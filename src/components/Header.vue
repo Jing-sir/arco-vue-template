@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { IconMenuFold, IconMenuUnfold } from '@arco-design/web-vue/es/icon';
+import BindGoogle from '@/components/Modal/BindGoogle.vue';
 import { RouteRecordRaw } from 'vue-router';
 import cookies from 'cookies-js';
 import api from '@/api/sys';
@@ -74,35 +75,38 @@ userStore.getUserInfo();
 </script>
 
 <template>
-    <div class="flex justify-between items-center header">
-        <div class="flex flex-row items-center">
-            <div class="cursor-pointer" @click.stop="onIsSidebar(isSidebar)">
-                <icon-menu-fold v-if="isSidebar" :style="{ fontSize: 22 }" />
-                <icon-menu-unfold v-else :style="{ fontSize: 22 }" />
-            </div>
-            <a-breadcrumb>
-                <a-breadcrumb-item v-for="(item,index) in routes" :key="item.path">
-                    <span v-if="item.redirect === 'noRedirect'|| index === routes.length - 1" class="no-redirect">{{ item.meta?.title }}</span>
-                    <a v-else @click.prevent="onLink(item)">{{ item.meta?.title }}</a>
-                </a-breadcrumb-item>
-            </a-breadcrumb>
-        </div>
-        <a-space :size="20">
-            <ColorPicker/>
-            <a-dropdown trigger="hover">
-                <div class="flex flex-row items-center cursor-pointer">
-                    <div class="user-header">{{ getUserName }}</div>
-                    <p class="user-text">{{ getName }}</p>
+    <div>
+        <BindGoogle ref="googleRef" />
+        <div class="flex justify-between items-center header">
+            <div class="flex flex-row items-center">
+                <div class="cursor-pointer" @click.stop="onIsSidebar(isSidebar)">
+                    <icon-menu-fold v-if="isSidebar" :style="{ fontSize: 22 }" />
+                    <icon-menu-unfold v-else :style="{ fontSize: 22 }" />
                 </div>
-                <template #content>
-                    <a-menu>
-                        <a-menu-item key="0" @click="onOpenGoogle">修改2FA</a-menu-item>
-                        <a-menu-item key="0" @click="onOpenPass">修改密码</a-menu-item>
-                        <a-menu-item key="0" @click="onLoginOut">退出登录</a-menu-item>
-                    </a-menu>
-                </template>
-            </a-dropdown>
-        </a-space>
+                <a-breadcrumb>
+                    <a-breadcrumb-item v-for="(item,index) in routes" :key="item.path">
+                        <span v-if="item.redirect === 'noRedirect'|| index === routes.length - 1" class="no-redirect">{{ item.meta?.title }}</span>
+                        <a v-else @click.prevent="onLink(item)">{{ item.meta?.title }}</a>
+                    </a-breadcrumb-item>
+                </a-breadcrumb>
+            </div>
+            <a-space :size="20">
+                <ColorPicker/>
+                <a-dropdown trigger="hover">
+                    <div class="flex flex-row items-center cursor-pointer">
+                        <div class="user-header">{{ getUserName }}</div>
+                        <p class="user-text">{{ getName }}</p>
+                    </div>
+                    <template #content>
+                        <a-menu>
+                            <a-menu-item key="0" @click="onOpenGoogle">修改2FA</a-menu-item>
+                            <a-menu-item key="0" @click="onOpenPass">修改密码</a-menu-item>
+                            <a-menu-item key="0" @click="onLoginOut">退出登录</a-menu-item>
+                        </a-menu>
+                    </template>
+                </a-dropdown>
+            </a-space>
+        </div>
     </div>
 </template>
 <style lang="scss" scoped>

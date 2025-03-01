@@ -32,11 +32,13 @@ const { data, loading, runAsync } = useRequest(async (facode = '') => {
 
 // 登录
 const onOk = async () => {
-    await formRef.value.validate();
-    await runAsync();
-    cookies.set('manageToken', data.value?.token);
-    Message.success('登录成功！');
-    router.push('/');
+    const r = await formRef.value.validate();
+    if (!r) {
+        await runAsync();
+        cookies.set('manageToken', data.value?.token);
+        Message.success('登录成功！');
+        router.push('/');
+    }
     // codeRef.value.onShowDilog(true);
 };
 

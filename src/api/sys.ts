@@ -75,5 +75,15 @@ class FetchTest extends Api {
     loginOut(): Promise<boolean> {
         return this.api.get('/sys/user/loginOut');
     }
+
+    // 绑定2FA,校验密码
+    checkCipher(params: {
+        password: string; // 操作密码
+        userId: string; // 用户ID
+        facode?: string;
+        type?: 1 | 2 | 3; // 1、重置登陆密码 2、重置审核密码 3、重置锁屏密码
+    }): Promise<boolean> {
+        return this.api.post('/sys/user/checkCipher', params);
+    }
 }
 export default new FetchTest();

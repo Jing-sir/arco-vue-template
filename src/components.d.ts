@@ -37,6 +37,7 @@ declare module 'vue' {
     ASubMenu: typeof import('@arco-design/web-vue')['SubMenu']
     ATable: typeof import('@arco-design/web-vue')['Table']
     AVerificationCode: typeof import('@arco-design/web-vue')['VerificationCode']
+    BindGoogle: typeof import('./components/Modal/BindGoogle.vue')['default']
     CodeInput: typeof import('./components/CodeInput.vue')['default']
     ColorPicker: typeof import('./components/ColorPicker.vue')['default']
     Error: typeof import('./components/Error.vue')['default']
