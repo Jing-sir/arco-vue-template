@@ -43,7 +43,7 @@ const routerNext = { // router进入页面前执行的事件
     async setRequiresAuth(to: RouteLocationNormalized): Promise<boolean | string> { // 路由鉴权
         // 路由鉴权
         const { requiresAuth } = to.meta;
-        const hasToken = cookies.get('walletToken');
+        const hasToken = cookies.get('manageToken');
         if (hasToken) {
             const store = useSidebar(pinia);
             const { roleMenu } = storeToRefs(store);

@@ -55,7 +55,7 @@ const handleLink = (item: RouteRecordRaw) => { // 跳转路由
 
 const handleLoginOut = (): void => { // 退出登录
     api.loginOut().then(() => {
-        cookies.set('walletToken', '');
+        cookies.set('manageToken', '');
         storeTagsView.clearVisitedView();
         push('/login');
     });

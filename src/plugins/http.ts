@@ -44,7 +44,7 @@ function httpInit(instance: AxiosInstance): AxiosInstance {
             ...config,
             headers: {
                 pretreatment: true, // 是否进行数据预处理，不进行预处理将返回原始的数据结构到集成层（适用于获取完整的数据结构，而非仅获取需要的数据）
-                Token: cookies.get('walletToken') || '',
+                Token: cookies.get('manageToken') || '',
                 'X-B3-Traceid': moment().valueOf() * 1000, // Traceid
                 'X-B3-Spanid': moment().valueOf() * 1000, // Spanid
                 'Accept-Language': getI18nLanguage(), // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language
@@ -89,7 +89,7 @@ function httpInit(instance: AxiosInstance): AxiosInstance {
 
         if (typeOf(newData) !== 'object' || !headers?.pretreatment) return newData;
         if (newData.code === 1000 || newData.code === 1001) { // 去登录，错误提示、异常抛出由后续流程继续处理
-            cookies.set('walletToken', ''); // 使凭证过期
+            cookies.set('manageToken', ''); // 使凭证过期
             await router.push('/login'); // 主动登录
         }
 

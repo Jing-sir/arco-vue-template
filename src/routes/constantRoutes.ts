@@ -4,16 +4,10 @@ import { RouteRecordRaw } from 'vue-router';
 
 const constantRoutes: RouteRecordRaw[] = [
     {
-        path: '/',
-        name: 'main',
-        component: () => import(/* webpackChunkName: "main" */ '../Main.vue'),
-        meta: { requiresAuth: false, role: 'Home', title: '首页', hidden: true, icon: 'icon-zhuye' },
-        children: [{
-            path: '',
-            name: 'Home',
-            component: () => import(/* webpackChunkName: "Home" */ '@/views/Home/Index.vue'),
-            meta: { title: '首页', role: 'Home', isShow: true, requiresAuth: false }
-        }]
+        path: '/login',
+        name: 'login',
+        component: () => import(/* webpackChunkName: "error" */ '@/views/Login/Index.vue'),
+        meta: { title: '登录', role: 'login', isShow: true, requiresAuth: false }
     }, {
         path: '/error',
         name: 'error-main',

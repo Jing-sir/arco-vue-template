@@ -19,7 +19,7 @@ const isHome = (route: RouteRecordRaw) => {
 
 // 获取routes
 const fetchBreadcrumb = () => {
-    // store.fetchSidebarRoutes();
+    store.fetchSidebarRoutes();
     let hasMatched: RouteRecordRaw[] = hasRoute.matched.filter((item: RouteRecordRaw) => item.meta && item.meta.title);
     const hasRouteList: RouteRecordRaw[] = [{ path: '/', meta: { title: '首页' }, redirect: '/Home' }];
 
@@ -73,7 +73,7 @@ watch(
     }
 );
 
-onBeforeMount(fetchBreadcrumb);
+fetchBreadcrumb();
 </script>
 
 <template>
