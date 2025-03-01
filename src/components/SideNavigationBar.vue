@@ -10,7 +10,7 @@ const store = sideBar();
 const { push } = useRouter();
 const { routes, roleMenu, isSidebar } = storeToRefs(store);
 
-const openKeys = computed(() => routes.value?.map(({path}) => path));
+const openKeys = computed(() => routes.value?.map(({ path }) => path));
 
 const isShowChild = (children = []) => !children.length; // 判断子路由的item还是menu的显示
 const hasOneShowingChild = (children = [], item: any) => children.length === 1 && item.meta.hidden; // 根路由不显示子路由
@@ -25,7 +25,7 @@ watch(() => hasRoute.path,
         if (o !== n) {
             selectedKeys.value = [String(o === '/' ? '/' : o.split('/').pop())];
         }
-    }, {deep: true, immediate: true}); // 监听路由重置selectedKeys
+    }, { deep: true, immediate: true }); // 监听路由重置selectedKeys
 </script>
 
 <template>

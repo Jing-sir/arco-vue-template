@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { IconMenuFold, IconMenuUnfold } from '@arco-design/web-vue/es/icon';
-import {RouteRecordRaw} from 'vue-router';
+import { RouteRecordRaw } from 'vue-router';
 import cookies from 'cookies-js';
 
 const googleRef = ref();
@@ -10,9 +10,9 @@ const routes = ref<RouteRecordRaw[]>([]);
 
 const store = sideBar();
 const userStore = user();
-const {push} = useRouter();
+const { push } = useRouter();
 const storeTagsView = tagsView();
-const {isSidebar} = storeToRefs(store);
+const { isSidebar } = storeToRefs(store);
 
 const handleIsSidebar = (status: boolean) => { // 开关左侧列表
     store.updateIsSidebar(!status);
@@ -34,7 +34,7 @@ const handleOpenPass = (): void => { // 打开重置密码弹窗
 
 const fetchBreadcrumb = () => { // 获取routes
     let hasMatched: RouteRecordRaw[] = hasRoute.matched.filter((item: RouteRecordRaw) => item.meta && item.meta.title);
-    const hasRouteList: RouteRecordRaw[] = [{path: '/', meta: {title: '首页', role: ''}, redirect: '/Home'}];
+    const hasRouteList: RouteRecordRaw[] = [{ path: '/', meta: { title: '首页', role: '' }, redirect: '/Home' }];
 
     if (!isHome(hasMatched[0])) {
         hasMatched = hasRouteList.concat(hasMatched);
@@ -44,7 +44,7 @@ const fetchBreadcrumb = () => { // 获取routes
 };
 
 const handleLink = (item: RouteRecordRaw) => { // 跳转路由
-    const {redirect, path} = item;
+    const { redirect, path } = item;
     if (redirect) {
         const routePath = redirect === '/Home' ? '/' : redirect;
         push(String(routePath));

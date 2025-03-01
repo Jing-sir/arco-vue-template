@@ -7,7 +7,7 @@ const store = theme();
 
 <template>
     <a-space>
-        <a-color-picker size="mini" v-model="store.defaultColor" @change="store.upDefaultColor" showText disabledAlpha />
+        <a-color-picker v-model="store.defaultColor" size="mini" show-text disabled-alpha @change="store.upDefaultColor" />
     </a-space>
 </template>
 

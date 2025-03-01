@@ -7,8 +7,8 @@ const hasRoute = useRoute();
 const routes = ref<RouteRecordRaw[]>([]);
 
 const store = sideBar();
-const {push} = useRouter();
-const {isSidebar} = storeToRefs(store);
+const { push } = useRouter();
+const { isSidebar } = storeToRefs(store);
 
 // 是否是首页
 const isHome = (route: RouteRecordRaw) => {
@@ -21,7 +21,7 @@ const isHome = (route: RouteRecordRaw) => {
 const fetchBreadcrumb = () => {
     // store.fetchSidebarRoutes();
     let hasMatched: RouteRecordRaw[] = hasRoute.matched.filter((item: RouteRecordRaw) => item.meta && item.meta.title);
-    const hasRouteList: RouteRecordRaw[] = [{path: '/', meta: {title: '首页'}, redirect: '/Home'}];
+    const hasRouteList: RouteRecordRaw[] = [{ path: '/', meta: { title: '首页' }, redirect: '/Home' }];
 
     if (!isHome(hasMatched[0])) {
         hasMatched = hasRouteList.concat(hasMatched);
@@ -35,7 +35,7 @@ const keepAlive = computed(() => visitedViews.value.map((item) => item.name));
 
 const onCollapse = (val: boolean) => {
     isSidebar.value = val;
-}
+};
 
 const fetchHeaderWidth = computed<string>(() => (isSidebar.value ? 'calc(100% - 80px)' : 'calc(100% - 235px)'));
 
@@ -48,7 +48,7 @@ const nameComponent = computed(() => {
 
 const handleLink = (item: RouteRecordRaw) => {
     // 跳转路由
-    const {redirect, path} = item;
+    const { redirect, path } = item;
     if (redirect) {
         const routePath = redirect === '/Home' ? '/' : redirect;
         push(String(routePath));
@@ -62,7 +62,7 @@ watch(
     (o: boolean) => {
         isOnline.value = o;
     },
-    {deep: true, immediate: true}
+    { deep: true, immediate: true }
 );
 
 watch(
@@ -83,9 +83,9 @@ onBeforeMount(fetchBreadcrumb);
             breakpoint="lg"
             collapsible
             :width="235"
-            @collapse="onCollapse"
             :collapsed="isSidebar"
             :style="{ overflow: 'auto', height: '100vh', position: 'fixed', left: 0, zIndex: 3 }"
+            @collapse="onCollapse"
         >
             <SideNavigationBar/>
         </a-layout-sider>

@@ -42,7 +42,7 @@ const onSearch = (obj: { [key: string]: string }): void => {
     fetchTableData(obj);
 };
 
-const { paginationConfig, handleSizeChange, updatePagination } = useTableConf(fetchTableData);
+const { paginationConfig, onSizeChange, updatePagination, onPageSizeChange } = useTableConf(fetchTableData);
 
 fetchTableData();
 </script>
@@ -61,7 +61,8 @@ fetchTableData();
                 :data="dataSource"
                 :loading="loading"
                 :scroll="{ x: 1000 }"
-                @change="handleSizeChange"
+                @page-size-change="onPageSizeChange"
+                @page-change="onSizeChange"
             >
                 <template #optional>
                     <slot name="optional"></slot>

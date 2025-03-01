@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import {ref, watch} from 'vue';
+import { ref, watch } from 'vue';
 import CodeInput from '@/components/CodeInput.vue';
-import {SIX_NUMBER} from '@/utils/constant';
-import {handlePaste} from '@/utils/common';
-import {useRouter} from 'vue-router';
+import { SIX_NUMBER } from '@/utils/constant';
+import { handlePaste } from '@/utils/common';
+import { useRouter } from 'vue-router';
 
-const {title} = defineProps({
+const { title } = defineProps({
     title: {
         type: String,
         require: true,
@@ -41,7 +41,7 @@ watch(() => codeArr.value, (newValue) => {
     }
 });
 
-defineExpose({onShowDialog, resetInputs});
+defineExpose({ onShowDialog, resetInputs });
 </script>
 
 <template>

@@ -8,7 +8,7 @@ import { Message } from '@arco-design/web-vue';
 import { getI18nLanguage } from '@/setup/i18n-setup';
 import router from '../setup/router-setup';
 import { typeOf, deepCopy } from '@/utils/common';
-import {timeStampToDate} from '@/filters/dateFormat';
+import { timeStampToDate } from '@/filters/dateFormat';
 
 export type { AxiosInstance };
 
@@ -99,7 +99,7 @@ function httpInit(instance: AxiosInstance): AxiosInstance {
         Message.error(newData?.msg || newData?.message);
         return Promise.reject(newData?.msg || newData?.message);
     }, (error) => {
-        const { response, /* __CANCEL__ */} = error;
+        const { response, /* __CANCEL__ */ } = error;
         // if (!__CANCEL__) message.error(response.data.msg || response.data.message); // 非主动取消请求的接口
         throw new Error(response);
     });

@@ -4,7 +4,7 @@ import { map, reduce, toPairs, debounce } from 'lodash-es';
 import { timeStampToDate } from '@/filters/dateFormat';
 import { SearchOption } from '@/interface/TableType';
 import { PropType } from 'vue';
-import * as console from "node:console";
+import * as console from 'node:console';
 
 const props = defineProps({
     searchConf: {
@@ -66,22 +66,7 @@ const onReset = (): void => {
 
 // 格式化搜索obj
 const getSearchCal = computed(() => {
-    const res = map(formState.domains, (item) => {
-        if (['input', 'select'].includes(item.type)) {
-            return {
-                [item.modelKey]: item.value ? timeStampToDate(item.value) : null
-            };
-        }
-
-        // 处理多值情况
-        return reduce(item.modelKey, (acc, childKey) => {
-            const value = item[childKey];
-            acc[childKey] = value ? timeStampToDate(value) : null;
-            return acc;
-        }, {});
-    });
-
-    const obj = reduce(res, (acc, item) => {
+    const obj = reduce(getFormStateObj.value, (acc, item) => {
         const [key, value] = toPairs(item)[0];
         acc[key] = value;
         return acc;
@@ -90,8 +75,23 @@ const getSearchCal = computed(() => {
     return {
         ...obj,
         [searchState.value.searchKey]: searchState.value.searchVal,
-    }
+    };
 });
+
+const getFormStateObj = computed(() => map(formState.domains, (item) => {
+    if (['input', 'select'].includes(item.type)) {
+        return {
+            [item.modelKey]: item.value ? timeStampToDate(item.value) : null
+        };
+    }
+
+    // 处理多值情况
+    return reduce(item.modelKey, (acc, childKey) => {
+        const value = item[childKey];
+        acc[childKey] = value ? timeStampToDate(value) : null;
+        return acc;
+    }, {});
+}))
 
 const getSearchOptions = computed(() => props.searchConf.filter((item) => item.type === 'input'));
 
@@ -127,7 +127,7 @@ const fetchTipsText = computed(() => getSearchOptions.value.find((item) => item.
                     <slot name="left"></slot>
                 </div>
                 <a-space v-if="props.isMore && props.searchConf.length > 1">
-                    <a-checkbox :value="false" v-model="isDefaVal" @change="onChangeCheck">默认展开</a-checkbox>
+                    <a-checkbox v-model="isDefaVal" :value="false" @change="onChangeCheck">默认展开</a-checkbox>
                     <a-button @click.stop="onToggleSearch">
                         <template #icon>
                             <span class="mr-1">
@@ -145,15 +145,15 @@ const fetchTipsText = computed(() => getSearchOptions.value.find((item) => item.
             v-if="isSearch && props.searchConf.length > 1"
             :class="['flex flex-col search-footer mt-0.5 animate__animated', isSearch ? 'animate__fadeIn' : 'animate__fadeOut', 'animate__delay-0.6s']"
         >
-            <a-form size="large" ref="formRef" :model="formState" layout="vertical">
+            <a-form ref="formRef" size="large" :model="formState" layout="vertical">
                 <div class="flex flex-row w-full flex-wrap search-wrap">
                     <a-row :gutter="[10]">
-                        <a-col v-for="(item, i) of getConfArr" :span="['input', 'select'].includes(item.type) ? 4 : 8" :key="i">
+                        <a-col v-for="(item, i) of getConfArr" :key="i" :span="['input', 'select'].includes(item.type) ? 4 : 8">
                             <a-form-item :label="item.label" :name="item.modelKey">
                                 <a-input
-                                    class="w-full"
                                     v-if="item.type === 'input'"
                                     v-model="item.value"
+                                    class="w-full"
                                     :placeholder="`${t('inputText[0]')}${item.label}`"
                                     @pressEnter="onSearch"
                                     @input="onSearch"

@@ -6,11 +6,15 @@ export default function useTableConf(fetchTableDataCallback: () => void) {
     const isLoading = ref(false);
     const paginationConfig = reactive({ ...PagingDefaultConf }); // 分页信息
 
-    const handleSizeChange = ({ pageSize, current }: { pageSize: number, current: number }): void => { // 切换每页数量
-        paginationConfig.pageSize = pageSize;
-        paginationConfig.current = current;
+    const onSizeChange = (val: number): void => { // 切换每页数量
+        paginationConfig.current = val;
         fetchTableDataCallback();
     };
+
+    const onPageSizeChange = (val: number): void => {
+        paginationConfig.pageSize = val;
+        fetchTableDataCallback();
+    }
 
     const onSearch = () => {
         paginationConfig.current = 1;
@@ -33,8 +37,9 @@ export default function useTableConf(fetchTableDataCallback: () => void) {
     return {
         onSearch,
         isLoading,
+        onSizeChange,
+        onPageSizeChange,
         updatePagination,
         paginationConfig,
-        handleSizeChange,
     };
 }

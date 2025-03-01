@@ -14,9 +14,9 @@ export const VERSION_NUMBER_RULES =
 
 interface PagingType {
     size: string;
-    showSizeChanger: boolean;
+    showPageSize: boolean;
     pageSizeOptions: number[];
-    showQuickJumper: boolean;
+    showJumper: boolean;
     showTotal: (val: number) => void;
     total: number
     current: number
@@ -26,9 +26,9 @@ interface PagingType {
 export const PagingDefaultConf: PagingType = {
     // paging 默认数据
     size: 'small',
-    showSizeChanger: true,
+    showPageSize: true,
     pageSizeOptions: [20, 30, 40, 50],
-    showQuickJumper: true,
+    showJumper: true,
     showTotal: (total: number) => `共 ${total} 条记录`,
     total: 0,
     current: 1,

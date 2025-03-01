@@ -78,7 +78,7 @@ watch(
             itemRefs.value[0]?.focus();
         }
     },
-    {immediate: true}
+    { immediate: true }
 );
 
 onMounted(() => {

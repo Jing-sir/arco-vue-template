@@ -14,9 +14,9 @@
 </template>
 
 <script lang="ts">
-import {defineComponent, watch} from 'vue';
-import {useRoute, useRouter, RouteLocationNormalizedLoaded} from 'vue-router';
-import {storeToRefs} from 'pinia';
+import { defineComponent, watch } from 'vue';
+import { useRoute, useRouter, RouteLocationNormalizedLoaded } from 'vue-router';
+import { storeToRefs } from 'pinia';
 import useTagsView from '@/store/tagsView';
 
 export default defineComponent({
@@ -28,15 +28,15 @@ export default defineComponent({
         watch(() => route.path,
             (o: string, n?: string) => {
                 if (o && o !== n) store.addVisitedView(route);
-            }, {deep: true, immediate: true}); // 监听路由更新tabs
+            }, { deep: true, immediate: true }); // 监听路由更新tabs
 
-        const {visitedViews: _visitedViews} = storeToRefs(store);
+        const { visitedViews: _visitedViews } = storeToRefs(store);
         const visitedViews = _visitedViews as unknown as RouteLocationNormalizedLoaded[];
 
         const deleteVisitedView = (index: number, isActive: boolean): void => store.deleteVisitedView(index, isActive);
 
         const handleGoCacheRoute = (route: RouteLocationNormalizedLoaded) => {
-            router.replace({...route, hash: '#no-refresh'});
+            router.replace({ ...route, hash: '#no-refresh' });
         };
 
         return {
