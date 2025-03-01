@@ -33,7 +33,7 @@ export default defineStore('sideBar', () => {
     // 获取sidebar 列表路由
     const fetchSidebarRoutes = () => {
         NProgress.start();
-        api.menuList().then((r: PromiseReturnType<typeof api.menuList>) => {
+        api.menuList().then((r) => {
             roleMenu.value = [...filterAsyRouter(r)];
             const fetchObj = Object.fromEntries(r?.map((item: PromiseReturnType<typeof api.menuList>[0]) => [item.name, item.name]));
             if (route.meta.requiresAuth && !fetchObj[String(route.meta.role)]) router.push('/error/404');
