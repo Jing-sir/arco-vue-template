@@ -2,6 +2,7 @@
 import { IconMenuFold, IconMenuUnfold } from '@arco-design/web-vue/es/icon';
 import { RouteRecordRaw } from 'vue-router';
 import cookies from 'cookies-js';
+import api from '@/api/sys';
 
 const googleRef = ref();
 const resetPassRef = ref();
@@ -14,7 +15,7 @@ const { push } = useRouter();
 const storeTagsView = tagsView();
 const { isSidebar } = storeToRefs(store);
 
-const handleIsSidebar = (status: boolean) => { // 开关左侧列表
+const onIsSidebar = (status: boolean) => { // 开关左侧列表
     store.updateIsSidebar(!status);
 };
 
@@ -24,12 +25,12 @@ const isHome = (route: RouteRecordRaw) => { // 是否是首页
     return String(name).trim().toLocaleLowerCase() === 'main'.toLocaleLowerCase();
 };
 
-const handleOpenGoogle = (): void => { // 打开google绑定二维码弹窗
-    googleRef.value.handleShowDialog(true);
+const onOpenGoogle = (): void => { // 打开google绑定二维码弹窗
+    googleRef.value.onShowDialog(true);
 };
 
-const handleOpenPass = (): void => { // 打开重置密码弹窗
-    resetPassRef.value.handleShowDialog(true);
+const onOpenPass = (): void => { // 打开重置密码弹窗
+    resetPassRef.value.onShowDialog(true);
 };
 
 const fetchBreadcrumb = () => { // 获取routes
@@ -43,7 +44,7 @@ const fetchBreadcrumb = () => { // 获取routes
     routes.value = hasMatched.filter((item: RouteRecordRaw) => item.meta && item.meta.title);
 };
 
-const handleLink = (item: RouteRecordRaw) => { // 跳转路由
+const onLink = (item: RouteRecordRaw) => { // 跳转路由
     const { redirect, path } = item;
     if (redirect) {
         const routePath = redirect === '/Home' ? '/' : redirect;
@@ -53,7 +54,7 @@ const handleLink = (item: RouteRecordRaw) => { // 跳转路由
     push(path);
 };
 
-const handleLoginOut = (): void => { // 退出登录
+const onLoginOut = (): void => { // 退出登录
     api.loginOut().then(() => {
         cookies.set('manageToken', '');
         storeTagsView.clearVisitedView();
@@ -61,50 +62,47 @@ const handleLoginOut = (): void => { // 退出登录
     });
 };
 
-// const fetchName = computed<string>(() => userStore.userInfo?.username);
-// const fetchUserName = computed<string>(() => userStore.userInfo?.username?.substr(0, 1) || '');
+const getName = computed<string>(() => userStore.userInfo?.fullName);
+const getUserName = computed<string>(() => userStore.userInfo?.fullName?.substr(0, 1) || '');
 
 watch(() => hasRoute.path, () => { // 监听路由变化
     if (hasRoute.path.startsWith('/redirect/')) return;
     fetchBreadcrumb();
 });
 
-onBeforeMount(() => {
-    // fetchBreadcrumb();
-    // userStore.fetchCurrUserInfo();
-});
+userStore.getUserInfo();
 </script>
 
 <template>
     <div class="flex justify-between items-center header">
         <div class="flex flex-row items-center">
-            <div class="cursor-pointer" @click.stop="handleIsSidebar(isSidebar)">
+            <div class="cursor-pointer" @click.stop="onIsSidebar(isSidebar)">
                 <icon-menu-fold v-if="isSidebar" :style="{ fontSize: 22 }" />
                 <icon-menu-unfold v-else :style="{ fontSize: 22 }" />
             </div>
             <a-breadcrumb>
                 <a-breadcrumb-item v-for="(item,index) in routes" :key="item.path">
                     <span v-if="item.redirect === 'noRedirect'|| index === routes.length - 1" class="no-redirect">{{ item.meta?.title }}</span>
-                    <a v-else @click.prevent="handleLink(item)">{{ item.meta?.title }}</a>
+                    <a v-else @click.prevent="onLink(item)">{{ item.meta?.title }}</a>
                 </a-breadcrumb-item>
             </a-breadcrumb>
         </div>
-        <div class="flex flex-row items-center">
+        <a-space :size="20">
             <ColorPicker/>
-            <a-dropdown>
-                <div class="flex flex-row items-center cursor-pointer" @click.prevent>
-                    <div class="user-header">{{ 11 }}</div>
-                    <p class="user-text">{{ 22 }}</p>
+            <a-dropdown trigger="hover">
+                <div class="flex flex-row items-center cursor-pointer">
+                    <div class="user-header">{{ getUserName }}</div>
+                    <p class="user-text">{{ getName }}</p>
                 </div>
-                <template #overlay>
+                <template #content>
                     <a-menu>
-                        <a-menu-item key="0" @click="handleOpenGoogle">修改2FA</a-menu-item>
-                        <a-menu-item key="0" @click="handleOpenPass">修改密码</a-menu-item>
-                        <a-menu-item key="0" @click="handleLoginOut">退出登录</a-menu-item>
+                        <a-menu-item key="0" @click="onOpenGoogle">修改2FA</a-menu-item>
+                        <a-menu-item key="0" @click="onOpenPass">修改密码</a-menu-item>
+                        <a-menu-item key="0" @click="onLoginOut">退出登录</a-menu-item>
                     </a-menu>
                 </template>
             </a-dropdown>
-        </div>
+        </a-space>
     </div>
 </template>
 <style lang="scss" scoped>
@@ -133,7 +131,7 @@ onBeforeMount(() => {
     height: 32px;
     border-radius: 16px;
     margin-right: 8px;
-    background: var(--primary-color);
+    background: var(--color-primary-6);
     color: #fff;
     font-size: 15px;
     text-align: center;

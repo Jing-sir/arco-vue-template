@@ -12,7 +12,7 @@ class FetchTest extends Api {
         state: 1 | 2; // 状态 1、启用 2、禁用
         userId: string; // 用户ID
     }> {
-        return this.api.post('/sys/user/getInfo');
+        return this.api.get('/sys/user/getInfo');
     }
 
     // 登陆
@@ -69,6 +69,11 @@ class FetchTest extends Api {
         parentId: string; // 父ID
     }[]> {
         return this.api.get('/sys/menu/list');
+    }
+
+    // 推出登录
+    loginOut(): Promise<boolean> {
+        return this.api.get('/sys/user/loginOut');
     }
 }
 export default new FetchTest();
