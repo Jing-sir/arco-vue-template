@@ -34,8 +34,8 @@ export default defineConfig(({ mode }) => {
         plugins: [
             vue(),
             VueI18nPlugin({
-                include: path.resolve(__dirname, 'src/**'),
-                defaultSFCLang: 'yaml',
+                include: [path.resolve(__dirname, 'src/lang/**/*.json')],
+                // 支持JSON格式的语言文件
             }),
             AutoImport({
                 imports: ['vue', 'vue-router', 'vue-i18n', 'pinia'],

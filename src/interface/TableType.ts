@@ -31,7 +31,7 @@ export interface TabsType  {
     role?: string;
 }
 
-export interface ColumnType { // column type
+export interface ColumnType<T = Record<string, unknown>> { // column type
     title: string;
     dataIndex?: string;
     key?: string;
@@ -42,16 +42,52 @@ export interface ColumnType { // column type
     className?: string;
     align?: string;
     width?: string | number;
-    customRender?: (data: { index: number, text: string | number, record:any}) => void;
+    customRender?: (data: { index: number, text: string | number, record: T}) => void;
     fixed?: string;
     ellipsis?: boolean
 }
 
-export type SearchOption = {
-    value: string | null;
+// 搜索字段值类型
+export type SearchFieldValue = string | number | null | undefined;
+
+// 搜索选项基础接口
+interface BaseSearchOption {
     label: string;
+    optionsArr?: Array<{ value: string | null | number; label: string }> | ComputedRef<Array<{ value: string | null | number; label: string }>>;
+    props?: Record<string, unknown>;
+    timeFormat?: string;
+}
+
+// 输入框搜索选项
+export interface InputSearchOption extends BaseSearchOption {
+    type: 'input';
     modelKey: string;
-    type: 'input' | 'select' | 'date' | 'date-single';
-    optionsArr?: { value: string | null | number; label: string }[] | ComputedRef<{ value: string | null | number; label: string }[]>;
-    props?: Record<string, any>;
-};
+    value?: string | null;
+}
+
+// 下拉选择搜索选项
+export interface SelectSearchOption extends BaseSearchOption {
+    type: 'select';
+    modelKey: string;
+    value?: string | number | null;
+}
+
+// 日期范围搜索选项 - 使用索引签名支持动态属性
+export interface DateRangeSearchOption extends BaseSearchOption {
+    type: 'date';
+    modelKey: string[]; // 两个字段的数组
+    [key: string]: SearchFieldValue | string[] | BaseSearchOption['label'] | BaseSearchOption['optionsArr'] | BaseSearchOption['props'] | BaseSearchOption['timeFormat'] | BaseSearchOption['type'];
+}
+
+// 单日期搜索选项
+export interface DateSingleSearchOption extends BaseSearchOption {
+    type: 'date-single';
+    modelKey: string;
+    value?: string | null;
+}
+
+// 联合类型
+export type SearchOption = InputSearchOption | SelectSearchOption | DateRangeSearchOption | DateSingleSearchOption;
+
+// 搜索参数类型
+export type SearchParams = Record<string, SearchFieldValue>;

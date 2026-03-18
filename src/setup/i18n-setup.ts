@@ -4,8 +4,8 @@ import http from 'axios';
 import { WritableComputedRef } from 'vue';
 import type { Locale } from '@intlify/core-base';
 
-import en_US from '../lang/en-US';
-import zh_CN from '../lang/zh-CN';
+import en_US from '../lang/en-US.json';
+import zh_CN from '../lang/zh-CN.json';
 
 type MessageSchema = typeof en_US | typeof zh_CN;
 type LangKeyString = keyof typeof messages;

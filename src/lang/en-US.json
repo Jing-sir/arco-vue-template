@@ -1,0 +1,20 @@
+
+{
+    "xhrError": ["Please Login", "{code} login timeout"],
+    "commonText": [
+        "Copy success",
+        "Copy failed",
+        "This browser does not support paste function or needs authorization",
+        "This browser does not support paste function",
+        "Please paste 6 digits"
+    ],
+    "search": {
+        "defaultExpanded": "Default Expanded",
+        "moreFilters": "More Filters",
+        "search": "Search",
+        "reset": "Reset",
+        "pleaseInput": "Please Input",
+        "pleaseSelect": "Please Select",
+        "all": "All"
+    }
+}
