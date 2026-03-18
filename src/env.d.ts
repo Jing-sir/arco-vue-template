@@ -7,7 +7,12 @@ declare module '*.vue' {
 
 declare module 'nprogress'; // 进度条
 
-declare module 'virtual:message' {
-  const message: string;
-  export { message };
+interface ImportMetaEnv {
+  readonly VITE_APP_BASE_URL: string;
+  readonly VITE_APP_PASS: string;
+  readonly VITE_PUBLIC_PATH: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
 }

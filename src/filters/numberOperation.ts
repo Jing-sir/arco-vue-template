@@ -44,7 +44,7 @@ export function toFixed(
 export default {
     install: (app: App): void => {
         const { $filters: filters } = app.config.globalProperties;
-        if (process.env.NODE_ENV === 'development')
+        if (import.meta.env.DEV)
             console.warn(
                 '过滤器在当前版本已不受支持，查看迁移指南：',
                 'https://v3.vuejs.org/guide/migration/filters.html#migration-strategy',

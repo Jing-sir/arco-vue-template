@@ -57,8 +57,7 @@ export function shuffleArray<T>(array: T[]): T[] { // 打乱数组顺序
     return newArray;
 }
 
-// @ts-ignore
-export const formatText = (key: string): TranslateResult => i18n.global.t(key);
+export const formatText = (key: string): string => String(i18n.global.t(key));
 
 export function decodeHTMLEntities(encodedString: string): string { // 格式化字符串
     if (!encodedString) return '';
@@ -70,13 +69,16 @@ export function decodeHTMLEntities(encodedString: string): string { // 格式化
 export const handlePaste = async (): Promise<string[] | []> => {
     // 读取浏览器粘贴板数据
     if (!window.navigator.clipboard) {
-        message.warn(formatText('commonText[2]')); // 该浏览器不支持粘贴功能或需要进行授权操作
+        Message.warn(formatText('commonText[2]')); // 该浏览器不支持粘贴功能或需要进行授权操作
         throw new Error(formatText('commonText[3]')); // 该浏览器不支持粘贴功能
     }
 
     try {
         const text = await window.navigator.clipboard.readText();
-        if (!SIX_NUMBER.test(text)) return message.warn(formatText('commonText[4]')); // 请粘贴6位数字
+        if (!SIX_NUMBER.test(text)) {
+            Message.warn(formatText('commonText[4]')); // 请粘贴6位数字
+            return [];
+        }
         if (text.length === 6) return text.split('');
     } catch (error) {
         console.log(error);

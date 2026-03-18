@@ -1,18 +1,16 @@
 /* eslint-disable camelcase */
-import { createI18n, type VueMessageType, type I18nOptions } from 'vue-i18n';
+import { createI18n } from 'vue-i18n';
 import http from 'axios';
-// eslint-disable-next-line import/named
 import { WritableComputedRef } from 'vue';
-import type { LocaleMessages, Locale, FallbackLocale } from '@intlify/core-base';
+import type { Locale } from '@intlify/core-base';
 
-// @ts-ignore
-import en_US from '../lang/en-US.yml';
-// @ts-ignore
-import zh_CN from '../lang/zh-CN.yml';
+import en_US from '../lang/en-US';
+import zh_CN from '../lang/zh-CN';
 
 type MessageSchema = typeof en_US | typeof zh_CN;
+type LangKeyString = keyof typeof messages;
 
-const isProduction: boolean = process.env.NODE_ENV === 'production';
+const isProduction = import.meta.env.PROD;
 const localeDefault: string = window.navigator.language;
 
 const messages: {
@@ -31,13 +29,11 @@ const fallbackLocale/* FallbackLocale */ = (languages.includes(localeDefault)
 const i18n = createI18n({
     locale: fallbackLocale, // 设置语言环境
     fallbackLocale, // 如果未找到key,需要回溯到语言包的环境
-    silentTranslationWarn: isProduction, // 警告信息
     messages, // 设置语言环境信息
-    legacy: false // 是否不使用 composition-api 模式
-    // globalInjection: true // 是否为每个组件注入全局属性和函数 */
+    legacy: false, // 是否不使用 composition-api 模式
+    missingWarn: !isProduction,
+    fallbackWarn: !isProduction,
 });
-
-export type LangKeyString = typeof fallbackLocale;
 
 export const getI18nLanguage = (): LangKeyString => i18n.global.locale.value; // 获取语言
 export function setI18nLanguage(lang: LangKeyString = fallbackLocale): Locale { // 设置规则：完全匹配 -> 模糊匹配 -> 默认语言
