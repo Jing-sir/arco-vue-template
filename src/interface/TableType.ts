@@ -52,10 +52,13 @@ export type SearchFieldValue = string | number | null | undefined;
 
 // 搜索选项基础接口
 interface BaseSearchOption {
-    label: string;
-    optionsArr?: Array<{ value: string | null | number; label: string }> | ComputedRef<Array<{ value: string | null | number; label: string }>>;
-    props?: Record<string, unknown>;
-    timeFormat?: string;
+    label: string
+    type: string
+    optionsArr?:
+        | Array<{ value: string | null | number; label: string }>
+        | ComputedRef<Array<{ value: string | null | number; label: string }>>
+    props?: Record<string, unknown>
+    timeFormat?: string
 }
 
 // 输入框搜索选项
@@ -91,3 +94,8 @@ export type SearchOption = InputSearchOption | SelectSearchOption | DateRangeSea
 
 // 搜索参数类型
 export type SearchParams = Record<string, SearchFieldValue>;
+
+export interface FileItem {
+    type: string;
+    size: number;
+}

@@ -1,5 +1,5 @@
 import { Message } from '@arco-design/web-vue';
-import { FileItem } from '@/interface/StateType';
+import { FileItem } from '@/interface/TableType';
 
 export default function useUpload() {
     const beforeUpload = (file: FileItem) => {
