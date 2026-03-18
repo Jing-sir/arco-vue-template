@@ -69,14 +69,14 @@ export function decodeHTMLEntities(encodedString: string): string { // 格式化
 export const handlePaste = async (): Promise<string[] | []> => {
     // 读取浏览器粘贴板数据
     if (!window.navigator.clipboard) {
-        Message.warn(formatText('commonText[2]')); // 该浏览器不支持粘贴功能或需要进行授权操作
+        Message.warning(formatText('commonText[2]')); // 该浏览器不支持粘贴功能或需要进行授权操作
         throw new Error(formatText('commonText[3]')); // 该浏览器不支持粘贴功能
     }
 
     try {
         const text = await window.navigator.clipboard.readText();
         if (!SIX_NUMBER.test(text)) {
-            Message.warn(formatText('commonText[4]')); // 请粘贴6位数字
+            Message.warning(formatText('commonText[4]')); // 请粘贴6位数字
             return [];
         }
         if (text.length === 6) return text.split('');

@@ -1,7 +1,7 @@
 import type { Router, NavigationGuardNext, RouteLocationNormalized, RouteLocationRaw, _RouteLocationBase } from 'vue-router'; /// doc: https://router.vuejs.org/api
 // import type { Locale } from '@intlify/runtime';
 
-import VueRouter, { createRouter, createWebHistory } from 'vue-router'; /// doc: https://router.vuejs.org/api
+import { createRouter, createWebHistory } from 'vue-router'; /// doc: https://router.vuejs.org/api
 import { storeToRefs } from 'pinia';
 // import i18n, { setI18nLanguage, LangKeyString, getI18nLanguage } from './i18n-setup';
 import routes from '../routes';

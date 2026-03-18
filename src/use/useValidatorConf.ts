@@ -1,15 +1,15 @@
-import { RuleObject } from '@arco-design/web-vue/es/form/interface';
+import type { FieldRule } from '@arco-design/web-vue';
 import { GREATER_THAN_ZERO_NUMBER, INTER_NUMBER, IP_V4, IP_V6 } from '@/utils/constant';
 
 export default function useValidatorConf() {
-    const validateNumber = async (rule: RuleObject, value: string) => { // 验证码验证
+    const validateNumber = async (rule: FieldRule, value: string) => { // 验证码验证
         if (value === '') return Promise.reject('请输入');
         if (!INTER_NUMBER.test(value)) return Promise.reject('非法输入');
 
         return Promise.resolve();
     };
 
-    const validateNumInput = async (rule: RuleObject, value: string) => { // 验证码验证
+    const validateNumInput = async (rule: FieldRule, value: string) => { // 验证码验证
         if (value === '') return Promise.reject('请输入');
         if (!value) return Promise.reject('无效金额');
         if (!GREATER_THAN_ZERO_NUMBER.test(value)) return Promise.reject('无效金额');
@@ -17,7 +17,7 @@ export default function useValidatorConf() {
         return Promise.resolve();
     };
 
-    const validateIp = async (rule: RuleObject, value: string) => { // 验证码验证
+    const validateIp = async (rule: FieldRule, value: string) => { // 验证码验证
         if (value === '') return Promise.reject('请输入');
         if (!IP_V4.test(value) && !IP_V6.test(value)) return Promise.reject('请输入有效ip地址');
 
