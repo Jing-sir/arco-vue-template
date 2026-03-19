@@ -9,6 +9,7 @@ import pinia from '../store/Index';
 import useSidebar from '@/store/sideBar';
 import cookies from 'cookies-js';
 import api from '@/api/permission';
+import i18n from './i18n-setup';
 
 type _RouteMethod = {
     [key in keyof Router]: any
@@ -36,7 +37,9 @@ const routerNext = { // router进入页面前执行的事件
     }, */
     setTitle({ meta }: RouteLocationNormalized): Promise<boolean> { // 窗口标题设置
         const { title } = meta;
-        window.document.title = (typeof title === 'function' ? title() : title) || TITLE; // 动态修改窗口标题
+        const routeTitle = typeof title === 'function' ? title() : title;
+
+        window.document.title = routeTitle ? String(i18n.global.t(String(routeTitle))) : TITLE; // 动态修改窗口标题
         return Promise.resolve(true);
     },
 

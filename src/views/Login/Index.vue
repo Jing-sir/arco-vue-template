@@ -6,6 +6,8 @@ import cookies from 'cookies-js';
 import api from '@/api/sys';
 import md5 from 'md5';
 
+const { t } = useI18n();
+
 const codeRef = ref();
 const formRef = ref();
 const formState = ref({
@@ -17,8 +19,8 @@ const store = user();
 const router = useRouter();
 
 const rules = {
-    account: [{ required: true, message: '请输入账号', trigger: 'blur' }],
-    password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+    account: [{ required: true, message: t('请输入账号'), trigger: 'blur' }],
+    password: [{ required: true, message: t('请输入密码'), trigger: 'blur' }],
 };
 
 const { data, loading, runAsync } = useRequest(async (facode = '') => {
@@ -36,7 +38,7 @@ const onOk = async () => {
     if (!r) {
         await runAsync();
         cookies.set('manageToken', data.value?.token);
-        Message.success('登录成功！');
+        Message.success(t('登录成功'));
         router.push('/');
     }
     // codeRef.value.onShowDilog(true);
@@ -47,7 +49,7 @@ const getCode = async (val: string) => {
     await runAsync(val);
     router.push('/');
     cookies.set('manageToken', data.value?.token);
-    Message.success('登录成功！');
+    Message.success(t('登录成功'));
 };
 
 </script>
@@ -59,13 +61,13 @@ const getCode = async (val: string) => {
             <GoogleCode ref="codeRef" @setCode="getCode" />
             <div class="w-96 rounded-lg bg-neutral-50 p-10">
                 <a-form ref="formRef" layout="vertical" :rules="rules" :model="formState">
-                    <a-form-item label="账号" field="account">
-                        <a-input v-model="formState.account" placeholder="请输入账号" />
+                    <a-form-item :label="t('账号')" field="account">
+                        <a-input v-model="formState.account" :placeholder="t('请输入账号')" />
                     </a-form-item>
-                    <a-form-item label="密码" field="password">
-                        <a-input-password v-model="formState.password" placeholder="请输入密码" />
+                    <a-form-item :label="t('密码')" field="password">
+                        <a-input-password v-model="formState.password" :placeholder="t('请输入密码')" />
                     </a-form-item>
-                    <a-button type="primary" :loading="loading" @click.stop="onOk">登录</a-button>
+                    <a-button type="primary" :loading="loading" @click.stop="onOk">{{ t('登录') }}</a-button>
                 </a-form>
             </div>
         </a-spin>

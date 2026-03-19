@@ -3,7 +3,7 @@ import { IconSearch, IconCaretDown, IconCaretUp } from '@arco-design/web-vue/es/
 import { map, reduce, toPairs, debounce } from 'lodash-es'
 import { timeStampToDate } from '@/filters/dateFormat'
 import { SearchOption, SearchParams, SearchFieldValue, InputSearchOption, SelectSearchOption, DateRangeSearchOption } from '@/interface/TableType'
-import { PropType, unref } from 'vue'
+import { PropType, unref, watch } from 'vue'
 
 // 常量定义
 const DEBOUNCE_DELAY = 600
@@ -36,6 +36,12 @@ const formState = reactive({
 const getOptionList = (
     item: SearchOption,
 ): Array<{ value: string | null | number; label: string }> => unref(item.optionsArr ?? item.options ?? [])
+
+const getTranslatedOptionList = (item: SearchOption): Array<{ value: string | null | number; label: string }> =>
+    getOptionList(item).map((option) => ({
+        ...option,
+        label: t(option.label),
+    }))
 
 // 安全获取第一个modelKey
 const getFirstModelKey = (): string => {
@@ -149,6 +155,14 @@ const fetchTipsText = computed(
         getSearchOptions.value.find((item) => item.modelKey === searchState.value.searchKey)
             ?.label || '',
 )
+
+watch(
+    () => props.searchConf,
+    (value) => {
+        formState.domains = JSON.parse(JSON.stringify(value))
+    },
+    { deep: true },
+)
 </script>
 <template>
     <div class="w-full mb-5">
@@ -172,7 +186,7 @@ const fetchTipsText = computed(
                         v-model="searchState.searchVal"
                         allow-clear
                         class="ml-4 w-2/5"
-                        :placeholder="`${t('search.search')} ${fetchTipsText}`"
+                        :placeholder="t('搜索{label}', { label: t(fetchTipsText) })"
                         @pressEnter="onSearch"
                         @input="onSearch"
                     >
@@ -186,7 +200,7 @@ const fetchTipsText = computed(
                 </div>
                 <a-space v-if="props.isMore && props.searchConf.length > 1">
                     <a-checkbox v-model="isDefaVal" :value="false" @change="onChangeCheck">
-                        {{ t('search.defaultExpanded') }}
+                        {{ t('默认展开') }}
                     </a-checkbox>
                     <a-button @click.stop="onToggleSearch">
                         <template #icon>
@@ -195,7 +209,7 @@ const fetchTipsText = computed(
                                 <icon-caret-up v-else />
                             </span>
                         </template>
-                        {{ t('search.moreFilters') }}
+                        {{ t('更多筛选') }}
                     </a-button>
                 </a-space>
             </div>
@@ -216,26 +230,26 @@ const fetchTipsText = computed(
                             :key="i"
                             :span="['input', 'select'].includes(item.type) ? 4 : 8"
                         >
-                            <a-form-item :label="item.label" :name="item.modelKey">
+                            <a-form-item :label="t(item.label)" :name="item.modelKey">
                                 <a-input
                                     v-if="item.type === 'input'"
                                     v-model="item.value"
                                     class="w-full"
-                                    :placeholder="`${t('search.pleaseInput')}${item.label}`"
+                                    :placeholder="t(item.placeholder || '请输入{label}', { label: t(item.label) })"
                                     @pressEnter="onSearch"
                                     @input="onSearch"
                                 />
                                 <a-select
                                     v-if="item.type === 'select'"
                                     v-model="item.value"
-                                    :options="getOptionList(item)"
-                                    :placeholder="`${t('search.pleaseSelect')}${item.label}`"
+                                    :options="getTranslatedOptionList(item)"
+                                    :placeholder="t(item.placeholder || '请选择{label}', { label: t(item.label) })"
                                     v-bind="item.props"
                                     @change="onSearch"
                                 >
-                                    <a-option :value="null">{{ t('search.all') }}</a-option>
+                                    <a-option :value="null">{{ t('全部') }}</a-option>
                                     <a-option
-                                        v-for="child of getOptionList(item)"
+                                        v-for="child of getTranslatedOptionList(item)"
                                         :key="child.value"
                                         :value="child.value"
                                     >
@@ -266,10 +280,10 @@ const fetchTipsText = computed(
             </a-form>
             <div class="flex justify-end pb-3 pr-3">
                 <a-button type="primary" class="mr-2" @click.stop="onSearch">
-                    {{ t('search.search') }}
+                    {{ t('搜索') }}
                 </a-button>
                 <a-button @click.stop="onReset">
-                    {{ t('search.reset') }}
+                    {{ t('重置') }}
                 </a-button>
             </div>
         </div>

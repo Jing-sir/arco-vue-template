@@ -1,3 +1,5 @@
+import { formatText } from '@/utils/common';
+
 // 解密函数
 export async function decryptAESGCM(encryptedKeyBase64: string, keyStr: string, ivStr: string): Promise<string> {
     // 将字符串密钥和 IV 转换为 Uint8Array
@@ -18,8 +20,8 @@ export async function decryptAESGCM(encryptedKeyBase64: string, keyStr: string, 
         const decoder = new TextDecoder();
         return decoder.decode(decrypted);
     } catch (err) {
-        console.error('解密失败:', err);
-        throw new Error('解密失败');
+        console.error(formatText('解密失败'), err);
+        throw new Error(formatText('解密失败'));
     }
 }
 
@@ -49,6 +51,6 @@ export async function encryptAESGCM(plainText: string, keyStr: string, ivStr: st
         // 将加密后的 ArrayBuffer 转换为 Base64 编码的字符串
         return btoa(String.fromCharCode(...new Uint8Array(encrypted)));
     } catch (err) {
-        throw new Error('err');
+        throw new Error(formatText('加密失败'));
     }
 }

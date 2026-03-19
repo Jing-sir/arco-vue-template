@@ -5,12 +5,12 @@ import i18n from '@/setup/i18n-setup';
 
 export function formatTaskState(val: number): string { // 1、待处理 2、待确认 3、待入账 4、成功 5、钱包处理失败 6、钱包处理中
     switch (val) {
-    case 1: return '待处理';
-    case 2: return '待确认';
-    case 3: return '待入账';
-    case 4: return '成功';
-    case 5: return '钱包处理失败';
-    case 6: return '钱包处理中';
+    case 1: return formatText('待处理');
+    case 2: return formatText('待确认');
+    case 3: return formatText('待入账');
+    case 4: return formatText('成功');
+    case 5: return formatText('钱包处理失败');
+    case 6: return formatText('钱包处理中');
     default: return '--';
     }
 }
@@ -69,14 +69,14 @@ export function decodeHTMLEntities(encodedString: string): string { // 格式化
 export const handlePaste = async (): Promise<string[] | []> => {
     // 读取浏览器粘贴板数据
     if (!window.navigator.clipboard) {
-        Message.warning(formatText('commonText[2]')); // 该浏览器不支持粘贴功能或需要进行授权操作
-        throw new Error(formatText('commonText[3]')); // 该浏览器不支持粘贴功能
+        Message.warning(formatText('该浏览器不支持粘贴功能或需要进行授权操作'));
+        throw new Error(formatText('该浏览器不支持粘贴功能'));
     }
 
     try {
         const text = await window.navigator.clipboard.readText();
         if (!SIX_NUMBER.test(text)) {
-            Message.warning(formatText('commonText[4]')); // 请粘贴6位数字
+            Message.warning(formatText('请粘贴6位数字'));
             return [];
         }
         if (text.length === 6) return text.split('');
@@ -441,8 +441,8 @@ export function throttleFunc(fn: (...arg: any[]) => any, time: number = 500): Re
 export const onCopyCode = (val: string): void => { // 复制code / 链接
     try {
         copyToClipboard(val);
-        Message.success(formatText('commonText[0]'));
+        Message.success(formatText('复制成功'));
     } catch (e) {
-        Message.success(formatText('commonText[1]'));
+        Message.success(formatText('复制失败'));
     }
 };

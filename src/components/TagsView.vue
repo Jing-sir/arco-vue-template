@@ -1,12 +1,12 @@
 <template>
     <div class="tags-view-container">
         <div class="tags-view-wrapper overflow-x">
-            <span class="tags-view-item" :class="{active:$route.path==='/'}" @click="$router.push('/')">首页</span>
+            <span class="tags-view-item" :class="{active:$route.path==='/'}" @click="$router.push('/')">{{ formatRouteTitle('首页') }}</span>
                 <span
                     v-for="({name,path, meta,fullPath},i) in visitedViews" :key="path"
                     class="tags-view-item" :class="{active:$route.name===name}"
                     @click="handleGoCacheRoute({ fullPath })">
-                    {{ meta.title }}
+                    {{ formatRouteTitle(meta.title) }}
                 <span class="icon-close" @click.stop="deleteVisitedView(i,$route.path===path)">x</span>
             </span>
         </div>
@@ -18,6 +18,7 @@ import { defineComponent, watch } from 'vue';
 import { useRoute, useRouter, type RouteLocationNormalizedLoaded } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import useTagsView from '@/store/tagsView';
+import i18n from '@/setup/i18n-setup';
 
 type CachedRouteLocation = {
     fullPath: string;
@@ -43,10 +44,16 @@ export default defineComponent({
             router.replace(`${route.fullPath}#no-refresh`);
         };
 
+        const formatRouteTitle = (title?: string | Function): string =>
+            title
+                ? String(i18n.global.t(String(typeof title === 'function' ? title() : title)))
+                : '';
+
         return {
             visitedViews,
             deleteVisitedView,
-            handleGoCacheRoute
+            handleGoCacheRoute,
+            formatRouteTitle,
         };
     }
 });

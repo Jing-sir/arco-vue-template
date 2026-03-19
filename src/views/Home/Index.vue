@@ -3,6 +3,8 @@ import type { ColumnType, SearchOption } from '@/interface/TableType';
 import TableSearchWrap from '@/components/TableSearchWrap/Index.vue';
 import api from '@/api/fetchTest';
 
+const { t } = useI18n();
+
 const fetchRedemptionList = (params: Record<string, unknown> = {}) =>
     api.redemptionList(params as Parameters<typeof api.redemptionList>[0]);
 
@@ -144,36 +146,29 @@ const searchConf = ref<SearchOption[]>([
     },
 ]);
 
-const tableColumns: ColumnType[] = [
-    { title: 'ID', dataIndex: 'id', width: 80, fixed: 'left' },
-    { title: '内部卡ID', dataIndex: 'ditchCardId', width: 140 },
-    { title: '渠道卡ID', dataIndex: 'internalCardId', key: 'internalCardId', width: 140 },
-    { title: '交易关联ID', dataIndex: 'transactionId', key: 'transactionId', width: 140 },
-    { title: '渠道交易ID', dataIndex: 'uuid', key: 'uuid', width: 140 },
-    { title: '账户号', dataIndex: 'accountNo', width: 140 },
-    { title: '业务类型', dataIndex: 'type', width: 140 },
-    { title: '交易金额', dataIndex: 'amount', width: 140 },
-    { title: '交易币种', dataIndex: 'currencyCode', width: 140 },
-    { title: '变动后余额', dataIndex: 'newAmount', width: 140 },
-    { title: '冻结金额', dataIndex: 'frozenAmount', width: 140 },
-    { title: '变动后冻结余额', dataIndex: 'newFrozenAmount', width: 140 },
-    { title: '交易发生时间', dataIndex: 'createTime', width: 140 },
-    { title: '备注', dataIndex: 'note', width: 140 },
-    { title: '操作', dataIndex: 'optional', slotName: 'optional', fixed: 'right', width: 160 },
-];
+const tableColumns = computed<ColumnType[]>(() => [
+    { title: t('ID'), dataIndex: 'id', width: 80, fixed: 'left' },
+    { title: t('内部卡ID'), dataIndex: 'ditchCardId', width: 140 },
+    { title: t('渠道卡ID'), dataIndex: 'internalCardId', key: 'internalCardId', width: 140 },
+    { title: t('交易关联ID'), dataIndex: 'transactionId', key: 'transactionId', width: 140 },
+    { title: t('渠道交易ID'), dataIndex: 'uuid', key: 'uuid', width: 140 },
+    { title: t('账户号'), dataIndex: 'accountNo', width: 140 },
+    { title: t('业务类型'), dataIndex: 'type', width: 140 },
+    { title: t('交易金额'), dataIndex: 'amount', width: 140 },
+    { title: t('交易币种'), dataIndex: 'currencyCode', width: 140 },
+    { title: t('变动后余额'), dataIndex: 'newAmount', width: 140 },
+    { title: t('冻结金额'), dataIndex: 'frozenAmount', width: 140 },
+    { title: t('变动后冻结余额'), dataIndex: 'newFrozenAmount', width: 140 },
+    { title: t('交易发生时间'), dataIndex: 'createTime', width: 140 },
+    { title: t('备注'), dataIndex: 'note', width: 140 },
+    { title: t('操作'), dataIndex: 'optional', slotName: 'optional', fixed: 'right', width: 160 },
+]);
 </script>
-
-<i18n>
-  zh-CN:
-    text: '测试'
-  en-US:
-    text: 'test'
-</i18n>
 <template>
     <div class="main-wrapper">
         <TableSearchWrap :api-fetch="fetchRedemptionList" :table-columns="tableColumns" :search-conf="searchConf">
             <template #optional>
-                <a-button type="text">编辑</a-button>
+                <a-button type="text">{{ t('编辑') }}</a-button>
             </template>
         </TableSearchWrap>
     </div>

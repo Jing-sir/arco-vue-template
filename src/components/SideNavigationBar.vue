@@ -2,6 +2,8 @@
 import '@iconfu/svg-inject';
 import type { RouteRecordRaw } from 'vue-router';
 
+const { t } = useI18n();
+
 type SidebarRoute = RouteRecordRaw & {
     meta: NonNullable<RouteRecordRaw['meta']>;
     children?: SidebarRoute[];
@@ -23,6 +25,8 @@ const hasOneShowingChild = (children: SidebarRoute[] = [], item: SidebarRoute): 
 const handleClickItem = (parentPath = '', childPath = ''): void => { // 根据菜单切换路由
     push(childPath ? `${parentPath}/${childPath}` : parentPath);
 };
+const formatRouteTitle = (title?: string | Function): string =>
+    title ? t(String(typeof title === 'function' ? title() : title)) : '';
 
 // const fetchSidebarList: ComputedRef<RouteRecordRaw[]> = computed(() => );
 
@@ -50,7 +54,7 @@ watch(() => hasRoute.path,
                     <div class="display-flex flex-align-items-center" @click="handleClickItem(item?.path)">
                         <Icon v-if="item.meta.icon" :icon-type="item.meta.icon" class="icon-size"/>
                         <!--            <img v-if="item.meta.icon" class="icon-svg" onload="SVGInject(this)" :src="require(`../assets/images/icon-${item.meta.icon}.svg`)">-->
-                        <span class="title">{{ item.meta?.title }}</span>
+                        <span class="title">{{ formatRouteTitle(item.meta?.title) }}</span>
                     </div>
                 </a-menu-item>
                 <a-sub-menu v-if="!hasOneShowingChild(item?.children, item) && !item.meta?.isShow" :key="item.path">
@@ -58,7 +62,7 @@ watch(() => hasRoute.path,
                         <div class="display-flex flex-align-items-center">
                             <Icon v-if="item.meta.icon" :icon-type="item.meta.icon" class="icon-size"/>
                             <!--              <img v-if="item.meta.icon" class="icon-svg" onload="SVGInject(this)" :src="require(`../assets/images/icon-${item.meta.icon}.svg`)">-->
-                            <span class="title">{{ item.meta?.title }}</span>
+                            <span class="title">{{ formatRouteTitle(item.meta?.title) }}</span>
                         </div>
                     </template>
                     <div v-for="childItem of item.children" :key="childItem.path">
@@ -66,21 +70,21 @@ watch(() => hasRoute.path,
                             <a-menu-item :key="childItem.path">
                                 <div class="display-flex flex-align-items-center" @click.stop="handleClickItem(item.path, childItem.path)">
                                     <Icon v-if="childItem.meta.icon" :icon-type="childItem.meta.icon" class="icon-size"/>
-                                    <span class="title">{{ childItem.meta.title }}</span>
+                                    <span class="title">{{ formatRouteTitle(childItem.meta.title) }}</span>
                                 </div>
                             </a-menu-item>
                         </template>
                         <a-sub-menu v-if="!isShowChild(childItem.children)" :key="childItem.path">
                             <template #title>
                                 <Icon v-if="childItem.meta.icon" :icon-type="childItem.meta.icon" class="icon-size"/>
-                                <span class="title">{{ childItem.meta.title }}</span>
+                                <span class="title">{{ formatRouteTitle(childItem.meta.title) }}</span>
                             </template>
                             <a-menu-item
                                 v-for="child of childItem.children"
                                 :key="child.path">
                                 <div @click.stop="handleClickItem(childItem.path, child.path)">
                                     <Icon v-if="child.meta.icon" :icon-type="child.meta.icon" class="icon-size"/>
-                                    <span class="title">{{ child.meta.title }}</span>
+                                    <span class="title">{{ formatRouteTitle(child.meta.title) }}</span>
                                 </div>
                             </a-menu-item>
                         </a-sub-menu>

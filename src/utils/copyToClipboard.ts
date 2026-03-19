@@ -1,3 +1,5 @@
+import i18n from '@/setup/i18n-setup';
+
 export default function copyToClipboard(text:string) {
     const input = document.createElement('input');
     const commandName = 'copy'; // https://developer.mozilla.org/zh-CN/docs/Web/API/Document/execCommand#%E5%91%BD%E4%BB%A4
@@ -15,7 +17,9 @@ export default function copyToClipboard(text:string) {
     input.focus();
     input.setSelectionRange(0, input.value.length);
     // @ts-ignore
-    if (!document.execCommand(commandName, false, null)) throw new Error('在调用`document.execCommand`复制时发生错误');
+    if (!document.execCommand(commandName, false, null)) {
+        throw new Error(String(i18n.global.t('复制时发生错误')));
+    }
     input.blur();
     document.body.removeChild(input);
 }

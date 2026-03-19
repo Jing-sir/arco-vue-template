@@ -12,7 +12,7 @@ const constantRoutes: RouteRecordRaw[] = [
         path: '/error',
         name: 'error-main',
         component: () => import(/* webpackChunkName: "main" */ '../Main.vue'),
-        meta: { title: 'error', role: 'error', icon: '', isShow: true, requiresAuth: false },
+        meta: { title: '错误', role: 'error', icon: '', isShow: true, requiresAuth: false },
         children: [{
             path: '',
             name: 'error',
@@ -22,7 +22,7 @@ const constantRoutes: RouteRecordRaw[] = [
             path: '404',
             name: 'notRole',
             component: () => import(/* webpackChunkName: "error" */ '../components/NotRolePurview.vue'),
-            meta: { title: '404', role: '404', isShow: true, requiresAuth: false }
+            meta: { title: '暂无权限', role: '404', isShow: true, requiresAuth: false }
         }]
     }
 ];

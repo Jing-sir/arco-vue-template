@@ -3,6 +3,8 @@ import type { ComponentPublicInstance, VNodeRef } from 'vue';
 import { ref, watch, onMounted } from 'vue';
 import { INTER_NUMBER } from '@/utils/constant';
 
+const { t } = useI18n();
+
 const props = defineProps({
     modelValue: {
         type: Array as () => string[],
@@ -94,7 +96,7 @@ onMounted(() => {
             />
         </div>
         <div class="error-text">
-            <span v-if="isError">非法输入</span>
+            <span v-if="isError">{{ t('非法输入') }}</span>
         </div>
     </div>
 </template>

@@ -2,6 +2,8 @@
 import type { FormInstance } from '@arco-design/web-vue';
 import { reactive, ref } from 'vue';
 
+const { t } = useI18n();
+
 const emits = defineEmits<{
     setCode: [code: string];
 }>();
@@ -32,12 +34,12 @@ defineExpose({ onShowDilog });
 </script>
 
 <template>
-    <a-modal title="2fa" v-model:visible="visible" @ok="onOk" @cancel="onCancel" :width="380" :footer="false">
+    <a-modal :title="t('2FA 验证')" v-model:visible="visible" @ok="onOk" @cancel="onCancel" :width="380" :footer="false">
         <a-form ref="formRef" layout="vertical" :model="formState">
-            <a-form-item label="请输入2fa" field="code" :rules="[
-                { required:true,message:'Verification code is required' },
-                { minLength:6, message:'Verification code is incomplete' },
-                { match: /^\d+$/, message: 'Must be numeric' },
+            <a-form-item :label="t('请输入2FA')" field="code" :rules="[
+                { required:true,message:t('验证码必填') },
+                { minLength:6, message:t('验证码不完整') },
+                { match: /^\d+$/, message: t('必须为数字') },
             ]">
                 <a-verification-code
                     :separator="(index: number) => index === 2 ? '-' : undefined"

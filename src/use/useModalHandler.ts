@@ -1,4 +1,5 @@
 import { ref } from 'vue';
+import { formatText } from '@/utils/common';
 
 type IOptions = {
     beforeOk?: () => Promise<void> | void
@@ -13,7 +14,7 @@ const noop = () => {};
 const defaultGetContainer = () => document.body;
 export default function useModalHandler(options: IOptions = {}) {
     const { beforeOk = noop, afterCancel = noop, beforeCancel = noop, title = '信息', getContainer = defaultGetContainer, defaultOpen = false } = options;
-    const modalTitle = ref<string>(title);
+    const modalTitle = ref<string>(formatText(title));
     const open = ref<boolean>(defaultOpen);
     const onCancel = async () => {
         await beforeCancel();
@@ -28,7 +29,7 @@ export default function useModalHandler(options: IOptions = {}) {
         },
         onCancel,
         openModal: (title?:string) => {
-            modalTitle.value = title || '信息';
+            modalTitle.value = formatText(title || '信息');
             open.value = true;
         },
         title: modalTitle,

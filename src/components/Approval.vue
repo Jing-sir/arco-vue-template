@@ -2,6 +2,8 @@
 import { computed, ref, watch } from 'vue';
 import api from '@/api/examine';
 
+const { t } = useI18n();
+
 interface ApprovalProps {
     amount: string;
     id: string;
@@ -44,7 +46,7 @@ defineExpose({ fetchFlowInfo });
           <div class="is-flex  flex-direction-row flow-item">
             <div class="is-flex flex-direction-column align-items-center">
               <span class="block"></span>
-              <span class="desc">发起</span>
+              <span class="desc">{{ t('发起') }}</span>
             </div>
             <div class="line"></div>
           </div>
@@ -60,12 +62,12 @@ defineExpose({ fetchFlowInfo });
           <div class="is-flex  flex-direction-row flow-item">
             <div class="is-flex flex-direction-column align-items-center">
               <span class="block"></span>
-              <span class="desc">结束</span>
+              <span class="desc">{{ t('结束') }}</span>
             </div>
           </div>
         </div>
       </div>
-      <span v-else class="desc">填入转账金额后，显示对应审批流程</span>
+      <span v-else class="desc">{{ t('填入转账金额后，显示对应审批流程') }}</span>
     </div>
     <span v-else>--</span>
   </div>

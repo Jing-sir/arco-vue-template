@@ -5,6 +5,8 @@ import { RouteRecordRaw } from 'vue-router';
 import cookies from 'cookies-js';
 import api from '@/api/sys';
 
+const { t } = useI18n();
+
 const googleRef = ref();
 const resetPassRef = ref();
 const hasRoute = useRoute();
@@ -65,6 +67,8 @@ const onLoginOut = (): void => { // 退出登录
 
 const getName = computed<string>(() => userStore.userInfo?.fullName);
 const getUserName = computed<string>(() => userStore.userInfo?.fullName?.substr(0, 1) || '');
+const formatRouteTitle = (title?: string | Function): string =>
+    title ? t(String(typeof title === 'function' ? title() : title)) : '';
 
 watch(() => hasRoute.path, () => { // 监听路由变化
     if (hasRoute.path.startsWith('/redirect/')) return;
@@ -85,8 +89,8 @@ userStore.getUserInfo();
                 </div>
                 <a-breadcrumb>
                     <a-breadcrumb-item v-for="(item,index) in routes" :key="item.path">
-                        <span v-if="item.redirect === 'noRedirect'|| index === routes.length - 1" class="no-redirect">{{ item.meta?.title }}</span>
-                        <a v-else @click.prevent="onLink(item)">{{ item.meta?.title }}</a>
+                        <span v-if="item.redirect === 'noRedirect'|| index === routes.length - 1" class="no-redirect">{{ formatRouteTitle(item.meta?.title) }}</span>
+                        <a v-else @click.prevent="onLink(item)">{{ formatRouteTitle(item.meta?.title) }}</a>
                     </a-breadcrumb-item>
                 </a-breadcrumb>
             </div>
@@ -99,9 +103,9 @@ userStore.getUserInfo();
                     </div>
                     <template #content>
                         <a-menu>
-                            <a-menu-item key="0" @click="onOpenGoogle">修改2FA</a-menu-item>
-                            <a-menu-item key="0" @click="onOpenPass">修改密码</a-menu-item>
-                            <a-menu-item key="0" @click="onLoginOut">退出登录</a-menu-item>
+                            <a-menu-item key="0" @click="onOpenGoogle">{{ t('修改2FA') }}</a-menu-item>
+                            <a-menu-item key="0" @click="onOpenPass">{{ t('修改密码') }}</a-menu-item>
+                            <a-menu-item key="0" @click="onLoginOut">{{ t('退出登录') }}</a-menu-item>
                         </a-menu>
                     </template>
                 </a-dropdown>

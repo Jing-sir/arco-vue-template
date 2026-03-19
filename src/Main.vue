@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { RouteRecordRaw } from 'vue-router';
 
+const { t } = useI18n();
+
 const isOnline = ref<boolean>(true);
 
 const hasRoute = useRoute();
@@ -110,8 +112,8 @@ fetchBreadcrumb();
                         </router-view>
                     </template>
                     <div v-else class="flex-direction-column flex-align-items-center table-container">
-                        <p class="network-text">网络异常</p>
-                        <p class="text-size-14">请检查网络状态后刷新重试</p>
+                        <p class="network-text">{{ t('网络异常') }}</p>
+                        <p class="text-size-14">{{ t('请检查网络状态后刷新重试') }}</p>
                     </div>
                 </div>
             </a-layout-content>
