@@ -5,6 +5,8 @@
     "scripts": {
         "dev": "vite",
         "build": "vue-tsc --noEmit && vite build",
+        "lint": "eslint .",
+        "lint:fix": "eslint . --fix",
         "preview": "vite preview",
         "typecheck": "vue-tsc --noEmit"
     },
@@ -34,10 +36,9 @@
         "dayjs": "^1.11.20",
         "eslint": "^10.0.3",
         "eslint-config-prettier": "^10.1.8",
-        "eslint-define-config": "^1.24.1",
         "eslint-plugin-import": "^2.32.0",
-        "eslint-plugin-prettier": "^5.5.5",
         "eslint-plugin-vue": "^10.8.0",
+        "globals": "^15.15.0",
         "less": "^4.6.4",
         "lodash-es": "^4.17.23",
         "postcss": "^8.5.8",
@@ -48,6 +49,7 @@
         "unplugin-auto-import": "^21.0.0",
         "unplugin-vue-components": "^31.0.0",
         "vite": "^8.0.0",
+        "vue-eslint-parser": "^10.0.0",
         "vue-tsc": "^3.2.6"
     }
 }
