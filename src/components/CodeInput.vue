@@ -1,10 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue';
+import type { ComponentPublicInstance, VNodeRef } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { INTER_NUMBER } from '@/utils/constant';
-
-interface Input {
-    value: string;
-}
 
 const props = defineProps({
     modelValue: {
@@ -16,31 +13,34 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue']);
 
 const isError = ref(false);
-const inputs = ref<Input[]>([
+const inputs = ref<Array<{ value: string }>>([
     { value: '' },
     { value: '' },
     { value: '' },
     { value: '' },
     { value: '' },
     { value: '' },
-    // Add more input objects here
 ]);
 
-const itemRefs = ref<{ [key: number]: HTMLElement }>({});
+const itemRefs = ref<Array<HTMLInputElement | null>>([]);
 const curIndex = ref<number>(0);
 
-const handleKeyDown = (event: { keyCode: number }): void => {
+const handleKeyDown = (event: KeyboardEvent): void => {
     const isVal = inputs.value[curIndex.value].value;
     if (event.keyCode === 8 && !isVal) {
         itemRefs.value[curIndex.value - 1]?.focus();
     }
 };
 
-const itemRef = (index: number) => (el: HTMLElement): void => {
-    itemRefs.value[index] = el;
-};
+const itemRef = (index: number): VNodeRef =>
+    (el: Element | ComponentPublicInstance | null): void => {
+        itemRefs.value[index] = el instanceof HTMLInputElement ? el : null;
+    };
 
-const onInput = (index: number, value: string): void => {
+const onInput = (index: number, event: Event): void => {
+    const target = event.target;
+    const value = target instanceof HTMLInputElement ? target.value : '';
+
     isError.value = !INTER_NUMBER.test(value) && value !== '';
     inputs.value[index].value = value;
     if (isError.value) return;
@@ -55,14 +55,6 @@ const focusNextInput = (index: number): void => {
 const handleFocus = (index: number): void => {
     curIndex.value = index;
 };
-
-const inputValue = computed<string>({
-    get: (): string => inputs.value[curIndex.value].value,
-    set: (value: string): void => {
-        inputs.value[curIndex.value].value = value;
-        emit('update:modelValue', inputs.value.map((input) => input.value));
-    },
-});
 
 watch(
     () => props.modelValue,
@@ -97,7 +89,7 @@ onMounted(() => {
                 class="input-item"
                 maxlength="1"
                 @keydown="handleKeyDown"
-                @input="onInput(index, $event.target.value)"
+                @input="onInput(index, $event)"
                 @focus="handleFocus(index)"
             />
         </div>

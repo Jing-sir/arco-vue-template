@@ -2,12 +2,20 @@
 import { computed, ref, watch } from 'vue';
 import api from '@/api/examine';
 
-const props = defineProps({
-    amount: { type: String, require: true, default: () => '' },
-    id: { type: String, require: true, default: () => '' }
+interface ApprovalProps {
+    amount: string;
+    id: string;
+}
+
+type ApprovalFlow = PromiseReturnType<typeof api.getEnterpriseTransferConfig>[number];
+type ApprovalUser = ApprovalFlow['checkReqList'][number];
+
+const props = withDefaults(defineProps<ApprovalProps>(), {
+    amount: '',
+    id: '',
 });
 
-const flowArr = ref<PromiseReturnType<typeof api.getEnterpriseTransferConfig>>([]); // 审批流数组
+const flowArr = ref<ApprovalFlow[]>([]); // 审批流数组
 
 const fetchFlowInfo = (): void => {
     if (props.id && props.amount) {
@@ -19,7 +27,7 @@ const fetchFlowInfo = (): void => {
     }
 };
 
-const formatFlow = computed(() => flowArr.value[0]?.checkReqList || []);
+const formatFlow = computed<ApprovalUser[]>(() => flowArr.value[0]?.checkReqList ?? []);
 
 watch(() => props.id, (value) => {
     if (value) fetchFlowInfo();

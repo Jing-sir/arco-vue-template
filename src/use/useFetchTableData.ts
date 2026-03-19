@@ -10,65 +10,85 @@ export interface ResponseType {
     totalSize: number;
 }
 
-type IService<R, P extends any[]> = (...args: P) => Promise<R>
-interface IResponse<L extends any[] = any[]> extends ResponseType {
-    list: L
+type TableQuery = {
+    pageNo: number;
+    pageSize: number;
+};
+
+type IService<Response, Params extends Record<string, unknown>> = (
+    params: Params & TableQuery
+) => Promise<Response>;
+
+interface IResponse<ListItem = unknown> extends ResponseType {
+    list: ListItem[];
 }
 
-interface IOptions<Response> {
-    columns?: ColumnType[]
-    manual?: boolean
+interface IOptions {
+    columns?: ColumnType[];
+    manual?: boolean;
 }
 
-export default function useFetchTableData<Response extends IResponse, Params extends any[]>(service: IService<Response, Params>, options: IOptions<Response> = {}) {
+export default function useFetchTableData<
+    Response extends IResponse,
+    Params extends Record<string, unknown> = Record<string, never>,
+>(service: IService<Response, Params>, options: IOptions = {}) {
     const { columns = [], manual = false } = options;
-    const filterKeys = toRaw(columns).filter(item => typeof item.dataIndex === 'string').map(item => item.dataIndex as string);
+    const filterKeys = toRaw(columns)
+        .filter((item) => typeof item.dataIndex === 'string')
+        .map((item) => item.dataIndex as string);
     const defaultColumns = ref<ColumnType[]>(columns);
     const pagination = reactive<{
-        pageNo: number,
-        pageSize: number,
-        pageTotal: number
+        pageNo: number;
+        pageSize: number;
+        pageTotal: number;
     }>({
         pageNo: 1,
         pageSize: 10,
-        pageTotal: 0
+        pageTotal: 0,
     });
 
-    const dataSource = ref<Response['list']>([]);
+    const dataSource = ref<Response['list']>([] as unknown as Response['list']);
     const loading = ref<boolean>(false);
-    const runAsync = async (params: Record<string, any> = {}) => {
+
+    const runAsync = async (params: Params = {} as Params): Promise<void> => {
         if (loading.value) return;
         NProgress.start();
         loading.value = true;
         const { pageNo, pageSize } = toRaw(pagination);
-        // @ts-ignore
+
         const { list, totalSize } = await service({
             ...allToRaw(params),
             pageNo,
-            pageSize
+            pageSize,
         }).finally(() => {
             loading.value = false;
             NProgress.done();
         });
-        // @ts-ignore
+
         dataSource.value = list;
         pagination.pageTotal = totalSize;
     };
-    const resetAndLoad = (params: Record<string, any> = {}) => {
+
+    const resetAndLoad = (params: Params = {} as Params): void => {
         pagination.pageNo = 1;
         runAsync(params).then();
     };
+
     onBeforeMount(async () => {
         if (manual) return;
         await runAsync();
     });
-    const filterColumns = (keys?:string[]) => {
+
+    const filterColumns = (keys?: string[]): void => {
         if (!keys) {
             defaultColumns.value = columns;
         } else {
-            defaultColumns.value = columns.filter(item => !item.dataIndex || keys.includes(item.dataIndex));
+            defaultColumns.value = columns.filter(
+                (item) => !item.dataIndex || keys.includes(item.dataIndex),
+            );
         }
     };
+
     return {
         loading,
         runAsync,
@@ -77,6 +97,6 @@ export default function useFetchTableData<Response extends IResponse, Params ext
         resetAndLoad,
         filterKeys,
         columns: defaultColumns,
-        filterColumns
+        filterColumns,
     };
 }

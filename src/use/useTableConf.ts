@@ -1,8 +1,10 @@
-import { getCurrentInstance, reactive, ref, watch } from 'vue';
+import { reactive, ref } from 'vue';
 import { PagingDefaultConf } from '@/utils/constant';
 import { throttleFunc } from '@/utils/common';
 
-export default function useTableConf(fetchTableDataCallback: () => void) {
+export default function useTableConf<TParams extends Record<string, unknown> = Record<string, unknown>>(
+    fetchTableDataCallback: (params?: TParams) => void | Promise<unknown>,
+) {
     const isLoading = ref(false);
     const paginationConfig = reactive({ ...PagingDefaultConf }); // 分页信息
 
@@ -14,14 +16,14 @@ export default function useTableConf(fetchTableDataCallback: () => void) {
     const onPageSizeChange = (val: number): void => {
         paginationConfig.pageSize = val;
         fetchTableDataCallback();
-    }
+    };
 
-    const onSearch = () => {
+    const onSearch = (): void => {
         paginationConfig.current = 1;
         throttledSearch();
     };
 
-    const updatePagination = (pageNo: number, pageSize: number, totalSize: number) => {
+    const updatePagination = (pageNo: number, pageSize: number, totalSize: number): void => {
         paginationConfig.current = pageNo;
         paginationConfig.pageSize = pageSize;
         paginationConfig.total = totalSize;
@@ -32,7 +34,7 @@ export default function useTableConf(fetchTableDataCallback: () => void) {
         if (typeof fetchTableDataCallback === 'function') {
             fetchTableDataCallback();
         }
-    },  800);
+    }, 800);
 
     return {
         onSearch,

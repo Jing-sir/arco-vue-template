@@ -25,7 +25,9 @@ export function toFixed(
     }
 
     // fixed mode
-    if (amount > Number.MAX_SAFE_INTEGER || amount < Number.MIN_SAFE_INTEGER) {
+    const num: number = Number(amount);
+
+    if (num > Number.MAX_SAFE_INTEGER || num < Number.MIN_SAFE_INTEGER) {
         console.error('数字超出处理范围，使用reg模式能正常处理，但返回结果是"string"');
         return 0;
     }
@@ -35,7 +37,6 @@ export function toFixed(
         return 0;
     }
 
-    const num: number = Number(amount);
     const newNum: string = num.toFixed(fix + 1);
     const newAmount: string = newNum.slice(0, -1);
     return Number(newAmount);

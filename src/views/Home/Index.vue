@@ -1,8 +1,12 @@
 <script setup lang="ts">
+import type { ColumnType, SearchOption } from '@/interface/TableType';
 import TableSearchWrap from '@/components/TableSearchWrap/Index.vue';
 import api from '@/api/fetchTest';
 
-const searchConf = ref([
+const fetchRedemptionList = (params: Record<string, unknown> = {}) =>
+    api.redemptionList(params as Parameters<typeof api.redemptionList>[0]);
+
+const searchConf = ref<SearchOption[]>([
     {
         label: '用户UID',
         modelKey: 'accountId',
@@ -43,7 +47,7 @@ const searchConf = ref([
         modelKey: 'ditchName',
         placeholder: '请选择',
         type: 'select',
-        options: [],
+        optionsArr: [],
         value: null,
     },
     {
@@ -58,7 +62,7 @@ const searchConf = ref([
         modelKey: 'coinSymbol',
         placeholder: '请选择',
         type: 'select',
-        options: [],
+        optionsArr: [],
         value: null,
     },
     {
@@ -66,7 +70,7 @@ const searchConf = ref([
         modelKey: 'creditedAmountSymbol',
         placeholder: '请选择',
         type: 'select',
-        options: [],
+        optionsArr: [],
         value: null,
     },
     {
@@ -74,7 +78,7 @@ const searchConf = ref([
         modelKey: 'priorFeeSymbol',
         placeholder: '请选择',
         type: 'select',
-        options: [],
+        optionsArr: [],
         value: null,
     },
     {
@@ -82,7 +86,7 @@ const searchConf = ref([
         modelKey: 'originalCoinId',
         placeholder: '请选择',
         type: 'select',
-        options: [],
+        optionsArr: [],
         value: null,
     },
     {
@@ -120,14 +124,14 @@ const searchConf = ref([
         placeholder: '请选择创建时间',
         timeFormat: 'timeStamp',
         type: 'date',
-        value: '',
+        value: [],
     },
     {
         label: '来源',
         modelKey: 'source',
         placeholder: '请选择',
         type: 'select',
-        options: [],
+        optionsArr: [],
         value: null,
     },
     {
@@ -135,12 +139,12 @@ const searchConf = ref([
         modelKey: 'state',
         placeholder: '请选择',
         type: 'select',
-        options: [],
+        optionsArr: [],
         value: null,
     },
 ]);
 
-const tableColumns = [
+const tableColumns: ColumnType[] = [
     { title: 'ID', dataIndex: 'id', width: 80, fixed: 'left' },
     { title: '内部卡ID', dataIndex: 'ditchCardId', width: 140 },
     { title: '渠道卡ID', dataIndex: 'internalCardId', key: 'internalCardId', width: 140 },
@@ -167,7 +171,7 @@ const tableColumns = [
 </i18n>
 <template>
     <div class="main-wrapper">
-        <TableSearchWrap :api-fetch="api.redemptionList.bind(api)" :table-columns="tableColumns" :search-conf="searchConf">
+        <TableSearchWrap :api-fetch="fetchRedemptionList" :table-columns="tableColumns" :search-conf="searchConf">
             <template #optional>
                 <a-button type="text">编辑</a-button>
             </template>

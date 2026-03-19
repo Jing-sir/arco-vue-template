@@ -1,21 +1,27 @@
 <script setup lang="ts">
-const emits = defineEmits(['setCode']);
+import type { FormInstance } from '@arco-design/web-vue';
+import { reactive, ref } from 'vue';
 
-const formRef = ref();
-const visible = ref(false);
-const formState = ref({
+const emits = defineEmits<{
+    setCode: [code: string];
+}>();
+
+const formRef = ref<FormInstance | null>(null);
+const visible = ref<boolean>(false);
+const formState = reactive({
     code: '',
 });
 
 // 确认方法
 const onOk = (): void => {
-    emits('setCode', formRef.value.code);
+    emits('setCode', formState.code);
     visible.value = false;
 };
 
 // 取消方法
 const onCancel = (): void => {
-    formRef.value.resetFields();
+    formRef.value?.resetFields();
+    visible.value = false;
 };
 
 const onShowDilog = (val = false): void => {
@@ -26,7 +32,7 @@ defineExpose({ onShowDilog });
 </script>
 
 <template>
-    <a-modal title="2fa" v-model:visible="visible" @ok="onOk" @cancel="onCancel" :width="380" :footer="null">
+    <a-modal title="2fa" v-model:visible="visible" @ok="onOk" @cancel="onCancel" :width="380" :footer="false">
         <a-form ref="formRef" layout="vertical" :model="formState">
             <a-form-item label="请输入2fa" field="code" :rules="[
                 { required:true,message:'Verification code is required' },
@@ -34,7 +40,7 @@ defineExpose({ onShowDilog });
                 { match: /^\d+$/, message: 'Must be numeric' },
             ]">
                 <a-verification-code
-                    :separator="(index) => index === 2 ? '-' : null"
+                    :separator="(index: number) => index === 2 ? '-' : undefined"
                     v-model="formState.code" @finish="onOk"
                 />
             </a-form-item>

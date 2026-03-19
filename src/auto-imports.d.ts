@@ -23,6 +23,7 @@ declare global {
   const VERSION_NUMBER_RULES: typeof import('./utils/constant').VERSION_NUMBER_RULES
   const acceptHMRUpdate: typeof import('pinia').acceptHMRUpdate
   const addEventListener: typeof import('./utils/common').addEventListener
+  const allToRaw: typeof import('./utils/allToRaw').default
   const buildFlat: typeof import('./utils/common').buildFlat
   const buildTree: typeof import('./utils/common').buildTree
   const computed: typeof import('vue').computed

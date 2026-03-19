@@ -31,7 +31,11 @@ const fetchBreadcrumb = () => {
 
 const storeTagsView = tagsView();
 const { visitedViews } = storeToRefs(storeTagsView);
-const keepAlive = computed(() => visitedViews.value.map((item) => item.name));
+const keepAlive = computed(() =>
+    visitedViews.value
+        .map((item: { name?: string | null }) => item.name)
+        .filter((item: string | null | undefined): item is string => Boolean(item)),
+    );
 
 const onCollapse = (val: boolean) => {
     isSidebar.value = val;

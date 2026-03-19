@@ -1,19 +1,25 @@
 <script setup lang="ts">
 import '@iconfu/svg-inject';
+import type { RouteRecordRaw } from 'vue-router';
 
+type SidebarRoute = RouteRecordRaw & {
+    meta: NonNullable<RouteRecordRaw['meta']>;
+    children?: SidebarRoute[];
+};
 
 const hasRoute = useRoute();
 const selectedKeys = ref<string[]>(['/']);
-const isShowSidebar = ref<boolean>(true);
 
 const store = sideBar();
 const { push } = useRouter();
-const { routes, roleMenu, isSidebar } = storeToRefs(store);
+const { routes } = storeToRefs(store);
 
-const openKeys = computed(() => routes.value?.map(({ path }) => path));
+const sidebarRoutes = computed(() => routes.value as SidebarRoute[]);
+const openKeys = computed(() => sidebarRoutes.value.map(({ path }) => path));
 
-const isShowChild = (children = []) => !children.length; // 判断子路由的item还是menu的显示
-const hasOneShowingChild = (children = [], item: any) => children.length === 1 && item.meta.hidden; // 根路由不显示子路由
+const isShowChild = (children: SidebarRoute[] = []): boolean => !children.length; // 判断子路由的item还是menu的显示
+const hasOneShowingChild = (children: SidebarRoute[] = [], item: SidebarRoute): boolean =>
+    children.length === 1 && Boolean(item.meta.hidden); // 根路由不显示子路由
 const handleClickItem = (parentPath = '', childPath = ''): void => { // 根据菜单切换路由
     push(childPath ? `${parentPath}/${childPath}` : parentPath);
 };
@@ -37,7 +43,7 @@ watch(() => hasRoute.path,
             v-model:selectedKeys="selectedKeys"
             mode="inline"
             theme="dark">
-            <template v-for="item of routes" :key="item.path">
+            <template v-for="item of sidebarRoutes" :key="item.path">
                 <a-menu-item
                     v-if="hasOneShowingChild(item?.children, item)"
                     :key="item.path">

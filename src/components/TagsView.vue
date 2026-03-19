@@ -3,9 +3,9 @@
         <div class="tags-view-wrapper overflow-x">
             <span class="tags-view-item" :class="{active:$route.path==='/'}" @click="$router.push('/')">首页</span>
                 <span
-                    v-for="({name,path, meta,fullPath, params, query},i) in visitedViews" :key="path"
+                    v-for="({name,path, meta,fullPath},i) in visitedViews" :key="path"
                     class="tags-view-item" :class="{active:$route.name===name}"
-                    @click="handleGoCacheRoute({path, fullPath, query, params})">
+                    @click="handleGoCacheRoute({ fullPath })">
                     {{ meta.title }}
                 <span class="icon-close" @click.stop="deleteVisitedView(i,$route.path===path)">x</span>
             </span>
@@ -15,9 +15,13 @@
 
 <script lang="ts">
 import { defineComponent, watch } from 'vue';
-import { useRoute, useRouter, RouteLocationNormalizedLoaded } from 'vue-router';
+import { useRoute, useRouter, type RouteLocationNormalizedLoaded } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import useTagsView from '@/store/tagsView';
+
+type CachedRouteLocation = {
+    fullPath: string;
+};
 
 export default defineComponent({
     name: 'TagsView',
@@ -35,8 +39,8 @@ export default defineComponent({
 
         const deleteVisitedView = (index: number, isActive: boolean): void => store.deleteVisitedView(index, isActive);
 
-        const handleGoCacheRoute = (route: RouteLocationNormalizedLoaded) => {
-            router.replace({ ...route, hash: '#no-refresh' });
+        const handleGoCacheRoute = (route: CachedRouteLocation): void => {
+            router.replace(`${route.fullPath}#no-refresh`);
         };
 
         return {

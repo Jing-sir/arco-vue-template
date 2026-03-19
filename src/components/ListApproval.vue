@@ -1,8 +1,15 @@
 <script setup lang="ts">
+import type { PropType } from 'vue';
+
+interface ApprovalItem {
+    user: string;
+    checkState: number;
+    checkResult: number;
+}
 
 const props = defineProps({
     flowArr: {
-        type: Array,
+        type: Array as PropType<ApprovalItem[]>,
         require: true,
         default: () => [],
     },

@@ -3,7 +3,7 @@ import { IconSearch, IconCaretDown, IconCaretUp } from '@arco-design/web-vue/es/
 import { map, reduce, toPairs, debounce } from 'lodash-es'
 import { timeStampToDate } from '@/filters/dateFormat'
 import { SearchOption, SearchParams, SearchFieldValue, InputSearchOption, SelectSearchOption, DateRangeSearchOption } from '@/interface/TableType'
-import { PropType } from 'vue'
+import { PropType, unref } from 'vue'
 
 // 常量定义
 const DEBOUNCE_DELAY = 600
@@ -32,6 +32,10 @@ const isDefaVal = ref(sessionStorage.getItem(SEARCH_STATE_KEY) === 'true') // �
 const formState = reactive({
     domains: JSON.parse(JSON.stringify(props.searchConf)),
 })
+
+const getOptionList = (
+    item: SearchOption,
+): Array<{ value: string | null | number; label: string }> => unref(item.optionsArr ?? item.options ?? [])
 
 // 安全获取第一个modelKey
 const getFirstModelKey = (): string => {
@@ -224,14 +228,14 @@ const fetchTipsText = computed(
                                 <a-select
                                     v-if="item.type === 'select'"
                                     v-model="item.value"
-                                    :options="item.optionsArr"
+                                    :options="getOptionList(item)"
                                     :placeholder="`${t('search.pleaseSelect')}${item.label}`"
                                     v-bind="item.props"
                                     @change="onSearch"
                                 >
                                     <a-option :value="null">{{ t('search.all') }}</a-option>
                                     <a-option
-                                        v-for="child of item.optionsArr"
+                                        v-for="child of getOptionList(item)"
                                         :key="child.value"
                                         :value="child.value"
                                     >

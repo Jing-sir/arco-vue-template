@@ -57,7 +57,7 @@ const routerNext = { // router进入页面前执行的事件
                 );
                 const { role, requiresAuth } = to.meta;
                 if (!role && !requiresAuth) return Promise.resolve('/error');
-                if (!fetchObj[role] && requiresAuth) return Promise.resolve('/error/404');
+                if (requiresAuth && (!role || !fetchObj[String(role)])) return Promise.resolve('/error/404');
             }
 
             return Promise.resolve(true);
@@ -109,8 +109,9 @@ declare module 'vue-router' { // 扩展RouteMeta类型信息
         title?: string | Function;
         requiresAuth?: boolean | Function;
         isShow?: boolean | Function;
-        role: string;
+        role?: string;
         icon?: string;
+        hidden?: boolean;
         // must be declared by every route
         redirection?: Function | string;
     }

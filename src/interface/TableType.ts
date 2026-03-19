@@ -1,3 +1,5 @@
+import type { ComputedRef } from 'vue';
+
 export interface TableResultType {
     pageNo: number;
     pageSize: number;
@@ -35,6 +37,7 @@ export interface ColumnType<T = Record<string, unknown>> { // column type
     title: string;
     dataIndex?: string;
     key?: string;
+    slotName?: string;
     slots?: {
         customRender: string;
     };
@@ -50,15 +53,24 @@ export interface ColumnType<T = Record<string, unknown>> { // column type
 // 搜索字段值类型
 export type SearchFieldValue = string | number | null | undefined;
 
+type SearchOptionItem = {
+    value: string | null | number;
+    label: string;
+};
+
 // 搜索选项基础接口
 interface BaseSearchOption {
-    label: string
-    type: string
+    label: string;
+    type: string;
+    placeholder?: string;
     optionsArr?:
-        | Array<{ value: string | null | number; label: string }>
-        | ComputedRef<Array<{ value: string | null | number; label: string }>>
-    props?: Record<string, unknown>
-    timeFormat?: string
+        | SearchOptionItem[]
+        | ComputedRef<SearchOptionItem[]>;
+    options?:
+        | SearchOptionItem[]
+        | ComputedRef<SearchOptionItem[]>;
+    props?: Record<string, unknown>;
+    timeFormat?: string;
 }
 
 // 输入框搜索选项

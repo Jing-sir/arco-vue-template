@@ -1,5 +1,5 @@
-import { ref, toRaw } from 'vue';
-import { FormInstance } from '@arco-design/web-vue';
+import { ref } from 'vue';
+import type { FormInstance } from '@arco-design/web-vue';
 import allToRaw from '@/utils/allToRaw';
 import { deepCopy } from '@/utils/common';
 
@@ -10,35 +10,44 @@ type IOptions<T extends Record<string, unknown>> = {
 }
 export default function useFormHandler<FormType extends Record<string, unknown>>(options: IOptions<FormType>) {
     const { defaultState } = options;
-    type FormState = IOptions<FormType>['defaultState']
-    const formState = ref<FormState>(deepCopy(defaultState));
+    type FormState = IOptions<FormType>['defaultState'];
+
+    const formState = ref<FormState>(deepCopy(defaultState) as FormState);
     const formRef = ref<FormInstance>();
+
     return {
         formState,
         formRef,
-        resetFields: () => {
-            formState.value = deepCopy(defaultState);
+
+        resetFields: (): void => {
+            formState.value = deepCopy(defaultState) as FormState;
         },
-        validateFields: () => new Promise<FormState>((resolve, reject) => {
-            formRef.value?.validateFields().then((values) => {
-                resolve(values as FormState);
-            }).catch((err) => {
-                reject(err);
-            });
-        }),
-        validateField: (nameList:string) => {
+
+        validateFields: (): Promise<FormState> =>
+            new Promise<FormState>((resolve, reject) => {
+                formRef.value?.validateFields()
+                    .then((values: unknown) => {
+                        resolve(values as FormState);
+                    })
+                    .catch((err: unknown) => {
+                        reject(err);
+                    });
+            }),
+
+        validateField: (nameList: string): void => {
             setTimeout(() => {
                 formRef.value?.validateFields(nameList);
             }, 300);
         },
-        setFields: (fields:FormState) => {
+
+        setFields: (fields: FormState): void => {
             const values = allToRaw<FormState>(fields);
-            const state = allToRaw(formState);
-            // @ts-ignore
+            const state = allToRaw(formState.value);
+
             formState.value = {
                 ...state,
-                ...values
+                ...values,
             };
-        }
+        },
     };
 }

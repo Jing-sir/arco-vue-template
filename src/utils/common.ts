@@ -257,39 +257,44 @@ export function sliceLength(arr: any[], startIndex: number, length: number): any
     return arr.slice(startIndex, startIndex + length);
 }
 
-export function buildFlat<T extends object>( // 树状数据转扁平数据（类似Array.flat, 但支持子集），递归汇总提取key最底层相关的数据，支持上层直接忽略
-    array: { [name in string]: any }[], // 需要处理的数组
+export function buildFlat<T extends Record<string, any>>( // 树状数据转扁平数据（类似Array.flat, 但支持子集），递归汇总提取key最底层相关的数据，支持上层直接忽略
+    array: T[], // 需要处理的数组
     key = 'children', // 包含子数据的key
     isOnlyBottom = false, // 是否只获取最底层的数据
     callback?: (cur: T, next: T[]) => T[], // 自定义处理数据回调函数，如果需要在每层的筛选时向下传递某些字段会非常有用，返回一个新的数据结构
-): { [name in string]: any }[] | T[] {
+): T[] {
     const hasCallback: boolean = typeof callback === 'function';
+    const result: T[] = [];
 
-    return (
-        array
-            // .filter((item: {[key in (typeof key | string)]: any}): boolean => !!item[key]) // 筛选数组
-            .map((item: { [key in typeof key | string]: any }): T => {
-                if (typeof item?.[key] !== 'undefined') {
-                    const newItem = JSON.parse(JSON.stringify(item)) as {
-                        [key in typeof key | string]: any
-                    } & T;
-                    delete newItem[key];
+    array.forEach((item) => {
+        const children = item?.[key];
 
-                    const nextValues = buildFlat(
-                        hasCallback
-                            ? (callback as Function)(newItem, <T[]>item[key]) // 返回的数据结会成为新的item[key]移交给地下一次递归处理
-                            : <T[]>item[key],
-                        key,
-                        isOnlyBottom,
-                        callback,
-                    );
-                    return <T>(isOnlyBottom ? nextValues : nextValues.concat(newItem));
-                }
+        if (Array.isArray(children)) {
+            const newItem = JSON.parse(JSON.stringify(item)) as T & Record<string, unknown>;
+            delete newItem[key];
 
-                return <T>item;
-            }) // 返回key下面的树
-            .flat()
-    );
+            const nextValues = buildFlat(
+                hasCallback
+                    ? (callback as (cur: T, next: T[]) => T[])(newItem as T, children)
+                    : children,
+                key,
+                isOnlyBottom,
+                callback,
+            );
+
+            result.push(...nextValues);
+
+            if (!isOnlyBottom) {
+                result.push(newItem as T);
+            }
+
+            return;
+        }
+
+        result.push(item);
+    });
+
+    return result;
 }
 
 export function buildTree<T extends Record<string, any>>(

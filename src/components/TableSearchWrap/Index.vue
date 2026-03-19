@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { SearchOption } from '@/interface/TableType';
+import type { ColumnType, SearchOption, SearchParams } from '@/interface/TableType';
 import SearchWrap from './SearchWrap/Index.vue';
 import { useRequest } from 'vue-request';
-import { PropType } from 'vue';
+import type { PropType } from 'vue';
 
 const props = defineProps({
     searchConf: { // 搜索项配置
@@ -15,36 +15,50 @@ const props = defineProps({
         default: true,
     },
     apiFetch: {
-        type: Function as PropType<(params: any) => Promise<any>>,
+        type: Function as PropType<
+            (params?: Record<string, unknown>) => Promise<{
+                list: unknown[];
+                pageNo: number;
+                pageSize: number;
+                totalSize: number;
+            }>
+        >,
         required: true,
     },
     tableColumns: {
-        type: Array as PropType<{
-            title: string;
-            dataIndex: string;
-            width: number;
-            fixed?: string;
-            key: string;
-        }[]>,
+        type: Array as PropType<ColumnType[]>,
         required: true,
-    }
+    },
 });
 
-const { data: dataSource, loading, runAsync: fetchTableData } = useRequest(async (obj: { [key: string]: string }) => {
+const currentSearchParams = ref<SearchParams>({});
+
+const { data: dataSource, loading, runAsync: fetchTableData } = useRequest(async (obj: SearchParams = {}) => {
     if (!props.apiFetch) return [];
-    const { list, pageNo, pageSize, totalSize } = await props?.apiFetch({ ...obj, pageNo: paginationConfig.current, pageSize: paginationConfig.pageSize });
+    currentSearchParams.value = obj;
+
+    const { list, pageNo, pageSize, totalSize } = await props.apiFetch({
+        ...currentSearchParams.value,
+        pageNo: paginationConfig.current,
+        pageSize: paginationConfig.pageSize,
+    });
+
     updatePagination(pageNo, pageSize, totalSize);
     return list;
 }, { manual: true });
 
-const onSearch = (obj: { [key: string]: string }): void => {
+const onSearch = (obj: SearchParams): void => {
     paginationConfig.current = 1;
     fetchTableData(obj);
 };
 
-const { paginationConfig, onSizeChange, updatePagination, onPageSizeChange } = useTableConf(fetchTableData);
+const reloadTable = (params: SearchParams = currentSearchParams.value): Promise<unknown[]> =>
+    fetchTableData(params);
 
-fetchTableData();
+const { paginationConfig, onSizeChange, updatePagination, onPageSizeChange } =
+    useTableConf<SearchParams>(reloadTable);
+
+fetchTableData({});
 </script>
 <template>
     <div class="w-full">
