@@ -14,15 +14,12 @@ Keep `AGENTS.md` and `CLAUDE.md` identical.
 ## 2. Project Facts / 项目事实
 
 - Stack: Vue 3, TypeScript, Vite, Pinia, Vue Router, vue-i18n, Arco Design, Tailwind, SCSS.
-- 包管理器固定为 `yarn`。
+- Package manager is `yarn`. 包管理器固定为 `yarn`。
 - Path alias is `@ -> src`. 路径别名固定为 `@ -> src`。
 - Main entry is `src/main.ts`. 应用入口是 `src/main.ts`。
 - Router bootstrap is `src/setup/router-setup.ts`. 路由初始化在 `src/setup/router-setup.ts`。
 - HTTP wrapper is `src/plugins/http.ts`. 请求封装在 `src/plugins/http.ts`。
 - Base API class is `src/api/api.ts`. API 基类在 `src/api/api.ts`。
-- Stores live in `src/store`. 状态管理在 `src/store`。
-- Public routes live in `src/routes/constantRoutes.ts`. 公共路由在 `src/routes/constantRoutes.ts`。
-- Permission routes live in `src/routes/asyncRoutes.ts`. 权限路由在 `src/routes/asyncRoutes.ts`。
 - ESLint uses flat config only: `eslint.config.js`. ESLint 只使用 flat config：`eslint.config.js`。
 
 ## 3. Tooling Rules / 工具规则
@@ -36,102 +33,110 @@ Keep `AGENTS.md` and `CLAUDE.md` identical.
 - Do not recreate `.eslintrc.*` or `.eslintignore`. 不要重新引入 `.eslintrc.*` 或 `.eslintignore`。
 - Keep `package.json` and `yarn.lock` in sync when dependencies change. 修改依赖时，保持 `package.json` 和 `yarn.lock` 同步。
 
-## 4. Architecture Map / 架构地图
+## 4. Directory Rules / 目录总规则
 
-- `src/api`: backend-facing service modules. 放后端接口模块。
-- `src/plugins/http.ts`: shared axios behavior, headers, token, preprocessing. 负责统一请求头、Token、响应预处理。
-- `src/setup`: app bootstrapping such as router and i18n. 放应用初始化逻辑。
-- `src/store`: shared cross-page state only. 只放真正跨页面共享的状态。
-- `src/use`: reusable composables and feature helpers. 放复用型组合式逻辑。
-- `src/components`: reusable UI pieces. 放可复用组件。
-- `src/views`: route-level pages only. 只放路由页面层组件。
-- `src/lang`: global shared i18n messages. 放全局共享文案。
+- `src/components`: shared UI components only. 放公用 UI 组件，不放整页业务实现。
+- `src/interface`: shared type definitions only. 放公用类型定义，不放页面私有临时类型。
+- `src/routes`: route registration only. 只放路由定义与路由拆分，不放业务逻辑。
+- `src/lang`: all i18n resources. 放所有国际化语言资源。
+- `src/utils`: reusable utilities. 放公用工具能力。
+- `src/api`: backend-facing service modules. 放后端接口调用层。
+- `src/store`: Pinia shared state. 放跨页面共享状态。
+- `src/filters`: existing reusable formatting helpers. 放已有格式化/过滤工具。
+- `src/directives`: reusable DOM directives. 放公用指令。
+- `src/use`: shared hooks/composables. 放公用 hooks / composables。
 
-## 5. File Placement Rules / 文件落位规则
+## 5. Detailed Folder Usage / 详细目录使用规则
 
-- New API code goes into `src/api`. 新接口代码放在 `src/api`。
-- New shared composables go into `src/use`. 新复用逻辑放在 `src/use`。
-- New reusable UI goes into `src/components`. 新复用 UI 放在 `src/components`。
-- New route pages go into `src/views`. 新页面放在 `src/views`。
-- Do not put page-specific business logic into `src/main.ts` or root setup files. 不要把页面业务逻辑塞进 `src/main.ts` 或根级初始化文件。
-- Do not move component-local state into Pinia unless it is truly shared across routes or layouts. 不是跨页面共享的状态，不要塞进 Pinia。
+### 5.1 `src/components` / 公用 UI 组件目录
 
-## 6. Vue Rules / Vue 规则
+- This folder is for reusable UI building blocks. 这个目录只放可复用 UI 组件。
+- Do not place full business pages here. 完整业务页面不要放在这里。
+- If a component is only meaningful inside one route and has no reuse potential, keep it near the route until reuse is clear. 只在单一路由内使用且短期无复用价值的组件，不要急着塞进这里。
 
-- Prefer `<script setup lang="ts">`. 优先使用 `<script setup lang="ts">`。
-- Prefer Composition API. 优先使用组合式 API。
-- Prefer type-only imports with `import type`. 类型导入优先使用 `import type`。
-- Prefer typed `defineProps`, `defineEmits`, and `withDefaults` when useful. 新组件尽量使用带类型的 `defineProps`、`defineEmits`、`withDefaults`。
-- Keep route views thin. 路由页面保持轻量。
-- Put reusable logic into composables instead of repeating it in multiple views. 多页面复用逻辑优先抽到 composable。
-- Prefer existing project patterns over new abstractions. 优先沿用现有项目模式，不要平地起新抽象。
+Current component responsibilities / 当前组件职责:
 
-## 7. Component Rules / 组件规则
+- `Approval.vue`: transfer/amount-related approval flow visualizer. 用于根据金额和币种拉取并展示审批流。
+- `CodeInput.vue`: 6-digit segmented input UI. 用于验证码、口令类 6 位分段输入。
+- `ColorPicker.vue`: theme color picker, directly tied to `store/theme.ts`. 用于主题色选择，依赖 `store/theme.ts`。
+- `Error.vue`: generic error container page shell. 通用错误页容器。
+- `GoogleCode.vue`: 2FA code input modal. 2FA 验证码输入弹窗。
+- `Header.vue`: top header, breadcrumb, user dropdown, logout, 2FA entry. 顶部头部、面包屑、用户操作区。
+- `HelloWorld.vue`: template/demo component from scaffold; not a business pattern source. 模板示例组件，不应作为业务实现模式来源。
+- `Icon.vue`: iconfont wrapper via remote script. 图标字体封装组件。
+- `ListApproval.vue`: static approval flow list renderer. 审批流列表展示组件。
+- `Modal/BindGoogle.vue`: modal for password verification before 2FA binding. 绑定 2FA 前的密码校验弹窗。
+- `NotRolePurview.vue`: no-permission empty state page. 无权限提示页。
+- `SideNavigationBar.vue`: sidebar menu based on filtered route tree from `store/sideBar.ts`. 依据 `store/sideBar.ts` 中过滤后的路由树渲染侧栏。
+- `TableSearchWrap/Index.vue`: reusable page scaffold for search + table + pagination. 搜索加表格页面通用骨架。
+- `TableSearchWrap/SearchWrap/Index.vue`: reusable advanced search form renderer driven by `searchConf`. 基于 `searchConf` 配置的高级搜索区域。
+- `TagsView.vue`: visited-page tabs cache UI. 访问页签与缓存视图组件。
 
-- Reuse existing generic wrappers such as `TableSearchWrap` when building search + table pages. 搜索加表格页面优先复用 `TableSearchWrap`。
-- Keep templates declarative. 让模板保持声明式，复杂逻辑尽量放到 `script`。
-- Use scoped styles for local component styles. 局部样式优先使用 scoped。
-- Avoid adding large page-local helper functions to templates. 不要把大量页面辅助逻辑直接写进模板。
-- Use PascalCase component names for imports and local components. 组件命名和引用使用 PascalCase。
-- Do not add a second UI system. 不要引入第二套 UI 框架。
+Component rules / 组件规则:
 
-## 8. State Rules / 状态管理规则
+- Reuse `TableSearchWrap` for search-list pages before creating another search scaffold. 搜索列表页优先复用 `TableSearchWrap`，不要重复造轮子。
+- Reuse `Header.vue`, `SideNavigationBar.vue`, and `TagsView.vue` when working on layout-level changes. 处理后台骨架布局时，优先沿用这三个组件。
+- Reuse `GoogleCode.vue` and `Modal/BindGoogle.vue` for 2FA flows instead of creating parallel modal logic. 2FA 流程优先复用这两个组件。
+- If adding a new reusable component, name it by responsibility, not by page position. 新公用组件按职责命名，不按页面位置命名。
 
-- Follow the current Pinia setup-store style. 遵循当前 Pinia setup store 风格。
-- Current store responsibilities:
-  - `src/store/user.ts`: user/account/auth-related state. 用户与登录态相关状态。
-  - `src/store/sideBar.ts`: sidebar open state, backend menu data, filtered route tree. 侧边栏状态、权限菜单、过滤后的路由树。
-  - `src/store/tagsView.ts`: visited tabs and keep-alive list. 标签页与缓存视图。
-  - `src/store/theme.ts`: theme color state. 主题色状态。
-- Do not merge unrelated concerns into one store. 不要把无关职责塞进同一个 store。
-- Do not collapse `roleMenu` and `routes` back into one field in `sideBar`. 不要再把 `sideBar` 里的 `roleMenu` 和 `routes` 混成一个字段。
+### 5.2 `src/interface` / 公用类型目录
 
-## 9. Router And Permission Rules / 路由与权限规则
+- Put cross-file shared types here. 跨文件复用的类型放这里。
+- Do not place one-off local component props or local response types here. 单文件局部 props / 局部返回值类型不要塞到这里。
 
-- Public or unauthenticated routes belong in `constantRoutes`. 公开或免登录路由放在 `constantRoutes`。
-- Permission-protected routes belong in `asyncRoutes`. 权限控制路由放在 `asyncRoutes`。
-- Permission routes must keep these `meta` fields aligned with backend permissions:
-  - `role`
-  - `title`
-  - `requiresAuth`
-- If a route appears in the sidebar, the route tree and backend permission names must stay consistent. 侧边栏可见路由必须与后端权限名保持一致。
-- Do not introduce hidden route behavior without checking current sidebar rendering logic. 修改隐藏路由行为前，先确认侧边栏渲染逻辑。
+Current files / 当前文件职责:
 
-## 10. API Rules / 接口规则
+- `TableType.ts`:
+  - table paging result type
+  - search form config types
+  - generic table column shape
+  - upload file item shape
+  - tabs-related types
+  - this is the main shared business UI type file
+- `StateType.ts`:
+  - compatibility re-export for `ColumnType`
+  - do not expand it casually unless a compatibility layer is really needed
 
-- Create new API modules using backend-path-oriented naming. 新 API 模块按后端路径语义命名。
-- Reuse `Api` from `src/api/api.ts` when adding standard service modules. 常规接口模块优先复用 `src/api/api.ts` 中的 `Api` 基类。
-- Avoid direct `axios` usage inside views or components. 不要在页面或组件里直接调用 `axios`。
-- Always think about the response shape. 新接口要明确返回类型，不要默认 `Promise<any>`。
-- If the backend shape is unstable, type the known fields and mark unknown fields explicitly. 如果后端结构不稳定，至少把已知字段写清楚，再显式标注未知部分。
+Type rules / 类型规则:
 
-## 11. HTTP Wrapper Rules / HTTP 封装规则
+- If a type is used by more than one module, move it here. 被多个模块共用的类型再放到这里。
+- Prefer extending `TableType.ts` for search/table concerns instead of inventing a second table typing file. 表格与搜索相关类型优先扩展 `TableType.ts`。
 
-- Respect `src/plugins/http.ts` as the shared HTTP contract. 把 `src/plugins/http.ts` 视为统一请求契约。
-- Preserve these response conventions:
-  - `code === 200`: return `data`
-  - `code === 1000 || code === 1001`: clear `manageToken` and redirect to `/login`
-- Do not silently bypass preprocessing. 不要无声绕过响应预处理。
-- If raw response access is required, make that choice explicit in code and explain why. 如果必须拿原始响应结构，要显式说明原因。
-- Keep token, language, and request headers centralized. Token、语言头、公共请求头应保持集中管理。
+### 5.3 `src/routes` / 路由目录
 
-## 12. Table And Form Rules / 表格与表单规则
+- This directory only defines route trees. 这里只定义路由树。
+- Do not place route guards, API calls, or layout state here. 不要在这里写守卫实现、接口调用或布局状态。
 
-- For searchable list pages, follow the existing search + table pattern unless the user asks for a redesign. 搜索列表页优先沿用现有搜索加表格模式。
-- Keep pagination behavior consistent with existing helpers. 分页逻辑尽量沿用已有 helper。
-- If adding validation, match the current Arco form usage. 新增表单校验时，遵循当前 Arco 表单写法。
-- Do not scatter form-reset and data-normalization logic across many files. 表单重置和数据整理逻辑不要分散在很多文件里。
+Current files / 当前文件职责:
 
-## 13. Styling Rules / 样式规则
+- `constantRoutes.ts`:
+  - routes that do not require backend permission gating
+  - currently includes login and error/no-permission pages
+- `asyncRoutes.ts`:
+  - routes that are filtered by backend menu permissions
+  - currently includes the home route tree
 
-- Primary UI stack is Arco Design + Tailwind utilities + SCSS. 主要 UI 技术栈是 Arco Design + Tailwind + SCSS。
-- Reuse existing spacing, header, layout, and admin page patterns. 优先复用已有后台布局、页头、间距与表格风格。
-- Avoid visual redesign unless explicitly requested. 用户未要求时，不做视觉重设计。
-- Do not introduce CSS-in-JS or another styling system. 不要引入 CSS-in-JS 或第二套样式体系。
+Route rules / 路由规则:
 
-## 14. i18n Rules / 国际化规则
+- Public or unauthenticated routes belong in `constantRoutes.ts`. 公开或免登录路由放 `constantRoutes.ts`。
+- Permission-protected routes belong in `asyncRoutes.ts`. 权限控制路由放 `asyncRoutes.ts`。
+- Route `meta.title` must store a Chinese i18n key, not final translated text in English. `meta.title` 必须存中文 i18n key。
+- Route `meta.role` must stay aligned with backend permission names. `meta.role` 必须和后端权限名保持一致。
 
-- All user-facing copy must default to i18n. 所有面向用户的文案默认必须接入国际化。
+### 5.4 `src/lang` / 多语言目录
+
+- This folder stores all translations. 这个目录存放所有多语言资源。
+- Keep both language files updated together. 两个语言文件必须同步维护。
+
+Current files / 当前文件职责:
+
+- `zh-CN.json`: source of truth for Chinese-key-based translations. 中文语言包，也是中文 key 策略的基准文件。
+- `en-US.json`: English mapping for the same Chinese keys. 同一批中文 key 的英文映射。
+- `README.md`: folder note only. 目录说明文件。
+
+Hard i18n rule / 强制国际化规则:
+
+- All user-facing copy must default to i18n. 所有面向用户的文案默认必须国际化。
 - Use Chinese source text as the translation key. 统一使用中文原文作为翻译 key。
 - Correct:
   - `t('登录')`
@@ -140,66 +145,212 @@ Keep `AGENTS.md` and `CLAUDE.md` identical.
 - Incorrect:
   - `t('auth.login')`
   - `t('login.button')`
-  - raw text like `登录` directly in templates, messages, modal titles, form rules, or table headers
-- Shared text should be added to both:
+  - raw text like `登录` directly in templates, messages, modal titles, form rules, table headers, or route rendering
+- In Vue components, user-facing text must be wrapped with `t('中文文案')`. 组件中的用户文案必须使用 `t('中文文案')`。
+- In non-component modules, use `i18n.global.t(...)` or `formatText(...)`. 非组件模块中使用 `i18n.global.t(...)` 或 `formatText(...)`。
+- Route titles must store Chinese keys and be rendered through `t(...)`. 路由标题存中文 key，展示时再翻译。
+
+### 5.5 `src/utils` / 工具目录
+
+- This folder stores generic utilities. 这里放通用工具能力。
+- Prefer adding generic, cross-feature code here. 只把跨功能可复用的通用能力放这里。
+- Do not place page-specific business transforms here. 页面私有业务转换不要放这里。
+
+Critical file rules / 关键文件规则:
+
+- `common.ts`:
+  - this is the primary shared utility file
+  - place generic reusable functions here
+  - examples already here: deep copy, event listeners, random string, flatten/tree transforms, debounce, throttle, copy helpers, i18n helper `formatText`
+  - if a helper is generic and reused, it belongs here
+  - do not add backend-specific request logic here
+- `constant.ts`:
+  - this is the primary shared constant file
+  - place static constants here: regexes, numeric boundaries, default paging config
+  - do not put business enums here unless they are truly app-wide constants
+
+Other utility files / 其它工具文件职责:
+
+- `aesGcm.ts`: current AES-GCM crypto helpers used by login/security flows. 当前登录/安全相关加解密工具。
+- `aes_128_cbc.ts`: older crypto helper set; treat as legacy unless the task explicitly requires it. 较旧的加密辅助，默认视为遗留实现。
+- `allToRaw.ts`: unwrap refs/reactive values into raw values for generic form/table helpers. 给通用 hooks 做 reactive/ref 解包。
+- `copyToClipboard.ts`: low-level copy implementation; prefer calling higher-level helpers from `common.ts` when possible. 底层复制实现，业务侧优先走 `common.ts` 中更高层的能力。
+- `protocol.ts`: internal protocol experiment/utility; do not casually reuse for normal web features. 内部协议试验类能力，普通页面功能不要滥用。
+- `global.d.ts` and `globals.d.ts`: global utility type declarations. 全局类型工具声明，除非做类型层建设，否则不要轻易改。
+
+### 5.6 `src/api` / 接口目录
+
+- This folder stores backend service modules only. 这里只放后端接口调用层。
+- File naming should follow backend URL segments. 文件命名应跟随后台接口 URL 片段。
+- Example:
+  - `/sys/...` -> `sys.ts`
+  - `/sys/permission/...` -> `permission.ts`
+
+Current files / 当前文件职责:
+
+- `api.ts`:
+  - base `Api` class
+  - shared base URL behavior
+  - default starting point for normal API modules
+- `sys.ts`:
+  - auth/user/system endpoints
+  - login, user info, pwd IV, menu list, logout, cipher verification
+- `permission.ts`:
+  - permission tree and home menu queries
+- `fetchTest.ts`:
+  - business list request example for table pages
+  - currently includes redemption list request
+- `examine.ts`:
+  - approval-flow-related API
+
+API rules / 接口规则:
+
+- Reuse `Api` from `api.ts` unless a module truly needs a special base path pattern. 一般接口模块优先复用 `api.ts` 的 `Api` 基类。
+- Keep API return types explicit. 接口返回类型要明确。
+- Avoid direct `axios` usage in components or views. 不要在页面和组件里直接用 `axios`。
+- Use `src/plugins/http.ts` preprocessing contract unless there is a documented reason not to. 默认走 `src/plugins/http.ts` 的响应预处理契约。
+
+### 5.7 `src/store` / 状态管理目录
+
+- Put only shared Pinia state here. 这里只放共享 Pinia 状态。
+- Follow the current setup-store style. 遵循当前 setup store 风格。
+
+Current files / 当前文件职责:
+
+- `Index.ts`: creates the Pinia instance. Pinia 实例入口。
+- `user.ts`:
+  - user info
+  - account field
+  - password IV
+- `sideBar.ts`:
+  - sidebar collapse state
+  - raw backend permission/menu data in `roleMenu`
+  - filtered route tree in `routes`
+  - sidebar route fetching and permission redirect
+- `tagsView.ts`:
+  - visited tabs list
+  - keep-alive related page tracking
+- `theme.ts`:
+  - theme color state
+  - updates CSS custom property `--color-primary-6`
+
+Store rules / store 规则:
+
+- Do not merge `roleMenu` and `routes` in `sideBar.ts`. 不要把 `sideBar.ts` 里的 `roleMenu` 和 `routes` 混成一个字段。
+- Do not add page-local modal open state or form draft state here unless it is reused globally. 页面私有弹窗开关、局部表单草稿不要塞进 store。
+
+### 5.8 `src/filters` / 过滤与格式化目录
+
+- This folder already contains reusable formatting helpers. 这里已经有一批公用格式化方法。
+- Check here before adding new formatting helpers elsewhere. 新增格式化方法前先看这里。
+- These files are legacy Vue-filter-style plugins, but the exported functions can also be imported directly. 这些文件保留了旧式 filter 插件安装方式，但导出的函数也可以直接 import 使用。
+
+Current files / 当前文件职责:
+
+- `arraySort.ts`: deep-path-aware array sort helper. 数组排序工具。
+- `dataThousands.ts`: thousands separator formatter. 千分位格式化。
+- `dateFormat.ts`: timestamp to string formatter. 时间格式化。
+- `numberOperation.ts`: numeric precision helper like `toFixed`. 数字精度处理。
+- `stringOperation.ts`: string masking/interception helper. 字符串截断/脱敏。
+
+Filter rules / filter 规则:
+
+- Reuse these helpers before creating duplicate formatters in `utils` or `use`. 优先复用，不要在 `utils` 或 `use` 里重复写同类格式化。
+- If the new function is formatting-oriented, it usually belongs here. 偏格式化的工具一般优先放这里。
+
+### 5.9 `src/directives` / 指令目录
+
+- This folder stores shared DOM-level directives. 这里只放可复用的 DOM 指令。
+- Add a directive only when a composable or normal component prop cannot express the behavior cleanly. 只有当 composable 或普通 props 无法优雅表达时，才新增指令。
+
+Current files / 当前文件职责:
+
+- `onlyNumber.ts`:
+  - directive that constrains numeric input behavior
+  - useful for inputs that need numeric typing behavior without native input-number styling
+- `whenEmpty.ts`:
+  - default-empty display directive
+  - writes `--` when bound value is empty
+
+Directive rules / 指令规则:
+
+- Keep directives generic. 保持指令通用，不要写成某个页面的私有行为。
+- Prefer putting directive registration logic close to app startup or plugin installation patterns already used. 注册方式遵循现有模式。
+
+### 5.10 `src/use` / hooks 目录
+
+- This folder stores shared hooks/composables only. 这里只放公用 hooks / composables。
+- Before writing new helper logic inside a component, check whether it belongs here. 在组件里新增帮助逻辑前，先判断是否应抽到这里。
+
+Current files / 当前文件职责:
+
+- `useButtonRole.ts`: checks button permission based on route name + button role suffix. 按钮权限判断。
+- `useDateLimit.ts`: date-range defaults and disabled-date rules. 日期范围限制。
+- `useFetchTableData.ts`: generic list-fetch hook with pagination and loading state. 通用表格拉取 hook。
+- `useFormHandler.ts`: form state/reset/validate helper wrapper. 表单状态与校验封装。
+- `useGoogleTitle.ts`: enable/disable title helper for 2FA-related UI. 启用/禁用标题辅助。
+- `useKeyDown.ts`: enter-key submit binding helper. 键盘回车提交 helper。
+- `useModalHandler.ts`: generic modal open/close/title/lifecycle helper. 弹窗控制通用 hook。
+- `useOnActivated.ts`: keep-alive activation hook with `#no-refresh` support. keep-alive 激活逻辑。
+- `useTableConf.ts`: pagination config and search throttling helper. 分页配置与搜索节流。
+- `useTabsRole.ts`: tab-level permission filtering helper. tabs 权限过滤。
+- `useUpload.ts`: upload precheck helper. 上传前校验 helper。
+- `useValidatorConf.ts`: common validator functions. 公用校验器。
+
+Hook rules / hook 规则:
+
+- If logic is reused or strongly reusable, move it here. 逻辑可复用时就抽到这里。
+- If logic is tied to forms, tables, permissions, uploads, modal lifecycle, or activated behavior, check this folder before writing new code. 表单、表格、权限、上传、弹窗生命周期、activated 行为都要先看这里。
+- Prefer extending an existing hook before creating a near-duplicate one. 优先扩展已有 hook，不要轻易新建近似重复的 hook。
+
+## 6. Cross-Cutting Rules / 跨目录规则
+
+- `components` may depend on `use`, `store`, `interface`, `filters`, `utils`, and `api`, but should not become a dumping ground for raw backend logic. `components` 可以依赖这些目录，但不能沦为后端逻辑堆放区。
+- `views` should compose existing `components` and `use` modules instead of rewriting their logic. `views` 应组合现有组件和 hooks，而不是重复实现。
+- `api` should never import UI components. `api` 绝不能反向依赖 UI 组件。
+- `utils/common.ts` is the first place to look for generic functions. 公用函数优先看 `utils/common.ts`。
+- `utils/constant.ts` is the first place to look for shared constants or regexes. 公用常量和正则优先看 `utils/constant.ts`。
+
+## 7. i18n Rules / 国际化规则
+
+- All user-facing copy must default to i18n. 所有面向用户的文案默认必须国际化。
+- Use Chinese source text as the translation key. 统一使用中文原文作为翻译 key。
+- Shared text must be added to both:
   - `src/lang/zh-CN.json`
   - `src/lang/en-US.json`
-- In Vue components, user-facing text must be wrapped with `t('中文文案')`. 在 Vue 组件中，用户文案必须使用 `t('中文文案')` 包裹。
-- In non-component modules, use `i18n.global.t(...)` or `formatText(...)`. 在非组件模块中，使用 `i18n.global.t(...)` 或 `formatText(...)`。
-- Route titles must store Chinese keys and be rendered through `t(...)`. 路由标题应保存中文 key，并在展示时通过 `t(...)` 渲染。
+- In Vue components, user-facing text must be wrapped with `t('中文文案')`. 组件中的用户文案必须使用 `t('中文文案')`。
+- In non-component modules, use `i18n.global.t(...)` or `formatText(...)`. 非组件模块中使用 `i18n.global.t(...)` 或 `formatText(...)`。
+- Route titles must store Chinese keys and be rendered through `t(...)`. 路由标题存中文 key，展示时再翻译。
 - New validation messages, `Message.*` prompts, modal titles, form labels, placeholders, empty states, button text, table headers, and dropdown text must all follow this rule. 新增校验提示、`Message.*` 文案、弹窗标题、表单标签、placeholder、空状态、按钮文案、表格表头、下拉菜单文案都必须遵守此规则。
-- Do not add new English semantic keys such as `login.title` or `search.reset`. 不要再新增 `login.title`、`search.reset` 这类英文语义 key。
-- Do not add new raw user-facing text without translation wrapping, even for temporary code. 即使是临时代码，也不要新增未包裹翻译函数的用户文案。
+- Do not add new English semantic keys such as `login.title` or `search.reset`. 不要再新增英文语义 key。
+- Do not add raw user-facing text without translation wrapping, even for temporary code. 即使是临时代码，也不要新增未包裹翻译函数的用户文案。
 
-## 15. Lint And Type Rules / Lint 与类型规则
+## 8. Verification Rules / 验证规则
 
-- Minimum verification for TypeScript or Vue code changes: `yarn typecheck`. 任何 TS / Vue 代码改动，最低验证是 `yarn typecheck`。
-- If you touch lint config, formatting behavior, or imports, run `yarn lint`. 修改 lint 配置、格式规则或 import 结构时，要跑 `yarn lint`。
-- Because the repository still has lint debt, prefer targeted lint on touched files during normal tasks. 由于仓库还有 lint 历史债务，日常任务优先对改动文件做定向 lint。
+- Minimum verification for TypeScript or Vue changes: `yarn typecheck`. TS / Vue 改动最低要跑 `yarn typecheck`。
+- If you touch lint config, imports, or formatting behavior, run `yarn lint`. 修改 lint 配置、imports 或格式规则时要跑 `yarn lint`。
+- Because the repository still has lint debt, prefer targeted lint on touched files during normal tasks. 仓库仍有 lint 历史债务，日常任务优先对改动文件做定向 lint。
 - Do not claim lint is clean unless `yarn lint` succeeds in the current turn. 没有在当前回合跑通 `yarn lint`，不要宣称 lint 已清洁。
 - Do not claim type safety unless `yarn typecheck` succeeds in the current turn. 没有在当前回合跑通 `yarn typecheck`，不要宣称类型已通过。
 
-## 16. Generated Files / 生成文件规则
+## 9. Editing Strategy / 改动策略
 
-- Do not hand-edit generated declaration files unless the task explicitly requires it. 非明确需要时，不手改生成声明文件。
-- Especially avoid manual edits to:
-  - `src/auto-imports.d.ts`
-  - `src/components.d.ts`
-- If a plugin regenerates them, mention that in the summary. 如果插件自动改动了这些文件，在总结里说明。
-
-## 17. Safety Rules / 安全规则
-
-- Do not add secrets, tokens, passwords, or real credentials to the repo. 不要向仓库写入密钥、Token、密码或真实账号。
-- Do not keep new debug credentials in forms or config. 不要新增默认测试账号密码。
-- Do not delete or rewrite large sections of unrelated code to satisfy style preferences. 不要为了风格偏好删除或重写大量无关代码。
-- Do not introduce dependency churn without clear need. 没有明确收益时，不要随意引入或替换依赖。
-
-## 18. Change Strategy / 改动策略
-
-- Prefer the smallest change that solves the requested problem. 优先选择能解决问题的最小改动。
-- Avoid opportunistic cleanup outside the touched area. 不要顺手清理过多无关区域。
-- If you notice broader architecture debt, mention it separately instead of folding it into the same patch. 发现更大范围的架构债务时，单独说明，不要偷渡进当前 patch。
+- Prefer the smallest change that solves the requested problem. 优先最小改动。
+- Avoid opportunistic cleanup outside the touched area. 不要顺手扩散清理无关区域。
+- If broader architecture debt is discovered, mention it separately instead of folding it into the same patch. 更大范围的架构债务要单独说明，不要偷渡进当前 patch。
 - Preserve existing behavior unless the user asks for behavior changes. 用户未要求时，默认保持现有行为。
 
-## 19. Required Working Sequence / 建议执行顺序
+## 10. What Not To Do / 禁止事项
 
-- Read the relevant entry files first. 先读相关入口文件。
-- Confirm the current pattern in nearby files. 先确认附近文件的现有写法。
-- Make the change using the local project pattern. 按本项目既有模式改动。
-- Run the minimum relevant verification. 跑最小必要验证。
-- Report what changed, what was verified, and what remains as existing debt. 汇报改了什么、验证了什么、还有哪些属于原有债务。
-
-## 20. What Not To Do / 禁止事项
-
-- Do not invent a new architecture for one feature. 不要为了一个功能发明新架构。
+- Do not invent a new architecture for one feature. 不要为了单个功能发明新架构。
 - Do not move many files unless requested. 不要在未要求时大规模移动文件。
-- Do not rewrite working components just to modernize style. 不要仅为“更现代”而重写可工作的组件。
-- Do not switch UI libraries, router strategy, store pattern, or HTTP pattern on your own. 不要擅自切换 UI、路由、状态管理或请求模式。
-- Do not present pre-existing lint debt as if your patch caused it. 不要把仓库原有 lint 债务说成这次改动导致的。
+- Do not rewrite working components just to modernize style. 不要只为“更现代”而重写能工作的组件。
+- Do not switch UI libraries, router strategy, store pattern, or HTTP pattern on your own. 不要擅自切换 UI、路由、store 或请求模式。
+- Do not present pre-existing lint debt as if your patch caused it. 不要把仓库原有 lint 债务说成你这次改动造成的。
 
-## 21. Output Expectations / 输出要求
+## 11. Output Expectations / 输出要求
 
-- Summaries should be concrete, not vague. 总结要具体，不要空泛。
-- Mention exact commands used for verification. 要说明实际运行过的验证命令。
-- If verification was partial, say so clearly. 如果验证不完整，要明确说明。
-- If a rule could not be followed because of repo reality, explain the constraint. 如果因仓库现状无法完全遵守某条规则，要说清限制原因。
+- Summaries should be concrete, not vague. 总结必须具体。
+- Mention exact commands used for verification. 要写清实际跑过的验证命令。
+- If verification was partial, say so clearly. 验证不完整时要明确说明。
+- If repo reality prevents full compliance with a rule, explain the constraint. 如果仓库现实限制导致无法完全遵守规则，要解释原因。
