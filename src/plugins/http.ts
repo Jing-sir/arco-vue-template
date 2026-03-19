@@ -1,7 +1,6 @@
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, CancelTokenSource, Canceler } from 'axios';
 
 import http from 'axios'; /// doc: https://github.com/axios/axios#axios-api
-// eslint-disable-next-line import/no-extraneous-dependencies
 import moment from 'dayjs'; /// doc: https://momentjs.com/docs
 import cookies from 'cookies-js'; /// doc: https://github.com/ScottHamper/Cookies
 import { Message } from '@arco-design/web-vue';

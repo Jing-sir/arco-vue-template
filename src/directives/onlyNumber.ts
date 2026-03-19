@@ -1,14 +1,18 @@
 import type { VNode, App, Directive, DirectiveBinding } from 'vue';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { invokeArrayFns } from '@vue/shared';
 
 import { hyphenate } from '@/utils/common';
 
-type AssignerFn = (value: any) => void;
+type AssignerFn = (value: unknown) => void;
+
+const invokeFns = (fns: AssignerFn[], value: unknown): void => {
+    fns.forEach((fn) => {
+        fn(value);
+    });
+};
 
 const getModelAssigner = (vnode: VNode): AssignerFn => {
     const fn = vnode.props?.['onUpdate:modelValue'] || vnode.props?.['onModelCompat:input'];
-    return Array.isArray(fn) ? value => invokeArrayFns(fn, value) : fn;
+    return Array.isArray(fn) ? (value) => invokeFns(fn as AssignerFn[], value) : fn;
 };
 
 export const onlyNumber: Directive = function (

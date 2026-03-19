@@ -36,7 +36,6 @@
         "dayjs": "^1.11.20",
         "eslint": "^10.0.3",
         "eslint-config-prettier": "^10.1.8",
-        "eslint-plugin-import": "^2.32.0",
         "eslint-plugin-vue": "^10.8.0",
         "globals": "^15.15.0",
         "less": "^4.6.4",

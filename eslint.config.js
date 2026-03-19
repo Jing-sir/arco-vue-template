@@ -3,7 +3,6 @@ const tsPlugin = require('@typescript-eslint/eslint-plugin');
 const tsParser = require('@typescript-eslint/parser');
 const vuePlugin = require('eslint-plugin-vue');
 const vueParser = require('vue-eslint-parser');
-const importPlugin = require('eslint-plugin-import');
 const prettier = require('eslint-config-prettier');
 
 module.exports = [
@@ -18,6 +17,7 @@ module.exports = [
             '.husky/**',
             '.local/**',
             'bin/**',
+            'dev-dist/**',
             'dist/**',
             'docs/**',
             'node_modules/**',
@@ -28,6 +28,8 @@ module.exports = [
             'src/auto-imports.d.ts',
             'src/components.d.ts',
         ],
+    },
+    {
         linterOptions: {
             reportUnusedDisableDirectives: 'warn',
         },
@@ -50,7 +52,6 @@ module.exports = [
             },
         },
         plugins: {
-            import: importPlugin,
             '@typescript-eslint': tsPlugin,
         },
         rules: {
@@ -58,6 +59,7 @@ module.exports = [
             'no-undef': 'off',
             'no-console': 'off',
             'no-debugger': 'warn',
+            'no-duplicate-imports': ['error', { allowSeparateTypeImports: true }],
             'no-unreachable': 'error',
             'no-constant-condition': ['warn', { checkLoops: false }],
             'no-irregular-whitespace': 'error',
@@ -101,51 +103,14 @@ module.exports = [
 
             'vue/multi-word-component-names': 'off',
             'vue/v-on-event-hyphenation': 'off',
+            'vue/component-name-in-template-casing': 'off',
+            'vue/no-required-prop-with-default': 'off',
             'vue/require-default-prop': 'off',
-            'vue/component-name-in-template-casing': ['error', 'PascalCase'],
+            'vue/attributes-order': 'off',
+            'vue/first-attribute-linebreak': 'off',
+            'vue/attribute-hyphenation': 'off',
             'vue/prop-name-casing': ['error', 'camelCase'],
             'vue/no-v-html': 'off',
-
-            'import/extensions': [
-                'error',
-                'ignorePackages',
-                {
-                    js: 'never',
-                    jsx: 'never',
-                    ts: 'never',
-                    tsx: 'never',
-                    vue: 'never',
-                },
-            ],
-            'import/no-extraneous-dependencies': 'off',
-            'import/named': 'off',
-            'import/order': [
-                'warn',
-                {
-                    groups: [
-                        'builtin',
-                        'external',
-                        'internal',
-                        ['parent', 'sibling'],
-                        'index',
-                        'object',
-                        'type',
-                    ],
-                    pathGroups: [
-                        {
-                            pattern: '@/**',
-                            group: 'internal',
-                            position: 'before',
-                        },
-                    ],
-                    pathGroupsExcludedImportTypes: ['builtin'],
-                    'newlines-between': 'never',
-                    alphabetize: {
-                        order: 'asc',
-                        caseInsensitive: true,
-                    },
-                },
-            ],
         },
     },
 
@@ -166,6 +131,13 @@ module.exports = [
                 sourceType: 'module',
                 ecmaVersion: 'latest',
             },
+        },
+    },
+
+    {
+        files: ['**/*.d.ts'],
+        rules: {
+            '@typescript-eslint/no-empty-object-type': 'off',
         },
     },
 
