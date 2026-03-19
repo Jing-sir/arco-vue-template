@@ -41,7 +41,7 @@ export interface ColumnType<T = Record<string, unknown>> { // column type
     slots?: {
         customRender: string;
     };
-    children?: Array<{ title: string; dataIndex: string; key: string; }>;
+    children?: ColumnType<T>[];
     className?: string;
     align?: string;
     width?: string | number;
@@ -110,4 +110,28 @@ export type SearchParams = Record<string, SearchFieldValue>;
 export interface FileItem {
     type: string;
     size: number;
+}
+
+export interface TableFetchResult<TRecord = Record<string, unknown>> {
+    list: TRecord[];
+    pageNo: number;
+    pageSize: number;
+    totalSize: number;
+}
+
+export type TableRowKey<TRecord = Record<string, unknown>> =
+    | string
+    | ((record: TRecord) => string | number);
+
+export interface TableSearchFormExpose {
+    reset: () => void;
+    search: () => void;
+    getSearchParams: () => SearchParams;
+}
+
+export interface TableSearchWrapExpose {
+    refresh: () => Promise<unknown[]>;
+    search: (params?: SearchParams) => Promise<unknown[]>;
+    reset: () => void;
+    getSearchParams: () => SearchParams;
 }
