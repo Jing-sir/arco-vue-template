@@ -62,10 +62,10 @@ export default defineConfig(({ mode }) => {
             port: 60001,
             proxy: {
                 '/api': {
-                    target: 'http://18.166.68.147:10002/',
+                    target: 'http://43.199.161.111:10002/',
                     changeOrigin: true,
                 },
             },
         },
-    };
+    }
 });
