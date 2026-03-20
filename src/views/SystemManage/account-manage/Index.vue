@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ResetPasswords from './components/ResetPasswords.vue';
+import ResetPasswords from './modal/ResetPasswords.vue';
 import TableSearchWrap from '@/components/TableSearchWrap/Index.vue';
 import type {
     ColumnType,
@@ -80,7 +80,7 @@ useOnActivated(() => {
 </script>
 
 <template>
-    <div class="table-container">
+    <div>
         <TableSearchWrap
             ref="tableWrapRef"
             :api-fetch="fetchUserList"

@@ -69,55 +69,52 @@ useOnActivated(() => {
 </script>
 
 <template>
-    <div class="table-container">
-        <TableSearchWrap
-            ref="tableWrapRef"
-            :api-fetch="fetchOperationLogList"
-            :table-columns="tableColumns"
-            :search-conf="searchConf"
-            row-key="id"
-        >
-            <template #reqData="{ record }">
-                <a-popover position="top" trigger="click">
-                    <template #content>
-                        <pre class="max-h-[400px] min-h-[300px] overflow-auto whitespace-pre-wrap break-all">
+    <TableSearchWrap
+        ref="tableWrapRef"
+        :api-fetch="fetchOperationLogList"
+        :table-columns="tableColumns"
+        :search-conf="searchConf"
+        row-key="id"
+    >
+        <template #reqData="{ record }">
+            <a-popover position="top" trigger="click">
+                <template #content>
+                    <pre class="max-h-[400px] min-h-[300px] overflow-auto whitespace-pre-wrap break-all">
 {{ getJsonText(record.reqData) }}</pre
-                        >
-                    </template>
-                    <a-button type="text" size="small" class="!px-0">{{ t('详细') }}</a-button>
-                </a-popover>
-            </template>
+                    >
+                </template>
+                <a-button type="text" size="small" class="!px-0">{{ t('详细') }}</a-button>
+            </a-popover>
+        </template>
 
-            <template #respData="{ record }">
-                <a-popover position="top" trigger="click">
-                    <template #content>
-                        <pre class="max-h-[400px] min-h-[300px] overflow-auto whitespace-pre-wrap break-all">
-{{ getJsonText(record.respData) }}</pre
-                        >
-                    </template>
-                    <a-button type="text" size="small" class="!px-0">{{ t('详细') }}</a-button>
-                </a-popover>
-            </template>
+        <template #respData="{ record }">
+            <a-popover position="top" trigger="click">
+                <template #content>
+                    <pre class="max-h-[400px] min-h-[300px] overflow-auto whitespace-pre-wrap break-all">
+{{ getJsonText(record.respData) }}</pre>
+                </template>
+                <a-button type="text" size="small" class="!px-0">{{ t('详细') }}</a-button>
+            </a-popover>
+        </template>
 
-            <template #errMsg="{ record }">
-                <a-popover v-if="record.errMsg" position="top" trigger="click">
-                    <template #content>
-                        <div class="h-[400px] w-[400px] overflow-y-auto break-all px-5">
-                            {{ record.errMsg }}
-                        </div>
-                    </template>
-                    <a-button type="text" size="small" class="!px-0">{{ t('详细') }}</a-button>
-                </a-popover>
-                <span v-else>--</span>
-            </template>
+        <template #errMsg="{ record }">
+            <a-popover v-if="record.errMsg" position="top" trigger="click">
+                <template #content>
+                    <div class="h-[400px] w-[400px] overflow-y-auto break-all px-5">
+                        {{ record.errMsg }}
+                    </div>
+                </template>
+                <a-button type="text" size="small" class="!px-0">{{ t('详细') }}</a-button>
+            </a-popover>
+            <span v-else>--</span>
+        </template>
 
-            <template #occurErr="{ record }">
-                {{ record.occurErr ? t('是') : t('否') }}
-            </template>
+        <template #occurErr="{ record }">
+            {{ record.occurErr ? t('是') : t('否') }}
+        </template>
 
-            <template #success="{ record }">
-                {{ record.success ? t('成功') : t('失败') }}
-            </template>
-        </TableSearchWrap>
-    </div>
+        <template #success="{ record }">
+            {{ record.success ? t('成功') : t('失败') }}
+        </template>
+    </TableSearchWrap>
 </template>

@@ -35,7 +35,7 @@ const constantRoutes: RouteRecordRaw[] = [
                 name: 'operationLog',
                 component: () =>
                     import(
-                        /* webpackChunkName: "systemManage" */ '@/views/SystemManage/OperationLog.vue'
+                        /* webpackChunkName: "systemManage" */ '@/views/SystemManage/operation-log/Index.vue'
                     ),
                 meta: { title: '操作日志', role: 'operationLog', requiresAuth: true },
             },
@@ -45,7 +45,7 @@ const constantRoutes: RouteRecordRaw[] = [
                 name: 'rolePermissions',
                 component: () =>
                     import(
-                        /* webpackChunkName: "systemManage" */ '@/views/SystemManage/RolePermissions.vue'
+                        /* webpackChunkName: "systemManage" */ '@/views/SystemManage/role-permissions/Index.vue'
                     ),
                 meta: { title: '角色与权限', role: 'rolePermissions', requiresAuth: true },
             },
@@ -55,7 +55,7 @@ const constantRoutes: RouteRecordRaw[] = [
                 name: 'addRolePermissions',
                 component: () =>
                     import(
-                        /* webpackChunkName: "addRolePermissions" */ '@/views/SystemManage/AddRolePermissions.vue'
+                        /* webpackChunkName: "addRolePermissions" */ '@/views/SystemManage/role-permissions/form/Index.vue'
                     ),
                 meta: { title: '新增', role: 'rolePermissions', isShow: true, requiresAuth: true },
             },
@@ -65,7 +65,7 @@ const constantRoutes: RouteRecordRaw[] = [
                 name: 'viewRolePermissions',
                 component: () =>
                     import(
-                        /* webpackChunkName: "viewRolePermissions" */ '@/views/SystemManage/AddRolePermissions.vue'
+                        /* webpackChunkName: "viewRolePermissions" */ '@/views/SystemManage/role-permissions/form/Index.vue'
                     ),
                 meta: { title: '查看', role: 'rolePermissions', isShow: true, requiresAuth: true },
             },
@@ -75,7 +75,7 @@ const constantRoutes: RouteRecordRaw[] = [
                 name: 'editRolePermissions',
                 component: () =>
                     import(
-                        /* webpackChunkName: "editRolePermissions" */ '@/views/SystemManage/AddRolePermissions.vue'
+                        /* webpackChunkName: "editRolePermissions" */ '@/views/SystemManage/role-permissions/form/Index.vue'
                     ),
                 meta: { title: '编辑', role: 'rolePermissions', isShow: true, requiresAuth: true },
             },
@@ -85,7 +85,7 @@ const constantRoutes: RouteRecordRaw[] = [
                 name: 'accountManage',
                 component: () =>
                     import(
-                        /* webpackChunkName: "addRolePermissions" */ '@/views/SystemManage/AccountManage.vue'
+                        /* webpackChunkName: "addRolePermissions" */ '@/views/SystemManage/account-manage/Index.vue'
                     ),
                 meta: { title: '账号管理', role: 'accountManage', requiresAuth: true },
             },
@@ -95,7 +95,7 @@ const constantRoutes: RouteRecordRaw[] = [
                 name: 'addAccount',
                 component: () =>
                     import(
-                        /* webpackChunkName: "addAccount" */ '@/views/SystemManage/AddAccount.vue'
+                        /* webpackChunkName: "addAccount" */ '@/views/SystemManage/account-manage/form/Index.vue'
                     ),
                 meta: { title: '新增', role: 'accountManage', requiresAuth: true, isShow: true },
             },
@@ -105,7 +105,7 @@ const constantRoutes: RouteRecordRaw[] = [
                 name: 'editAccount',
                 component: () =>
                     import(
-                        /* webpackChunkName: "editAccount" */ '@/views/SystemManage/AddAccount.vue'
+                        /* webpackChunkName: "editAccount" */ '@/views/SystemManage/account-manage/form/Index.vue'
                     ),
                 meta: { title: '编辑', role: 'accountManage', requiresAuth: true, isShow: true },
             },

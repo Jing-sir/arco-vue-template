@@ -310,6 +310,23 @@ Hook rules / hook 规则:
 - If logic is tied to forms, tables, permissions, uploads, modal lifecycle, or activated behavior, check this folder before writing new code. 表单、表格、权限、上传、弹窗生命周期、activated 行为都要先看这里。
 - Prefer extending an existing hook before creating a near-duplicate one. 优先扩展已有 hook，不要轻易新建近似重复的 hook。
 
+### 5.11 `src/views` / 页面目录
+
+- Route-level pages should be organized by module and feature folder, not as a flat list once the feature has subparts. 路由页面应按模块和功能目录组织；一旦某个功能开始拆分子结构，就不要继续平铺在同级目录。
+- For a large module such as `SystemManage`, keep the module as the top-level folder and place each list/detail feature in its own subfolder. 对于 `SystemManage` 这类大模块，保留模块一级目录，并把每个列表页/详情页放进各自独立的子目录。
+- Use `Index.vue` as the single route entry file inside a feature folder. 功能目录内部统一使用 `Index.vue` 作为单一页面入口。
+- Put route-private reusable pieces in a local `components/` folder. 页面私有但可复用的小组件放在当前功能目录下的 `components/` 中。
+- Put add/edit/detail dialogs, drawers, and other overlay UIs in a local `modal/` folder. 新增/编辑/详情弹窗、抽屉等浮层 UI 统一放在当前功能目录下的 `modal/` 中。
+- Keep the feature folder as the only public entry for that route; files in `components/` and `modal/` are internal implementation details. 功能目录本身是该路由的唯一公开入口；`components/` 和 `modal/` 内的文件都视为内部实现细节。
+- Example structure:
+  - `src/views/SystemManage/operation-log/Index.vue`
+  - `src/views/SystemManage/operation-log/components/...`
+  - `src/views/SystemManage/operation-log/modal/...`
+  - `src/views/SystemManage/role-permissions/Index.vue`
+  - `src/views/SystemManage/account-manage/Index.vue`
+- Do not create new flat files like `src/views/SystemManage/Foo.vue` for features that already need child components or modals. 对于已经需要子组件或弹窗的功能，不要再新建类似 `src/views/SystemManage/Foo.vue` 这种平铺文件。
+- When touching an existing flat page substantially, prefer migrating it into the feature-folder structure above instead of adding more sibling files next to it. 当一个现有平铺页面进入较大改动时，优先迁移到上述功能目录结构，而不是继续在旁边堆更多同级文件。
+
 ## 6. Cross-Cutting Rules / 跨目录规则
 
 - `components` may depend on `use`, `store`, `interface`, `filters`, `utils`, and `api`, but should not become a dumping ground for raw backend logic. `components` 可以依赖这些目录，但不能沦为后端逻辑堆放区。

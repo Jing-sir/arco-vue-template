@@ -30,10 +30,6 @@ const currentModuleKey = ref('');
 const searchKeyword = ref('');
 const onlySelected = ref(false);
 const manualExpandedKeys = ref<string[]>([]);
-const modulePanelRef = ref<HTMLElement | null>(null);
-const modulePanelHeight = ref(0);
-const isWideLayout = ref(window.innerWidth >= 1280);
-let resizeObserver: ResizeObserver | null = null;
 
 const roleId = computed(() => String(route.params.id || ''));
 const see = computed(() => Boolean(route.params.see));
@@ -166,23 +162,12 @@ const displayedExpandedKeys = computed(() => {
 });
 
 const selectedPermissionCount = computed(() => selectedPermissionList.value.length);
-const selectedPanelStyle = computed(() =>
-    isWideLayout.value && modulePanelHeight.value > 0
-        ? { maxHeight: `${modulePanelHeight.value}px` }
-        : undefined,
-);
 
 const handleBack = (): void => {
     router.back();
     if (route.name) {
         tagsViewStore.deleteVisitedViewByName(String(route.name), true);
     }
-};
-
-// 右侧“已选权限清单”高度跟随左侧模块导航，避免两列视觉高度失衡。
-const syncLayoutState = (): void => {
-    isWideLayout.value = window.innerWidth >= 1280;
-    modulePanelHeight.value = modulePanelRef.value?.offsetHeight ?? 0;
 };
 
 const handleExpand = (expandedKeys: TreeNodeKey[]): void => {
@@ -295,27 +280,11 @@ watch(
 );
 
 onMounted(async () => {
-    syncLayoutState();
-    resizeObserver = new ResizeObserver(() => {
-        syncLayoutState();
-    });
-
-    if (modulePanelRef.value) {
-        resizeObserver.observe(modulePanelRef.value);
-    }
-
-    window.addEventListener('resize', syncLayoutState);
-
     currState.roleId = roleId.value;
     await fetchRoleList();
     if (roleId.value) {
         fetchRoleListDetail();
     }
-});
-
-onBeforeUnmount(() => {
-    resizeObserver?.disconnect();
-    window.removeEventListener('resize', syncLayoutState);
 });
 </script>
 
@@ -369,10 +338,7 @@ onBeforeUnmount(() => {
                 </div>
 
                 <div class="grid gap-4 xl:grid-cols-[220px_minmax(0,1fr)_320px] xl:items-start">
-                    <section
-                        ref="modulePanelRef"
-                        class="rounded-xl border border-slate-200 bg-slate-50 p-3"
-                    >
+                    <section class="rounded-xl border border-slate-200 bg-slate-50 p-3">
                         <div class="mb-3">
                             <p class="text-sm font-semibold text-slate-800">{{ t('模块导航') }}</p>
                             <p class="mt-1 text-xs text-slate-500">
@@ -408,7 +374,7 @@ onBeforeUnmount(() => {
                         </div>
                     </section>
 
-                    <section class="flex min-h-[560px] flex-col rounded-xl border border-slate-200 bg-white">
+                    <section class="rounded-xl border border-slate-200 bg-white">
                         <div class="border-b border-slate-100 px-4 py-3">
                             <div class="flex flex-wrap items-center justify-between gap-3">
                                 <div>
@@ -445,7 +411,7 @@ onBeforeUnmount(() => {
                             </div>
                         </div>
 
-                        <div class="min-h-0 flex-1 overflow-auto p-4">
+                        <div class="p-4">
                             <a-tree
                                 v-if="visibleTreeData.length"
                                 v-model:checked-keys="currState.checkedKeys"
@@ -464,10 +430,7 @@ onBeforeUnmount(() => {
                         </div>
                     </section>
 
-                    <aside
-                        class="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-3"
-                        :style="selectedPanelStyle"
-                    >
+                    <aside class="rounded-xl border border-slate-200 bg-slate-50 p-3">
                         <div class="mb-3">
                             <p class="text-sm font-semibold text-slate-800">
                                 {{ t('已选权限清单') }}
@@ -477,10 +440,7 @@ onBeforeUnmount(() => {
                             </p>
                         </div>
 
-                        <div
-                            v-if="groupedSelectedPermissions.length"
-                            class="min-h-0 flex-1 space-y-4 overflow-auto pr-1"
-                        >
+                        <div v-if="groupedSelectedPermissions.length" class="space-y-4 pr-1">
                             <div
                                 v-for="group in groupedSelectedPermissions"
                                 :key="group.key"
@@ -530,9 +490,7 @@ onBeforeUnmount(() => {
                                 </div>
                             </div>
                         </div>
-                        <div v-else class="flex min-h-0 flex-1 items-center justify-center">
-                            <a-empty :description="t('未选择任何权限')" />
-                        </div>
+                        <a-empty v-else :description="t('未选择任何权限')" />
                     </aside>
                 </div>
 
