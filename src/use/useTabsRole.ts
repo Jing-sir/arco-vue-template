@@ -1,5 +1,4 @@
-import { computed, ref, watch } from 'vue';
-import { TabsType } from '@/interface/TableType';
+import type { TabsType } from '@/interface/TableType';
 import sideBar from '@/store/sideBar';
 import { storeToRefs } from 'pinia';
 import api from '@/api/permission';

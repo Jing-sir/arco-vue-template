@@ -1,5 +1,5 @@
+import type { FileItem } from '@/interface/TableType'
 import { Message } from '@arco-design/web-vue';
-import { FileItem } from '@/interface/TableType';
 import { formatText } from '@/utils/common';
 
 export default function useUpload() {

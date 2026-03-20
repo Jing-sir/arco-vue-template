@@ -1,4 +1,5 @@
-import dayjs, { Dayjs } from 'dayjs';
+import type { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 
 export default function useDateLimit() {
     const endDate = dayjs().startOf('day').set('hour', 23).set('minute', 59).set('second', 59);

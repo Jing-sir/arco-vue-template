@@ -1,4 +1,3 @@
-import { computed, ref } from 'vue';
 import { formatText } from '@/utils/common';
 
 export default function useGoogleTitle() {

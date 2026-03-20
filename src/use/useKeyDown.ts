@@ -1,5 +1,3 @@
-import { onMounted, onUnmounted } from 'vue';
-
 export default function useKeyDown(handleSubmit: () => void) {
     const handleKeyDown = (event: { code: string }) =>  {
         if (event.code === 'Enter') {

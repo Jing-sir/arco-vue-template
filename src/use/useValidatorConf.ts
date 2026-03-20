@@ -1,5 +1,5 @@
+import { GREATER_THAN_ZERO_NUMBER, INTER_NUMBER, IP_V4, IP_V6 } from '@/utils/constant'
 import type { FieldRule } from '@arco-design/web-vue';
-import { GREATER_THAN_ZERO_NUMBER, INTER_NUMBER, IP_V4, IP_V6 } from '@/utils/constant';
 import { formatText } from '@/utils/common';
 
 export default function useValidatorConf() {

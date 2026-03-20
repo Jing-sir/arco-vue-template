@@ -1,4 +1,3 @@
-import { ref } from 'vue';
 import { formatText } from '@/utils/common';
 
 type IOptions = {
