@@ -34,9 +34,7 @@ const constantRoutes: RouteRecordRaw[] = [
                 path: 'operationLog',
                 name: 'operationLog',
                 component: () =>
-                    import(
-                        /* webpackChunkName: "systemManage" */ '@/views/SystemManage/operation-log/Index.vue'
-                    ),
+                    import(/* webpackChunkName: "systemManage" */ '@/views/SystemManage/operation-log/Index.vue'),
                 meta: { title: '操作日志', role: 'operationLog', requiresAuth: true },
             },
             {
@@ -44,9 +42,7 @@ const constantRoutes: RouteRecordRaw[] = [
                 path: 'rolePermissions',
                 name: 'rolePermissions',
                 component: () =>
-                    import(
-                        /* webpackChunkName: "systemManage" */ '@/views/SystemManage/role-permissions/Index.vue'
-                    ),
+                    import(/* webpackChunkName: "systemManage" */ '@/views/SystemManage/role-permissions/Index.vue'),
                 meta: { title: '角色与权限', role: 'rolePermissions', requiresAuth: true },
             },
             {
@@ -54,9 +50,7 @@ const constantRoutes: RouteRecordRaw[] = [
                 path: 'addRolePermissions',
                 name: 'addRolePermissions',
                 component: () =>
-                    import(
-                        /* webpackChunkName: "addRolePermissions" */ '@/views/SystemManage/role-permissions/form/Index.vue'
-                    ),
+                    import(/* webpackChunkName: "addRolePermissions" */ '@/views/SystemManage/role-permissions/form/Index.vue'),
                 meta: { title: '新增', role: 'rolePermissions', isShow: true, requiresAuth: true },
             },
             {
@@ -64,9 +58,7 @@ const constantRoutes: RouteRecordRaw[] = [
                 path: 'viewRolePermissions/:id/:see',
                 name: 'viewRolePermissions',
                 component: () =>
-                    import(
-                        /* webpackChunkName: "viewRolePermissions" */ '@/views/SystemManage/role-permissions/form/Index.vue'
-                    ),
+                    import(/* webpackChunkName: "viewRolePermissions" */ '@/views/SystemManage/role-permissions/form/Index.vue'),
                 meta: { title: '查看', role: 'rolePermissions', isShow: true, requiresAuth: true },
             },
             {
@@ -74,9 +66,7 @@ const constantRoutes: RouteRecordRaw[] = [
                 path: 'editRolePermissions/:id',
                 name: 'editRolePermissions',
                 component: () =>
-                    import(
-                        /* webpackChunkName: "editRolePermissions" */ '@/views/SystemManage/role-permissions/form/Index.vue'
-                    ),
+                    import(/* webpackChunkName: "editRolePermissions" */ '@/views/SystemManage/role-permissions/form/Index.vue'),
                 meta: { title: '编辑', role: 'rolePermissions', isShow: true, requiresAuth: true },
             },
             {
@@ -84,9 +74,7 @@ const constantRoutes: RouteRecordRaw[] = [
                 path: 'accountManage',
                 name: 'accountManage',
                 component: () =>
-                    import(
-                        /* webpackChunkName: "addRolePermissions" */ '@/views/SystemManage/account-manage/Index.vue'
-                    ),
+                    import(/* webpackChunkName: "addRolePermissions" */ '@/views/SystemManage/account-manage/Index.vue'),
                 meta: { title: '账号管理', role: 'accountManage', requiresAuth: true },
             },
             {
@@ -94,9 +82,7 @@ const constantRoutes: RouteRecordRaw[] = [
                 path: 'addAccount',
                 name: 'addAccount',
                 component: () =>
-                    import(
-                        /* webpackChunkName: "addAccount" */ '@/views/SystemManage/account-manage/form/Index.vue'
-                    ),
+                    import(/* webpackChunkName: "addAccount" */ '@/views/SystemManage/account-manage/form/Index.vue'),
                 meta: { title: '新增', role: 'accountManage', requiresAuth: true, isShow: true },
             },
             {
@@ -104,9 +90,7 @@ const constantRoutes: RouteRecordRaw[] = [
                 path: 'editAccount/:id',
                 name: 'editAccount',
                 component: () =>
-                    import(
-                        /* webpackChunkName: "editAccount" */ '@/views/SystemManage/account-manage/form/Index.vue'
-                    ),
+                    import(/* webpackChunkName: "editAccount" */ '@/views/SystemManage/account-manage/form/Index.vue'),
                 meta: { title: '编辑', role: 'accountManage', requiresAuth: true, isShow: true },
             },
         ],

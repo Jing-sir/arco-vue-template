@@ -75,7 +75,7 @@ useOnActivated(() => {
                     type="text"
                     size="small"
                     class="!px-0"
-                    @click.stop="router.push(`/systemManage/viewRolePermissions/${record.roleId}`)"
+                    @click.stop="router.push(`/systemManage/viewRolePermissions/${record.roleId}/1`)"
                 >
                     {{ t('查看权限') }}
                 </a-button>

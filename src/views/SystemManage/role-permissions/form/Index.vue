@@ -22,6 +22,7 @@ const route = useRoute();
 const sidebarStore = sideBar();
 const tagsViewStore = tagsView();
 
+// 表单级状态和页面级交互状态统一放在顶部，便于快速识别“字段状态”和“视图状态”。
 const formRef = ref<FormInstance>();
 const isSpinning = ref(false);
 const isLoading = ref(false);
@@ -34,6 +35,8 @@ const manualExpandedKeys = ref<string[]>([]);
 const roleId = computed(() => String(route.params.id || ''));
 const see = computed(() => Boolean(route.params.see));
 
+// 当前页面唯一需要提交给接口的核心数据。
+// 其中 checkedKeys 始终保持扁平 key 数组，避免树组件和接口模型来回转换。
 const currState = reactive({
     roleName: '',
     roleId: '',
@@ -45,12 +48,16 @@ const rules: Record<string, FieldRule[]> = {
     roleName: [{ required: true, message: t('请输入角色名称'), trigger: 'blur' }],
 };
 
+// 频繁判断“当前权限是否已选”时用 Set，避免在大权限树里反复线性查找。
 const checkedKeySet = computed(() => new Set(currState.checkedKeys.map((key) => String(key))));
 
+// 后端返回的是平铺菜单列表，这里先统一转成真正的树结构，
+// 后续模块导航、树展示、已选清单都从这棵树派生，保证数据源唯一。
 const rootRoleList = computed(() =>
     buildTree<TreeDataType>(allRoleList.value, 'children', 'menuId', 'parentId') || [],
 );
 
+// 左侧模块导航只关心一级模块，因此从根树提取最轻量的导航数据。
 const moduleList = computed(() =>
     rootRoleList.value.map((item) => ({
         key: String(item.menuId),
@@ -62,7 +69,8 @@ const currentModule = computed(() =>
     rootRoleList.value.find((item) => String(item.menuId) === currentModuleKey.value) ?? null,
 );
 
-// 将权限树拍平成可检索、可回跳的索引，供右侧已选清单和模块统计复用。
+// 将整棵权限树拍平成“可搜索、可分组、可回跳”的索引。
+// 右侧已选权限清单不会再直接遍历树，而是基于这个索引做筛选和聚合。
 const flattenPermissionTree = (
     nodes: TreeDataType[],
     moduleKey: string,
@@ -92,10 +100,12 @@ const permissionSummary = computed(() =>
     ),
 );
 
+// 右侧清单和顶部统计都建立在“已选索引”上，避免直接操作树节点。
 const selectedPermissionList = computed(() =>
     permissionSummary.value.filter((item) => checkedKeySet.value.has(item.key)),
 );
 
+// 左侧模块角标直接复用已选索引聚合结果。
 const selectedCountByModule = computed(() =>
     selectedPermissionList.value.reduce<Record<string, number>>((acc, item) => {
         acc[item.moduleKey] = (acc[item.moduleKey] ?? 0) + 1;
@@ -103,6 +113,7 @@ const selectedCountByModule = computed(() =>
     }, {}),
 );
 
+// 右侧“已选权限清单”按模块分组，和左侧模块导航保持同一认知模型。
 const groupedSelectedPermissions = computed(() =>
     moduleList.value
         .map((module) => ({
@@ -126,7 +137,10 @@ const filterTreeNodes = (nodes: TreeDataType[]): TreeDataType[] => {
     const keyword = searchKeyword.value.trim().toLowerCase();
 
     const walk = (node: TreeDataType): TreeDataType | null => {
-        // 搜索和“仅看已选”都通过同一套递归过滤，确保树结构和父子路径保持完整。
+        // 搜索和“仅看已选”共用一套递归过滤，确保：
+        // 1. 命中的父节点能保留完整层级关系
+        // 2. 命中的子节点能把父链一起带出来
+        // 3. 树组件拿到的仍然是合法树结构，而不是扁平结果
         const children = (node.children ?? [])
             .map((child) => walk(child))
             .filter((child): child is TreeDataType => child !== null);
@@ -149,10 +163,25 @@ const filterTreeNodes = (nodes: TreeDataType[]): TreeDataType[] => {
         .filter((node): node is TreeDataType => node !== null);
 };
 
+// 中间树面板一次只展示当前模块，避免把所有权限树一次性塞给用户。
 const currentModuleTree = computed(() => (currentModule.value ? [currentModule.value] : []));
 
 const visibleTreeData = computed(() => filterTreeNodes(currentModuleTree.value));
 
+const readonlyTreeData = computed<TreeDataType[]>(() => {
+    const markReadonly = (nodes: TreeDataType[]): TreeDataType[] =>
+        nodes.map((node) => ({
+            ...node,
+            // 查看模式下保留树的浏览能力，但锁定 checkbox 交互。
+            disableCheckbox: see.value,
+            children: markReadonly(node.children ?? []),
+        }));
+
+    return markReadonly(visibleTreeData.value);
+});
+
+// 搜索或“仅看已选”开启时，优先自动展开命中路径；
+// 平时则尊重用户手动展开/收起的状态。
 const displayedExpandedKeys = computed(() => {
     if (searchKeyword.value.trim() || onlySelected.value) {
         return getExpandableKeys(visibleTreeData.value);
@@ -170,10 +199,12 @@ const handleBack = (): void => {
     }
 };
 
+// 树组件返回的是 number|string 混合 key，这里统一转成 string，和本页其它状态保持一致。
 const handleExpand = (expandedKeys: TreeNodeKey[]): void => {
     manualExpandedKeys.value = expandedKeys.map((key) => String(key));
 };
 
+// 展开/收起只针对当前模块生效，避免用户误以为会影响整棵权限树。
 const expandAll = (): void => {
     manualExpandedKeys.value = getExpandableKeys(currentModuleTree.value);
 };
@@ -186,11 +217,14 @@ const focusModule = (moduleKey: string): void => {
     currentModuleKey.value = moduleKey;
 };
 
+// 从右侧已选清单移除权限时，除了更新 checkedKeys，也同步把当前模块切回该权限所在模块，
+// 这样用户删除后马上就能在中间树里看到最新状态。
 const removePermission = (permissionKey: string, moduleKey: string): void => {
     currState.checkedKeys = currState.checkedKeys.filter((key) => String(key) !== permissionKey);
     currentModuleKey.value = moduleKey;
 };
 
+// 第一步只拉完整权限树；角色详情和已勾选权限在编辑/查看时再单独补齐。
 const fetchRoleList = async (): Promise<void> => {
     NProgress.start();
     isSpinning.value = true;
@@ -203,6 +237,7 @@ const fetchRoleList = async (): Promise<void> => {
     }
 };
 
+// 编辑/查看场景需要把“角色基本信息”和“已勾选权限”分别回填到表单状态。
 const fetchRoleListDetail = (): void => {
     api.sysInfoCheckMenuList({ roleId: currState.roleId }).then((data) => {
         currState.checkedKeys = data.map((item) => String(item.menuId));
@@ -216,6 +251,7 @@ const fetchRoleListDetail = (): void => {
 };
 
 const handleSaveData = async (): Promise<void> => {
+    // 保存前先做基础字段校验，再校验权限树至少选择了一项。
     const errors = await formRef.value?.validate();
     if (errors) return;
     if (!currState.checkedKeys.length) {
@@ -226,7 +262,7 @@ const handleSaveData = async (): Promise<void> => {
     isLoading.value = true;
     isSpinning.value = true;
 
-    // 接口仍然要求扁平 menuIdList，这里统一从当前勾选项转换一次。
+    // 接口仍然要求扁平 menuIdList，这里把前端树选中状态统一转换成后端需要的结构。
     const menuIdList = currState.checkedKeys.map((value) => ({
         checkUserPassword: 2,
         menuId: Number(value),
@@ -251,6 +287,7 @@ const handleSaveData = async (): Promise<void> => {
         });
 };
 
+// 模块列表一旦准备好，默认自动聚焦第一个模块，保证中间树面板始终有内容。
 watch(
     moduleList,
     (modules) => {
@@ -267,6 +304,7 @@ watch(
     { immediate: true },
 );
 
+// 当前模块切换后，默认只展开该模块根节点，避免树面板一上来信息过载。
 watch(
     currentModule,
     (module) => {
@@ -280,6 +318,7 @@ watch(
 );
 
 onMounted(async () => {
+    // 页面先拿到路由参数中的角色 ID，再按“权限树 -> 角色详情”顺序初始化。
     currState.roleId = roleId.value;
     await fetchRoleList();
     if (roleId.value) {
@@ -289,16 +328,16 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="table-container">
-        <a-spin :loading="isSpinning" class="w-full">
+    <div class="table-container h-[var(--content-pane-min-height)] overflow-hidden">
+        <a-spin :loading="isSpinning" class="block h-full w-full">
             <a-form
                 ref="formRef"
                 :model="currState"
                 :rules="rules"
                 layout="vertical"
-                class="space-y-5"
+                class="flex h-full flex-col"
             >
-                <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                <div class="shrink-0 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                     <a-form-item
                         :label="t('角色名称')"
                         field="roleName"
@@ -337,8 +376,10 @@ onMounted(async () => {
                     </div>
                 </div>
 
-                <div class="grid gap-4 xl:grid-cols-[220px_minmax(0,1fr)_320px] xl:items-start">
-                    <section class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <div class="grid min-h-0 flex-1 !mt-0 gap-4 xl:grid-cols-[280px_minmax(0,1fr)_320px] xl:items-stretch">
+                    <section
+                        class="flex min-h-0 h-full flex-col rounded-xl border border-slate-200 bg-slate-50 p-3"
+                    >
                         <div class="mb-3">
                             <p class="text-sm font-semibold text-slate-800">{{ t('模块导航') }}</p>
                             <p class="mt-1 text-xs text-slate-500">
@@ -346,12 +387,12 @@ onMounted(async () => {
                             </p>
                         </div>
 
-                        <div class="space-y-2">
+                        <div class="grid min-h-0 flex-1 grid-cols-2 gap-2 overflow-y-auto pr-1">
                             <button
                                 v-for="module in moduleList"
                                 :key="module.key"
                                 type="button"
-                                class="flex w-full items-center justify-between rounded-lg border px-3 py-2 text-left transition"
+                                class="flex min-h-[72px] w-full flex-col items-start justify-between rounded-lg border px-3 py-2 text-left transition"
                                 :class="
                                     currentModuleKey === module.key
                                         ? 'border-[var(--color-primary-6)] bg-blue-50 text-slate-900'
@@ -359,9 +400,9 @@ onMounted(async () => {
                                 "
                                 @click="focusModule(module.key)"
                             >
-                                <span class="truncate text-sm font-medium">{{ module.title }}</span>
+                                <span class="line-clamp-2 text-sm font-medium leading-5">{{ module.title }}</span>
                                 <span
-                                    class="ml-3 rounded-full px-2 py-0.5 text-xs"
+                                    class="rounded-full px-2 py-0.5 text-xs"
                                     :class="
                                         currentModuleKey === module.key
                                             ? 'bg-blue-100 text-blue-600'
@@ -374,7 +415,7 @@ onMounted(async () => {
                         </div>
                     </section>
 
-                    <section class="rounded-xl border border-slate-200 bg-white">
+                    <section class="flex min-h-0 h-full flex-col rounded-xl border border-slate-200 bg-white">
                         <div class="border-b border-slate-100 px-4 py-3">
                             <div class="flex flex-wrap items-center justify-between gap-3">
                                 <div>
@@ -411,13 +452,12 @@ onMounted(async () => {
                             </div>
                         </div>
 
-                        <div class="p-4">
+                        <div class="min-h-0 flex-1 overflow-y-auto p-4">
                             <a-tree
-                                v-if="visibleTreeData.length"
+                                v-if="readonlyTreeData.length"
                                 v-model:checked-keys="currState.checkedKeys"
                                 :expanded-keys="displayedExpandedKeys"
-                                :data="visibleTreeData"
-                                :disabled="see"
+                                :data="readonlyTreeData"
                                 :field-names="{ children: 'children', title: 'menuName', key: 'menuId' }"
                                 size="small"
                                 checkable
@@ -430,7 +470,9 @@ onMounted(async () => {
                         </div>
                     </section>
 
-                    <aside class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <aside
+                        class="flex min-h-0 h-full flex-col rounded-xl border border-slate-200 bg-slate-50 p-3"
+                    >
                         <div class="mb-3">
                             <p class="text-sm font-semibold text-slate-800">
                                 {{ t('已选权限清单') }}
@@ -440,7 +482,10 @@ onMounted(async () => {
                             </p>
                         </div>
 
-                        <div v-if="groupedSelectedPermissions.length" class="space-y-4 pr-1">
+                        <div
+                            v-if="groupedSelectedPermissions.length"
+                            class="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1"
+                        >
                             <div
                                 v-for="group in groupedSelectedPermissions"
                                 :key="group.key"
@@ -490,12 +535,14 @@ onMounted(async () => {
                                 </div>
                             </div>
                         </div>
-                        <a-empty v-else :description="t('未选择任何权限')" />
+                        <div v-else class="flex min-h-0 flex-1 items-center justify-center">
+                            <a-empty :description="t('未选择任何权限')" />
+                        </div>
                     </aside>
                 </div>
 
                 <div
-                    class="sticky bottom-0 z-10 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white/95 px-4 py-3 backdrop-blur"
+                    class="mt-5 shrink-0 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white/95 px-4 py-3 backdrop-blur"
                 >
                     <div class="flex flex-wrap items-center gap-3 text-sm text-slate-600">
                         <span>{{ t('已选 {count} 项', { count: selectedPermissionCount }) }}</span>

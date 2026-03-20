@@ -5,6 +5,11 @@
     --app-header-height: 61px;
     --page-shell-gap: 8px;
     --content-pane-min-height: calc(100dvh - var(--app-header-height) - (var(--page-shell-gap) * 2));
+    --scrollbar-size: 10px;
+    --scrollbar-track: rgb(148 163 184 / 8%);
+    --scrollbar-thumb: rgb(100 116 139 / 42%);
+    --scrollbar-thumb-hover: rgb(22 93 255 / 52%);
+    --scrollbar-thumb-active: rgb(22 93 255 / 68%);
 }
 
 .main-wrapper,
@@ -19,4 +24,55 @@
     min-height: var(--content-pane-min-height);
     height: fit-content;
     overflow: visible;
+}
+
+html {
+    scrollbar-gutter: stable;
+}
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+*::-webkit-scrollbar {
+    width: var(--scrollbar-size);
+    height: var(--scrollbar-size);
+}
+
+*::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+*::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--scrollbar-thumb) 88%, white 12%) 0%,
+        var(--scrollbar-thumb) 100%
+    );
+    background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--scrollbar-thumb-hover) 84%, white 16%) 0%,
+        var(--scrollbar-thumb-hover) 100%
+    );
+    background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:active {
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--scrollbar-thumb-active) 82%, white 18%) 0%,
+        var(--scrollbar-thumb-active) 100%
+    );
+    background-clip: padding-box;
 }

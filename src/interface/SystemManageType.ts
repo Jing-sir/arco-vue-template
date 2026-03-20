@@ -32,6 +32,7 @@ export interface TreeDataType {
     parentId: string;
     checked?: number;
     checkUserPassword?: number;
+    disableCheckbox?: boolean;
     children?: TreeDataType[];
 }
 
