@@ -142,5 +142,19 @@
     "是": "Yes",
     "失败": "Failed",
     "2FA验证": "2FA Verification",
-    "冻结": "Frozen"
+    "冻结": "Frozen",
+    "模块导航": "Module Navigation",
+    "当前模块": "Current Module",
+    "快速定位权限": "Quick Search Permissions",
+    "仅看已选": "Selected Only",
+    "展开全部": "Expand All",
+    "收起全部": "Collapse All",
+    "已选权限": "Selected Permissions",
+    "已选权限清单": "Selected Permission List",
+    "未选择任何权限": "No permissions selected",
+    "已选 {count} 项": "{count} selected",
+    "当前模块：{name}": "Current module: {name}",
+    "共 {count} 项": "{count} items",
+    "切换模块查看对应权限树": "Switch modules to view the related permission tree",
+    "从已选清单点击可快速定位模块": "Click a selected item to jump back to its module"
 }
