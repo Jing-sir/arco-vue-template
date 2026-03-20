@@ -160,7 +160,7 @@ defineExpose<TableSearchWrapExpose>({
             />
         </slot>
 
-        <div v-if="showToolbar" class="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div v-if="showToolbar" class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex flex-wrap items-center gap-3">
                 <slot name="roleBtnWrap" />
                 <slot
@@ -195,7 +195,7 @@ defineExpose<TableSearchWrapExpose>({
         >
             <a-table
                 v-bind="mergedTableProps"
-                class="w-full"
+                class="w-full max-h-[500px]"
                 :columns="normalizedColumns"
                 :data="dataSource || []"
                 :loading="loading"
@@ -207,7 +207,16 @@ defineExpose<TableSearchWrapExpose>({
                     :key="column.key"
                     #[column.slotName]="slotProps"
                 >
-                    <slot :name="column.slotName" v-bind="slotProps" />
+                    <slot
+                        :name="column.slotName"
+                        v-bind="{
+                            ...slotProps,
+                            pagination: paginationConfig,
+                            loading,
+                            dataSource: dataSource || [],
+                            searchParams: getSearchParams(),
+                        }"
+                    />
                 </template>
             </a-table>
         </slot>

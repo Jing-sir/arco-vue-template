@@ -233,13 +233,17 @@ defineExpose<TableSearchFormExpose>({
 });
 </script>
 <template>
-    <div class="w-full mb-5">
+    <div class="mb-5 w-full">
         <header class="w-full">
-            <div class="flex justify-between w-full">
-                <div v-if="hasQuickSearch" class="flex flex-row w-1/2">
+            <div class="flex w-full flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div
+                    v-if="hasQuickSearch"
+                    class="flex w-full flex-col gap-3 sm:flex-row sm:items-center lg:max-w-xl"
+                >
                     <a-select
                         v-model="searchState.searchKey"
-                        style="min-width: 160px"
+                        class="min-w-[160px] sm:w-[180px]"
+                        size="small"
                         @change="emitSearch"
                     >
                         <a-option
@@ -253,7 +257,8 @@ defineExpose<TableSearchFormExpose>({
                     <a-input
                         v-model="searchState.searchVal"
                         allow-clear
-                        class="ml-4 w-2/5"
+                        size="small"
+                        class="w-2/5"
                         :placeholder="t('搜索{label}', { label: t(fetchTipsText) })"
                         @pressEnter="emitSearch"
                         @input="onSearch"
@@ -266,11 +271,15 @@ defineExpose<TableSearchFormExpose>({
                 <div v-else>
                     <slot name="left"></slot>
                 </div>
-                <a-space v-if="props.isMore && props.searchConf.length > 1">
+                <a-space
+                    v-if="props.isMore && props.searchConf.length > 1"
+                    class="justify-end"
+                    wrap
+                >
                     <a-checkbox v-model="isDefaVal" :value="false" @change="onChangeCheck">
                         {{ t('默认展开') }}
                     </a-checkbox>
-                    <a-button @click.stop="onToggleSearch">
+                    <a-button size="small" @click.stop="onToggleSearch">
                         <template #icon>
                             <span class="mr-1">
                                 <IconCaretDown v-if="!isSearch" />
@@ -285,14 +294,14 @@ defineExpose<TableSearchFormExpose>({
         <div
             v-if="isSearch && props.searchConf.length > 1"
             :class="[
-                'flex flex-col search-footer mt-0.5 animate__animated',
+                'mt-0.5 flex flex-col rounded-lg border border-slate-200 bg-slate-50 animate__animated',
                 isSearch ? 'animate__fadeIn' : 'animate__fadeOut',
                 'animate__delay-0.6s',
             ]"
         >
-            <a-form ref="formRef" size="large" :model="formState" layout="vertical">
-                <div class="flex flex-row w-full flex-wrap search-wrap">
-                    <a-row :gutter="10">
+            <a-form ref="formRef" size="small" :model="formState" layout="vertical">
+                <div class="w-full px-3 pt-3">
+                    <a-row :gutter="[12, 0]">
                         <a-col
                             v-for="(item, i) of getConfArr"
                             :key="i"
@@ -328,7 +337,7 @@ defineExpose<TableSearchFormExpose>({
                                 <a-date-picker
                                     v-if="item.type === 'date-single'"
                                     v-model="item.value"
-                                    style="width: 100%"
+                                    class="w-full"
                                     show-time
                                     format="YYYY-MM-DD HH:mm:ss"
                                     v-bind="item.props"
@@ -342,7 +351,7 @@ defineExpose<TableSearchFormExpose>({
                                         >
                                             <a-date-picker
                                                 v-model="item[child]"
-                                                style="width: 100%"
+                                                class="w-full"
                                                 show-time
                                                 format="YYYY-MM-DD HH:mm:ss"
                                                 v-bind="item.props"
@@ -357,29 +366,14 @@ defineExpose<TableSearchFormExpose>({
                     </a-row>
                 </div>
             </a-form>
-            <div class="flex justify-end pb-3 pr-3">
-                <a-button type="primary" class="mr-2" @click.stop="emitSearch">
+            <div class="flex justify-end border-t border-slate-200 px-3 pb-3 pt-2">
+                <a-button type="primary" size="small" class="mr-2" @click.stop="emitSearch">
                     {{ t('搜索') }}
                 </a-button>
-                <a-button @click.stop="onReset">
+                <a-button size="small" @click.stop="onReset">
                     {{ t('重置') }}
                 </a-button>
             </div>
         </div>
     </div>
 </template>
-
-<style scoped lang="scss">
-.search-footer {
-    background: #fbfbfd;
-    @apply rounded-lg;
-}
-
-.search-wrap {
-    @apply pt-3 px-3;
-}
-
-::v-deep(.ant-form-item) {
-    @apply mb-4;
-}
-</style>

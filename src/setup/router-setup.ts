@@ -1,121 +1,152 @@
-import type { Router, NavigationGuardNext, RouteLocationNormalized, RouteLocationRaw, _RouteLocationBase } from 'vue-router'; /// doc: https://router.vuejs.org/api
-// import type { Locale } from '@intlify/runtime';
-
+import type { Router, RouteLocationNormalized, RouteLocationRaw } from 'vue-router'; /// doc: https://router.vuejs.org/api
 import { createRouter, createWebHistory } from 'vue-router'; /// doc: https://router.vuejs.org/api
 import { storeToRefs } from 'pinia';
-// import i18n, { setI18nLanguage, LangKeyString, getI18nLanguage } from './i18n-setup';
 import routes from '../routes';
 import pinia from '../store/Index';
 import useSidebar from '@/store/sideBar';
 import cookies from 'cookies-js';
-import api from '@/api/permission';
-import i18n from './i18n-setup';
+import type permissionApi from '@/api/permission';
+import i18n, { setI18nLanguage } from './i18n-setup';
 
-type _RouteMethod = {
-    [key in keyof Router]: any
-};
+type GuardResult = boolean | string;
+type RouterGuardHandler = (
+    to: RouteLocationNormalized,
+    from: RouteLocationNormalized,
+) => Promise<GuardResult>;
+type PermissionMenuItem = PromiseReturnType<typeof permissionApi.homeMenu>[number];
 
-const TITLE: string = window.document.title; // 获取初始window窗口的标题
-// const locales: string[] = i18n.global?.availableLocales.map((_locale: Locale) => _locale.toLowerCase()) || []; // 项目支持的语言包[小写]
+const TITLE = window.document.title;
+const LOCALE_MAP = Object.fromEntries(
+    i18n.global.availableLocales.map((locale) => [String(locale).toLowerCase(), String(locale)]),
+);
 
 const router: Router = createRouter({
     history: createWebHistory(/* process.env.BASE_URL  适用于OSS/CDN，process.env.BASE_URL仅适用于开发部署 */),
-    routes, // short for `routes: routes`
-    scrollBehavior<ScrollBehavior>(to: RouteLocationNormalized, from: RouteLocationNormalized) {
+    routes,
+    scrollBehavior() {
         return { top: 0 };
-    }
+    },
 });
 
-const routerNext = { // router进入页面前执行的事件
-    /* setLanguage({ meta, path }: RouteLocationNormalized): Promise<boolean> { // 语言设置
-        const {
-            lang = locales.find(_locale => new RegExp(`^/${_locale}`, 'im').test(path)) /* 路径设置语言 || getI18nLanguage()
-        } = meta;
+const routerGuards: Record<string, RouterGuardHandler> = {
+    async setLanguage({ meta, path }): Promise<boolean> {
+        const metaLang = typeof meta.lang === 'string' ? meta.lang : '';
+        const routeLangKey = Object.keys(LOCALE_MAP).find((locale) =>
+            new RegExp(`^/${locale}`, 'i').test(path),
+        );
+        const nextLang = metaLang || routeLangKey;
 
-        // if (lang) setI18nLanguage(lang as LangKeyString);
-        return Promise.resolve(true);
-    }, */
-    setTitle({ meta }: RouteLocationNormalized): Promise<boolean> { // 窗口标题设置
-        const { title } = meta;
-        const routeTitle = typeof title === 'function' ? title() : title;
-
-        window.document.title = routeTitle ? String(i18n.global.t(String(routeTitle))) : TITLE; // 动态修改窗口标题
-        return Promise.resolve(true);
-    },
-
-    async setRequiresAuth(to: RouteLocationNormalized): Promise<boolean | string> { // 路由鉴权
-        // 路由鉴权
-        const { requiresAuth } = to.meta;
-        const hasToken = cookies.get('manageToken');
-        if (hasToken) {
-            const store = useSidebar(pinia);
-            const { roleMenu } = storeToRefs(store);
-            if (roleMenu.value?.length > 0) {
-                if (to.path === '/login') return Promise.resolve('/'); // 如果已登录，则重定向到主页
-                const fetchObj = Object.fromEntries(
-                    roleMenu.value?.map((item: PromiseReturnType<typeof api.homeMenu>[0]) => [
-                        item.name,
-                        item.name,
-                    ]),
-                );
-                const { role, requiresAuth } = to.meta;
-                if (!role && !requiresAuth) return Promise.resolve('/error');
-                if (requiresAuth && (!role || !fetchObj[String(role)])) return Promise.resolve('/error/404');
-            }
-
-            return Promise.resolve(true);
+        if (nextLang) {
+            const matchedLang = LOCALE_MAP[nextLang.toLowerCase()] ?? nextLang;
+            setI18nLanguage(matchedLang as Parameters<typeof setI18nLanguage>[0]);
         }
 
-        // if (!hasToken && to.path !== '/login') return Promise.resolve('/login');
-        return Promise.resolve(true);
+        return true;
     },
-    setRedirect({ meta }: RouteLocationNormalized): Promise<boolean> { // 动态路由重定向
-        const { redirection } = meta;
-        // eslint-disable-next-line prefer-rest-params
-        if (redirection) return Promise.resolve(typeof redirection === 'function' ? redirection.apply(router, arguments) : redirection);
-        return Promise.resolve(true);
-    }
+
+    async setTitle({ meta }): Promise<boolean> {
+        const routeTitle = typeof meta.title === 'function' ? meta.title() : meta.title;
+        window.document.title = routeTitle ? String(i18n.global.t(String(routeTitle))) : TITLE;
+        return true;
+    },
+
+    async setRequiresAuth(to): Promise<GuardResult> {
+        const hasToken = cookies.get('manageToken');
+        if (!hasToken) return true;
+
+        if (to.path === '/login') {
+            return '/';
+        }
+
+        const store = useSidebar(pinia);
+        const { roleMenu } = storeToRefs(store);
+
+        if (!roleMenu.value.length) return true;
+
+        const permissionMenus = roleMenu.value as PermissionMenuItem[];
+        const permissionMap = Object.fromEntries(
+            permissionMenus
+                .filter((item) => item.component)
+                .map((item) => [String(item.component), String(item.component)]),
+        );
+
+        const routeRole = typeof to.meta.role === 'string' ? to.meta.role : '';
+        const requiresAuth = Boolean(to.meta.requiresAuth);
+
+        if (!requiresAuth) return true;
+        if (!routeRole) return '/error';
+        if (!permissionMap[routeRole]) return '/error/404';
+
+        return true;
+    },
+
+    async setRedirect(to, from): Promise<GuardResult> {
+        const { redirection } = to.meta;
+
+        if (typeof redirection === 'function') {
+            return redirection.call(router, to, from);
+        }
+
+        return redirection ?? true;
+    },
 };
 
-router.beforeEach((to: RouteLocationNormalized, from: RouteLocationNormalized/* , next: NavigationGuardNext */): Promise<RouteLocationRaw | boolean> => Promise.all(
-    Object.values(routerNext).map((func: Function): Promise<boolean | string> => func(to, from))
-).then((response:(string | boolean)[]): RouteLocationRaw | boolean => {
-    const path = [...response].reverse()/* 遵循webpack-loader加载与解析顺序规则 */.find((_path: string | boolean) => _path && typeof _path === 'string') as string;
-    switch (true) {
-    case Boolean(path):
-        return ({ path, replace: true });
-    case response.some(isNext => !isNext):
-        return false;
-    default:
-        return true;
-    }
-}));
+router.beforeEach(async (to, from): Promise<RouteLocationRaw | boolean> => {
+    const responses = await Promise.all(
+        Object.values(routerGuards).map((guard) => guard(to, from)),
+    );
 
-router.afterEach((/* to: RouteLocationNormalized, from: RouteLocationNormalized */): void => { // 自定义元素滚动到顶部
-    const el: HTMLElement | null = document.getElementById('app');
-    if (el) el.scrollTop = <number>0;
+    const redirectPath = [...responses]
+        .reverse()
+        // 遵循原有的后定义守卫优先级，最后一个命中的字符串重定向优先生效。
+        .find((result): result is string => typeof result === 'string' && Boolean(result));
+
+    if (redirectPath) {
+        return { path: redirectPath, replace: true };
+    }
+
+    if (responses.some((result) => result === false)) {
+        return false;
+    }
+
+    return true;
 });
 
-export const route = Object.keys(router.currentRoute.value)
-    // @ts-ignore
-    .reduce((acc, cur: keyof _RouteLocationBase) => Object.defineProperty(acc, cur, {
-        get: () => router.currentRoute.value[cur]
-    }),
-    Object.create(null)) as unknown as _RouteLocationBase;
+router.afterEach((): void => {
+    const el = document.getElementById('app');
+    if (el) {
+        el.scrollTop = 0;
+    }
+});
+
+type CurrentRouteState = typeof router.currentRoute.value;
+
+export const route = Object.keys(router.currentRoute.value).reduce(
+    (acc, cur) =>
+        Object.defineProperty(acc, cur, {
+            enumerable: true,
+            get: () => router.currentRoute.value[cur as keyof CurrentRouteState],
+        }),
+    Object.create(null) as Record<string, unknown>,
+) as unknown as CurrentRouteState;
 
 export default router;
 
-declare module 'vue-router' { // 扩展RouteMeta类型信息
+declare module 'vue-router' {
     interface RouteMeta {
-        // is optional
         lang?: string;
-        title?: string | Function;
-        requiresAuth?: boolean | Function;
-        isShow?: boolean | Function;
+        title?: string | (() => string);
+        requiresAuth?: boolean;
+        isShow?: boolean;
         role?: string;
         icon?: string;
         hidden?: boolean;
-        // must be declared by every route
-        redirection?: Function | string;
+        redirection?:
+            | string
+            | ((
+                this: Router,
+                to: RouteLocationNormalized,
+                from: RouteLocationNormalized,
+            ) => GuardResult);
     }
 }

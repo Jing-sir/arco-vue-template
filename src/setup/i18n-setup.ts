@@ -1,7 +1,6 @@
-/* eslint-disable camelcase */
 import { createI18n } from 'vue-i18n';
 import http from 'axios';
-import { WritableComputedRef } from 'vue';
+import type { WritableComputedRef } from 'vue';
 import type { Locale } from '@intlify/core-base';
 
 import en_US from '../lang/en-US.json';

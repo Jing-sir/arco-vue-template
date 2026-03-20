@@ -67,17 +67,21 @@ Current component responsibilities / 当前组件职责:
 - `ListApproval.vue`: static approval flow list renderer. 审批流列表展示组件。
 - `Modal/BindGoogle.vue`: modal for password verification before 2FA binding. 绑定 2FA 前的密码校验弹窗。
 - `NotRolePurview.vue`: no-permission empty state page. 无权限提示页。
-- `SideNavigationBar.vue`: sidebar menu based on filtered route tree from `store/sideBar.ts`. 依据 `store/sideBar.ts` 中过滤后的路由树渲染侧栏。
+- `SideNavigationBar/index.vue`: the single public entry for the sidebar menu, based on filtered route tree from `store/sideBar.ts`. 侧栏菜单唯一公开入口，依据 `store/sideBar.ts` 中过滤后的路由树渲染侧栏。
+- `SideNavigationBar/Item.vue`: internal recursive menu node renderer used only by `SideNavigationBar/index.vue`. 仅供 `SideNavigationBar/index.vue` 内部使用的递归侧栏节点组件。
 - `TableSearchWrap/Index.vue`: reusable page scaffold for search + table + pagination. 搜索加表格页面通用骨架。
 - `TableSearchWrap/SearchWrap/Index.vue`: reusable advanced search form renderer driven by `searchConf`. 基于 `searchConf` 配置的高级搜索区域。
 - `TagsView.vue`: visited-page tabs cache UI. 访问页签与缓存视图组件。
 
 Component rules / 组件规则:
 
-- Reuse `TableSearchWrap` for search-list pages before creating another search scaffold. 搜索列表页优先复用 `TableSearchWrap`，不要重复造轮子。
-- Reuse `Header.vue`, `SideNavigationBar.vue`, and `TagsView.vue` when working on layout-level changes. 处理后台骨架布局时，优先沿用这三个组件。
+- All new search/list pages must use `TableSearchWrap/Index.vue` by default, and when an existing search/list page is being refactored or substantially edited, migrate it to `TableSearchWrap/Index.vue` unless a concrete requirement cannot be expressed through `searchConf`, slots, or exposed methods. 所有新建搜索/列表页默认必须使用 `TableSearchWrap/Index.vue`；已有搜索/列表页只要进入重构或较大改动，也应迁移到 `TableSearchWrap/Index.vue`，除非存在明确需求无法通过 `searchConf`、插槽或暴露方法表达。
+- Do not hand-write a separate search form + table + pagination scaffold in views when `TableSearchWrap/Index.vue` can cover the page. 只要 `TableSearchWrap/Index.vue` 能覆盖页面需求，就不要在视图层重新手写一套搜索表单 + 表格 + 分页骨架。
+- Reuse `Header.vue`, `SideNavigationBar/index.vue`, and `TagsView.vue` when working on layout-level changes. 处理后台骨架布局时，优先沿用这三个组件。
 - Reuse `GoogleCode.vue` and `Modal/BindGoogle.vue` for 2FA flows instead of creating parallel modal logic. 2FA 流程优先复用这两个组件。
 - If adding a new reusable component, name it by responsibility, not by page position. 新公用组件按职责命名，不按页面位置命名。
+- Do not declare nested helper components inside another SFC with `defineComponent`; if recursion or substructure is needed, extract a named sibling component written with `<script setup>`, or keep the logic as pure data transformation. 不要在一个 SFC 内部用 `defineComponent` 再声明嵌套辅助组件；如果需要递归或子结构，请拆成同职责的独立 `<script setup>` 组件，或者退回纯数据转换。
+- When a reusable component needs child components, create a folder named after the public component and expose only one public entry file, usually `index.vue`; keep helper files such as `Item.vue` inside that folder as internal implementation details. 当一个可复用组件需要子组件时，使用以公开组件名命名的目录，并只暴露一个公开入口文件，通常是 `index.vue`；`Item.vue` 这类辅助文件应留在目录内部，作为实现细节。
 
 ### 5.2 `src/interface` / 公用类型目录
 
@@ -96,6 +100,9 @@ Current files / 当前文件职责:
 - `StateType.ts`:
   - compatibility re-export for `ColumnType`
   - do not expand it casually unless a compatibility layer is really needed
+- `SideNavigationType.ts`:
+  - shared sidebar menu node types for `SideNavigationBar/index.vue` and `SideNavigationBar/Item.vue`
+  - 侧栏菜单树的共享类型，供 `SideNavigationBar/index.vue` 与 `SideNavigationBar/Item.vue` 复用
 
 Type rules / 类型规则:
 

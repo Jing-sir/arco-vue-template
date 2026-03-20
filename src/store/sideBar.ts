@@ -1,6 +1,5 @@
-import constantRoutes from '../routes/constantRoutes';
 import asyncRoutes from '../routes/asyncRoutes';
-import { RouteRecordRaw } from 'vue-router';
+import type { RouteRecordRaw } from 'vue-router';
 import NProgress from 'nprogress';
 import api from '../api/sys';
 
@@ -33,7 +32,9 @@ export default defineStore('sideBar', () => {
 
     // 遍历后台传来的路由字符串，转换为组件对象
     const filterAsyRouter = (roleList: MenuItem[]): RouteRecordRaw[] => {
-        const fetchRoleObj = Object.fromEntries(roleList.map((item) => [item.name, item.name]));
+        const fetchRoleObj = Object.fromEntries(
+            roleList.map((item) => [item.component, item.component]),
+        )
         return getAsyRouter(JSON.parse(JSON.stringify(asyncRoutes)), fetchRoleObj);
     };
 
@@ -47,11 +48,11 @@ export default defineStore('sideBar', () => {
             routes.value = accessibleRoutes;
 
             const fetchObj = Object.fromEntries(
-                r.map((item: MenuItem) => [item.name, item.name]),
-            );
+                r.map((item: MenuItem) => [item.component, item.component]),
+            )
 
-            if (route.meta.requiresAuth && route.meta.role && !fetchObj[String(route.meta.role)]) {
-                router.push('/error/404');
+            if (route.meta.requiresAuth && !fetchObj[String(route.meta.role)]) {
+                router.push('/error/404')
             }
         }).finally(() => {
             NProgress.done();
