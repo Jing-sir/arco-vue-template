@@ -318,6 +318,10 @@ Hook rules / hook 规则:
 - Put route-private reusable pieces in a local `components/` folder. 页面私有但可复用的小组件放在当前功能目录下的 `components/` 中。
 - Put add/edit/detail dialogs, drawers, and other overlay UIs in a local `modal/` folder. 新增/编辑/详情弹窗、抽屉等浮层 UI 统一放在当前功能目录下的 `modal/` 中。
 - Keep the feature folder as the only public entry for that route; files in `components/` and `modal/` are internal implementation details. 功能目录本身是该路由的唯一公开入口；`components/` 和 `modal/` 内的文件都视为内部实现细节。
+- For create/edit flows, default to a `Drawer`-based interaction instead of opening a new route page. 新增/编辑流程默认优先使用 `Drawer` 交互，而不是新开独立路由页面。
+- Only use a dedicated route page for create/edit when the content is unusually large, multi-step, or clearly unsuitable for an overlay. 只有当内容特别多、步骤明显分段、或显然不适合浮层承载时，才使用独立路由页做新增/编辑。
+- Drawer width must stay within 50% of the viewport width on desktop layouts; do not create oversized drawers that occupy most of the screen. 桌面端 `Drawer` 宽度不得超过视口宽度的 50%，不要把抽屉做成接近整屏的大面板。
+- If a feature still needs a route page for create/edit, document the reason in code comments or task summary so the exception is explicit. 如果某个新增/编辑功能仍然需要独立页面，请在代码注释或任务总结中明确写出原因，保证这是有意识的例外。
 - Example structure:
   - `src/views/SystemManage/operation-log/Index.vue`
   - `src/views/SystemManage/operation-log/components/...`
