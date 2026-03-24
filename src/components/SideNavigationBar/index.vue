@@ -209,17 +209,26 @@ const handleMenuItemClick = (path: string): void => {
         <!-- 品牌区 -->
         <div
             :class="[
-                'mx-[14px] mt-4 mb-5 flex items-center gap-3 rounded-[10px] bg-white/4 px-3 py-3',
-                isSidebar ? 'justify-center px-0' : '',
+                'mx-[14px] mt-4 mb-5 grid h-16 overflow-hidden rounded-[10px] bg-white/4 transition-all duration-300 ease-out',
+                isSidebar
+                    ? 'grid-cols-[1fr] px-2'
+                    : 'grid-cols-[40px_minmax(0,1fr)] gap-3 px-3',
             ]"
         >
             <!-- 品牌图标 -->
             <div
-                class="relative h-10 w-10 shrink-0 rounded-[10px] bg-[var(--color-primary-6)] before:absolute before:left-[10px] before:top-[10px] before:h-2 before:w-5 before:rounded-full before:bg-white/90 before:content-[''] after:absolute after:left-[10px] after:top-[22px] after:h-2 after:w-3 after:rounded-full after:bg-white/90 after:content-['']"
+                class="relative flex h-10 w-10 shrink-0 items-center justify-center self-center justify-self-center rounded-[10px] bg-[var(--color-primary-6)] before:absolute before:left-[10px] before:top-[10px] before:h-2 before:w-5 before:rounded-full before:bg-white/90 before:content-[''] after:absolute after:left-[10px] after:top-[22px] after:h-2 after:w-3 after:rounded-full after:bg-white/90 after:content-['']"
             />
 
             <!-- 品牌文案 -->
-            <div v-if="!isSidebar" class="min-w-0">
+            <div
+                :class="[
+                    'min-w-0 self-center overflow-hidden transition-all duration-200 ease-out',
+                    isSidebar
+                        ? 'w-0 translate-x-1 opacity-0 pointer-events-none'
+                        : 'w-full translate-x-0 opacity-100 delay-75',
+                ]"
+            >
                 <p class="m-0 text-sm font-bold tracking-[0.01em] text-slate-50">
                     {{ t('管理后台') }}
                 </p>
@@ -231,7 +240,10 @@ const handleMenuItemClick = (path: string): void => {
 
         <!-- 菜单区 -->
         <a-menu
-            class="side-nav__menu flex-1 overflow-y-auto bg-transparent px-3 pb-[18px]"
+            :class="[
+                'side-nav__menu flex-1 overflow-y-auto bg-transparent pb-[18px]',
+                isSidebar ? 'px-2' : 'px-3',
+            ]"
             :selected-keys="selectedKeys"
             :collapsed="isSidebar"
             mode="vertical"
@@ -277,10 +289,47 @@ const handleMenuItemClick = (path: string): void => {
 :deep(.side-nav__menu .arco-menu-selected:hover),
 :deep(.side-nav__menu .arco-menu-selected-label) {
     color: #fff;
-    background: rgb(68 86 111 / 88%) !important;
+    background: var(--color-primary-6) !important;
 }
 
 :deep(.side-nav__menu .arco-menu-icon) {
     font-size: 18px;
+}
+
+:deep(.side-nav__menu.arco-menu-collapsed) {
+    width: 100%;
+}
+
+:deep(.side-nav__menu.arco-menu-collapsed .arco-menu-inner) {
+    padding-inline: 0;
+}
+
+:deep(.side-nav__menu.arco-menu-collapsed .arco-menu-item),
+:deep(.side-nav__menu.arco-menu-collapsed .arco-menu-inline-header) {
+    width: 100%;
+    margin-inline: 0;
+    padding-inline: 0 !important;
+    justify-content: center;
+}
+
+:deep(.side-nav__menu.arco-menu-collapsed .arco-menu-item-content),
+:deep(.side-nav__menu.arco-menu-collapsed .arco-menu-inline-header-content) {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+:deep(.side-nav__menu.arco-menu-collapsed .arco-menu-icon) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0;
+}
+
+:deep(.side-nav__menu.arco-menu-collapsed .arco-menu-item .arco-icon),
+:deep(.side-nav__menu.arco-menu-collapsed .arco-menu-inline-header .arco-icon),
+:deep(.side-nav__menu.arco-menu-collapsed .arco-menu-pop-header .arco-icon) {
+    margin-right: 0 !important;
 }
 </style>

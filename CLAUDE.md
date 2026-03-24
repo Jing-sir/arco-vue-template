@@ -40,6 +40,14 @@ Keep `AGENTS.md` and `CLAUDE.md` identical.
 - If local component CSS is truly necessary, keep it minimal and Tailwind-oriented: prefer `@apply`, CSS variables, and targeted `:deep(...)` overrides for third-party components. 如果组件局部 CSS 确实不可避免，也要保持最小化，并优先使用 `@apply`、CSS 变量，以及针对第三方组件的 `:deep(...)` 定向覆盖。
 - Plain CSS/SCSS inside components is only a fallback for cases such as long repeated selector logic, pseudo-elements, keyframes, complex media queries, or third-party internals that utilities cannot reasonably cover. 组件内的普通 CSS/SCSS 只作为兜底方案，适用于重复选择器较长、伪元素、关键帧、复杂响应式规则、或 Tailwind 无法合理覆盖的第三方内部结构。
 - For layout, spacing, radius, typography, and color choices, Tailwind should remain the first implementation path and local CSS should not recreate existing utility behavior. 布局、间距、圆角、字体、颜色等实现应优先走 Tailwind，本地 CSS 不要重复造已有 utility 的轮子。
+- For active, selected, primary, highlight, and brand-accent states, always prefer shared theme tokens such as `--color-primary-6` instead of hard-coded replacement colors when a common theme variable already exists. 对于 active、selected、primary、highlight、品牌强调等状态，如果项目里已有公用主题变量，必须优先使用像 `--color-primary-6` 这样的共享主题 token，不要再硬编码替代色。
+
+## 3.2 Comment Rules / 注释规则
+
+- Generated code must include explanatory comments by default so later maintenance is easier. 生成的代码默认必须带解释性注释，方便后续维护和阅读。
+- For logic code, comments should be detailed enough to explain intent, data flow, important branching, side effects, and why the implementation is written that way. 对于逻辑代码，注释需要足够详细，说明意图、数据流、关键分支、副作用，以及为什么这样实现。
+- For UI/layout code, comments can be lighter, but should still describe the main structure, regions, or layout purpose so the component hierarchy is easy to understand. 对于 UI / 布局代码，注释可以相对简洁，但仍需说明主要结构、区域划分或布局目的，便于理解组件层级。
+- Do not add meaningless filler comments; comments must help a future maintainer understand the code faster. 不要添加没有信息量的注释；注释必须真正帮助后续维护者更快理解代码。
 
 ## 4. Directory Rules / 目录总规则
 

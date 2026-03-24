@@ -87,7 +87,7 @@ useOnActivated(() => {
             :table-columns="tableColumns"
             :search-conf="searchConf"
             row-key="userId"
-            :scroll="{ x: 1100 }"
+            :scroll="{ x: 1100, y: 800 }"
         >
             <template #roleBtnWrap>
                 <a-button
