@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import ResetPasswords from './modal/ResetPasswords.vue';
 import TableSearchWrap from '@/components/TableSearchWrap/Index.vue';
+import PermissionButton from '@/components/TableSearchWrap/components/PermissionButton.vue';
+import StatusText from '@/components/TableSearchWrap/components/StatusText.vue';
 import type {
     ColumnType,
     SearchOption,
@@ -34,12 +36,6 @@ const searchConf = ref<SearchOption[]>([
         type: 'input',
         value: '',
     },
-]);
-
-const stateList = computed(() => [
-    { label: t('启用'), color: 'text-emerald-500' },
-    { label: t('禁用'), color: 'text-rose-500' },
-    { label: t('冻结'), color: 'text-amber-500' },
 ]);
 
 const tableColumns = computed<ColumnType[]>(() => [
@@ -90,17 +86,17 @@ useOnActivated(() => {
             :scroll="{ x: 1100, y: 800 }"
         >
             <template #roleBtnWrap>
-                <a-button
-                    v-if="buttonPermissions('add')"
+                <!-- 统一使用权限按钮组件：默认按当前 route.name + buttonKey 判断权限 -->
+                <PermissionButton
+                    button-key="add"
                     type="primary"
-                    size="small"
                     @click.stop="router.push('/systemManage/addAccount')"
                 >
                     <template #icon>
                         <icon-plus />
                     </template>
                     {{ t('新增管理员') }}
-                </a-button>
+                </PermissionButton>
             </template>
 
             <template #index="{ rowIndex, pagination }">
@@ -117,38 +113,23 @@ useOnActivated(() => {
                     :unchecked-text="record.state === 3 ? t('冻结') : t('禁用')"
                     @change="(value) => handleStatusChange(Number(value), record.userId)"
                 />
-                <span v-else :class="stateList[record.state - 1]?.color ?? 'text-slate-400'">
-                    {{ stateList[record.state - 1]?.label ?? '--' }}
-                </span>
+                <StatusText v-else :value="record.state" preset="account" />
             </template>
 
             <template #action="{ record }">
                 <div class="flex flex-wrap items-center gap-3">
-                    <a-button
-                        type="text"
-                        size="small"
-                        class="!px-0"
-                        @click.stop="handleCloseDialog(record.userId, 'loginPwd')"
-                    >
+                    <PermissionButton @click.stop="handleCloseDialog(record.userId, 'loginPwd')">
                         {{ t('重置登录密码') }}
-                    </a-button>
-                    <a-button
-                        type="text"
-                        size="small"
-                        class="!px-0"
-                        @click.stop="handleCloseDialog(record.userId, '2FA')"
-                    >
+                    </PermissionButton>
+                    <PermissionButton @click.stop="handleCloseDialog(record.userId, '2FA')">
                         {{ t('重置2FA') }}
-                    </a-button>
-                    <a-button
-                        type="text"
-                        size="small"
-                        class="!px-0"
+                    </PermissionButton>
+                    <PermissionButton
                         :disabled="record.state === 1"
                         @click.stop="router.push(`/systemManage/editAccount/${record.userId}`)"
                     >
                         {{ t('编辑') }}
-                    </a-button>
+                    </PermissionButton>
                 </div>
             </template>
         </TableSearchWrap>

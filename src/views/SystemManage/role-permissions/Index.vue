@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import TableSearchWrap from '@/components/TableSearchWrap/Index.vue';
+import PermissionButton from '@/components/TableSearchWrap/components/PermissionButton.vue';
 import type {
     ColumnType,
     TableFetchResult,
@@ -11,7 +12,6 @@ import api from '@/api/fetchTest/index';
 
 const { t } = useI18n();
 const router = useRouter();
-const { isShowBtn: buttonPermissions } = useButtonRole();
 
 const tableWrapRef = ref<TableSearchWrapExpose | null>(null);
 
@@ -52,17 +52,16 @@ useOnActivated(() => {
         row-key="roleId"
     >
         <template #roleBtnWrap>
-            <a-button
-                v-if="buttonPermissions('add')"
+            <PermissionButton
+                button-key="add"
                 type="primary"
-                size="small"
                 @click.stop="router.push('/systemManage/addRolePermissions')"
             >
                 <template #icon>
                     <icon-plus />
                 </template>
                 {{ t('新增角色') }}
-            </a-button>
+            </PermissionButton>
         </template>
 
         <template #index="{ rowIndex }">
@@ -71,22 +70,12 @@ useOnActivated(() => {
 
         <template #action="{ record }">
             <div class="flex items-center gap-3">
-                <a-button
-                    type="text"
-                    size="small"
-                    class="!px-0"
-                    @click.stop="router.push(`/systemManage/viewRolePermissions/${record.roleId}/1`)"
-                >
+                <PermissionButton @click.stop="router.push(`/systemManage/viewRolePermissions/${record.roleId}/1`)">
                     {{ t('查看权限') }}
-                </a-button>
-                <a-button
-                    type="text"
-                    size="small"
-                    class="!px-0"
-                    @click.stop="router.push(`/systemManage/editRolePermissions/${record.roleId}`)"
-                >
+                </PermissionButton>
+                <PermissionButton @click.stop="router.push(`/systemManage/editRolePermissions/${record.roleId}`)">
                     {{ t('编辑') }}
-                </a-button>
+                </PermissionButton>
             </div>
         </template>
     </TableSearchWrap>

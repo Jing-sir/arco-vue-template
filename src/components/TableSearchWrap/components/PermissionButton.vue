@@ -1,0 +1,88 @@
+<script setup lang="ts">
+import { useAttrs } from 'vue';
+
+type ButtonType = 'primary' | 'secondary' | 'outline' | 'dashed' | 'text';
+type ButtonStatus = 'normal' | 'success' | 'warning' | 'danger';
+type ButtonSize = 'mini' | 'small' | 'medium' | 'large';
+
+interface PermissionButtonProps {
+    buttonKey?: string;
+    routeName?: string;
+    type?: ButtonType;
+    status?: ButtonStatus;
+    size?: ButtonSize;
+    disabled?: boolean;
+    loading?: boolean;
+    hideWhenNoPermission?: boolean;
+}
+
+const props = withDefaults(defineProps<PermissionButtonProps>(), {
+    buttonKey: '',
+    routeName: '',
+    type: 'text',
+    status: 'normal',
+    size: 'small',
+    disabled: false,
+    loading: false,
+    hideWhenNoPermission: true,
+});
+
+const emit = defineEmits<{
+    click: [event: MouseEvent];
+}>();
+
+const attrs = useAttrs();
+const { isShowBtn } = useButtonRole();
+
+/**
+ * 是否需要做权限校验。
+ * 如果没有传 buttonKey，这个组件就退化成一个通用按钮壳层，只负责统一按钮展示方式。
+ */
+const shouldCheckPermission = computed(() => Boolean(props.buttonKey));
+
+/**
+ * 当前按钮是否具备权限。
+ * 外部传 routeName 时优先使用显式 routeName；否则默认走当前 route.name。
+ */
+const hasPermission = computed(() => {
+    if (!shouldCheckPermission.value) return true;
+    return isShowBtn(props.buttonKey, props.routeName || undefined);
+});
+
+/**
+ * 是否渲染按钮。
+ * 默认无权限直接隐藏；如果后续有场景需要“展示但禁用”，可以把 hideWhenNoPermission 设为 false。
+ */
+const shouldRender = computed(() => hasPermission.value || !props.hideWhenNoPermission);
+
+/**
+ * 统一按钮样式基线。
+ * 文本按钮默认去掉左右 padding，保持列表操作区更利落。
+ */
+const buttonClass = computed(() => (props.type === 'text' ? '!px-0' : ''));
+
+const handleClick = (event: MouseEvent): void => {
+    if (!hasPermission.value && props.hideWhenNoPermission) return;
+    emit('click', event);
+};
+</script>
+
+<template>
+    <!-- 权限按钮：默认按 route.name + buttonKey 组合权限；没传 buttonKey 时退化成普通按钮 -->
+    <a-button
+        v-if="shouldRender"
+        v-bind="attrs"
+        :type="props.type"
+        :status="props.status"
+        :size="props.size"
+        :disabled="props.disabled || (!hasPermission && !props.hideWhenNoPermission)"
+        :loading="props.loading"
+        :class="buttonClass"
+        @click="handleClick"
+    >
+        <template v-if="$slots.icon" #icon>
+            <slot name="icon" />
+        </template>
+        <slot />
+    </a-button>
+</template>

@@ -292,6 +292,23 @@ const handleMenuItemClick = (path: string): void => {
     background: var(--color-primary-6) !important;
 }
 
+/**
+ * 父级菜单在“选中但仍有子级高亮”时，视觉层级应该比叶子菜单更轻。
+ * 这里单独把 inline-header 的选中态降成浅一档的主题色，
+ * 避免父子同时高亮时看起来像两个同权重的“当前页面”。
+ */
+:deep(.side-nav__menu .arco-menu-inline-header.arco-menu-selected),
+:deep(.side-nav__menu .arco-menu-inline-header.arco-menu-selected:hover) {
+    color: var(--color-primary-6);
+    background: rgb(255 255 255 / 6%) !important;
+    box-shadow: inset 2px 0 0 0 var(--color-primary-6);
+}
+
+:deep(.side-nav__menu .arco-menu-inline-header.arco-menu-selected .arco-menu-icon),
+:deep(.side-nav__menu .arco-menu-inline-header.arco-menu-selected .arco-menu-title) {
+    color: inherit;
+}
+
 :deep(.side-nav__menu .arco-menu-icon) {
     font-size: 18px;
 }

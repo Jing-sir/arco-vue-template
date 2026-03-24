@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import TableSearchWrap from '@/components/TableSearchWrap/Index.vue';
+import StatusText from '@/components/TableSearchWrap/components/StatusText.vue';
 import type {
     ColumnType,
     SearchOption,
@@ -110,11 +111,11 @@ useOnActivated(() => {
         </template>
 
         <template #occurErr="{ record }">
-            {{ record.occurErr ? t('是') : t('否') }}
+            <StatusText :value="record.occurErr" preset="boolean" />
         </template>
 
         <template #success="{ record }">
-            {{ record.success ? t('成功') : t('失败') }}
+            <StatusText :value="record.success" preset="success" />
         </template>
     </TableSearchWrap>
 </template>

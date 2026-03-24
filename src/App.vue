@@ -8,17 +8,21 @@ import 'dayjs/locale/zh-cn';
 import dayjs from 'dayjs';
 import 'dayjs/locale/en';
 
-const store = user();
+const userStore = user();
+const themeStore = theme();
 
 const renderKey = computed(() => `app-key-${i18n.global.locale}-${Math.random()}`);
 
 const currLang = computed(() => i18n.global.locale.value === 'zh-CN' ? zhCN : enUS); // antd-vue国际化语言key
 
 onBeforeMount(() => {
+    // 应用启动时先同步语言环境，再初始化主题色。
+    // 主题色优先取浏览器缓存，没有缓存时回退默认值，并写回 CSS 变量。
     dayjs.locale(getI18nLanguage() === 'zh-CN' ? 'zh-cn' : 'en');
+    themeStore.initThemeColor();
 });
 
-store.getPwdIv();
+userStore.getPwdIv();
 </script>
 
 <template>

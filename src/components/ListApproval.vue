@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { PropType } from 'vue';
+import StatusText from '@/components/TableSearchWrap/components/StatusText.vue';
 
 const { t } = useI18n();
 
@@ -46,14 +47,17 @@ const props = defineProps({
                             {{ item.user || '--' }}
                         </span>
                     </a-tooltip>
-                    <span
+                    <StatusText
                         class="mt-1.5 w-10 truncate text-center text-[12px]"
-                        :style="{ color: item.checkState === 1 ? '#11a816' : '#f4064d' }"
-                    >
-                        {{ item.checkState === 1 ? t('已审核') : t('待审核') }}
-                    </span>
-                    <span v-if="item.checkResult === 1" class="mt-1.5 w-10 truncate text-center text-[12px] text-[#11a816]">{{ t('通过') }}</span>
-                    <span v-if="item.checkResult === 2" class="mt-1.5 w-10 truncate text-center text-[12px] text-[#ef1d09]">{{ t('拒绝') }}</span>
+                        :value="item.checkState"
+                        preset="reviewState"
+                    />
+                    <StatusText
+                        v-if="item.checkResult === 1 || item.checkResult === 2"
+                        class="mt-1.5 w-10 truncate text-center text-[12px]"
+                        :value="item.checkResult"
+                        preset="reviewResult"
+                    />
                 </div>
                 <div class="mt-1 mx-[6px] h-px w-5 bg-[#1677ff]"></div>
             </div>

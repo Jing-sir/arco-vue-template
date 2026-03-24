@@ -58,9 +58,11 @@ declare module 'vue' {
     Item: typeof import('./components/SideNavigationBar/Item.vue')['default']
     ListApproval: typeof import('./components/ListApproval.vue')['default']
     NotRolePurview: typeof import('./components/NotRolePurview.vue')['default']
+    PermissionButton: typeof import('./components/TableSearchWrap/components/PermissionButton.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SideNavigationBar: typeof import('./components/SideNavigationBar/index.vue')['default']
+    StatusText: typeof import('./components/TableSearchWrap/components/StatusText.vue')['default']
     TagsView: typeof import('./components/TagsView.vue')['default']
   }
 }

@@ -87,6 +87,8 @@ Current component responsibilities / 当前组件职责:
 - `SideNavigationBar/Item.vue`: internal recursive menu node renderer used only by `SideNavigationBar/index.vue`. 仅供 `SideNavigationBar/index.vue` 内部使用的递归侧栏节点组件。
 - `TableSearchWrap/Index.vue`: reusable page scaffold for search + table + pagination. 搜索加表格页面通用骨架。
 - `TableSearchWrap/SearchWrap/Index.vue`: reusable advanced search form renderer driven by `searchConf`. 基于 `searchConf` 配置的高级搜索区域。
+- `TableSearchWrap/components/PermissionButton.vue`: internal helper for route-aware permission buttons in list pages. TableSearchWrap 目录下的内部权限按钮组件，供列表页统一复用。
+- `TableSearchWrap/components/StatusText.vue`: internal helper for common status text and color mapping in list pages. TableSearchWrap 目录下的内部状态文案与颜色映射组件。
 - `TagsView.vue`: visited-page tabs cache UI. 访问页签与缓存视图组件。
 
 Component rules / 组件规则:
