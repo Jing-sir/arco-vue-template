@@ -70,7 +70,7 @@ const getActiveTabStyle = (isActive: boolean): Record<string, string> =>
         <div class="flex gap-2 overflow-x-auto rounded-xl bg-[#e8edf3] p-2">
             <button
                 type="button"
-                class="group inline-flex min-h-[38px] shrink-0 items-center gap-2 rounded-lg px-[14px] text-[13px] font-semibold text-[var(--app-text-muted)] transition-colors hover:bg-[rgba(255,255,255,0.58)] hover:text-[var(--app-text)]"
+                class="group inline-flex min-h-[32px] shrink-0 items-center gap-2 rounded-lg px-[14px] text-[12px] font-semibold text-[var(--app-text-muted)] transition-colors hover:bg-[rgba(255,255,255,0.58)] hover:text-[var(--app-text)]"
                 :class="isActiveHome ? 'text-white hover:text-white' : ''"
                 :style="getActiveTabStyle(isActiveHome)"
                 @click="handleGoHome"
@@ -81,7 +81,7 @@ const getActiveTabStyle = (isActive: boolean): Record<string, string> =>
                 v-for="({ name, path, meta, fullPath }, index) in visitedViews"
                 :key="path"
                 type="button"
-                class="group inline-flex min-h-[38px] shrink-0 items-center gap-2 rounded-lg px-[14px] text-[13px] font-semibold text-[var(--app-text-muted)] transition-colors hover:bg-[rgba(255,255,255,0.58)] hover:text-[var(--app-text)]"
+                class="group inline-flex min-h-[32px] shrink-0 items-center gap-2 rounded-lg px-[14px] text-[12px] font-semibold text-[var(--app-text-muted)] transition-colors hover:bg-[rgba(255,255,255,0.58)] hover:text-[var(--app-text)]"
                 :class="isActiveTab({ name, path, fullPath }) ? 'text-white hover:text-white' : ''"
                 :style="getActiveTabStyle(isActiveTab({ name, path, fullPath }))"
                 @click="handleGoCacheRoute({ fullPath })"

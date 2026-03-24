@@ -417,7 +417,7 @@ defineExpose<TableSearchWrapExpose>({
 </script>
 
 <template>
-    <div class="flex h-auto min-h-[auto] flex-col gap-[14px]">
+    <div class="flex h-auto min-h-[auto] flex-col gap-[14px] bg-white p-2 rounded-lg">
         <!-- 搜索区 -->
         <div
             v-if="props.searchConf.length || slots.searchWrap"
