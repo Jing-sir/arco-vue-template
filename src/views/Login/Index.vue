@@ -119,5 +119,3 @@ const onCancelGoogleCode = (): void => {
         </a-spin>
     </div>
 </template>
-
-<style scoped lang="scss"></style>

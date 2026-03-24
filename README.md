@@ -472,8 +472,6 @@ t('search.reset')
   - 弹窗打开/关闭/标题控制
 - `useOnActivated.ts`
   - keep-alive 激活逻辑
-- `useTableConf.ts`
-  - 分页配置与搜索节流
 - `useUpload.ts`
   - 上传前校验
 - `useValidatorConf.ts`

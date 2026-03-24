@@ -22,20 +22,9 @@ store.getPwdIv();
 </script>
 
 <template>
-    <div id="app">
+    <div id="app" class="min-h-full min-w-[var(--app-min-width)] bg-[var(--app-bg)]">
         <a-config-provider size="large" :locale="currLang">
             <router-view :key="renderKey" />
         </a-config-provider>
     </div>
 </template>
-
-<style lang="scss">
-#app {
-    width: 100%;
-    min-height: 100%;
-    min-width: var(--app-min-width);
-    background: var(--app-bg);
-
-    /* min-width: 1310px; */
-}
-</style>

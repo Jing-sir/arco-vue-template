@@ -14,7 +14,7 @@ const formState = ref({
 
 const { pwdIv, userInfo } = storeToRefs(user())
 
-const { data, loading, runAsync } = useRequest(
+const { loading, runAsync } = useRequest(
     async () => {
         const { pass } = formState.value
         const password = await encryptAESGCM(
@@ -57,5 +57,3 @@ defineExpose({ onShowDialog })
         </template>
     </a-modal>
 </template>
-
-<style scoped lang="scss"></style>

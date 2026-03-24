@@ -102,5 +102,3 @@ defineExpose({ closeDialog, onShowDialog })
         </template>
     </a-modal>
 </template>
-
-<style scoped lang="scss"></style>

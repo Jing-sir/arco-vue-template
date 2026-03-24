@@ -137,7 +137,6 @@ declare global {
   const useRoute: typeof import('vue-router').useRoute
   const useRouter: typeof import('vue-router').useRouter
   const useSlots: typeof import('vue').useSlots
-  const useTableConf: typeof import('./use/useTableConf').default
   const useTabsRole: typeof import('./use/useTabsRole').default
   const useTemplateRef: typeof import('vue').useTemplateRef
   const useUpload: typeof import('./use/useUpload').default

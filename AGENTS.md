@@ -315,7 +315,6 @@ Current files / 当前文件职责:
 - `useKeyDown.ts`: enter-key submit binding helper. 键盘回车提交 helper。
 - `useModalHandler.ts`: generic modal open/close/title/lifecycle helper. 弹窗控制通用 hook。
 - `useOnActivated.ts`: keep-alive activation hook with `#no-refresh` support. keep-alive 激活逻辑。
-- `useTableConf.ts`: pagination config and search throttling helper. 分页配置与搜索节流。
 - `useTabsRole.ts`: tab-level permission filtering helper. tabs 权限过滤。
 - `useUpload.ts`: upload precheck helper. 上传前校验 helper。
 - `useValidatorConf.ts`: common validator functions. 公用校验器。

@@ -17,7 +17,9 @@ interface PagingType {
     showPageSize: boolean;
     pageSizeOptions: number[];
     showJumper: boolean;
-    showTotal: (val: number) => void;
+    // Arco 当前版本的 PaginationProps.showTotal 只接受 boolean，
+    // 这里不要再沿用旧版“函数返回总数文案”的配置写法。
+    showTotal: boolean;
     total: number
     current: number
     pageSize: number
@@ -29,7 +31,7 @@ export const PagingDefaultConf: PagingType = {
     showPageSize: true,
     pageSizeOptions: [20, 30, 40, 50],
     showJumper: true,
-    showTotal: (total: number) => `共 ${total} 条记录`,
+    showTotal: true,
     total: 0,
     current: 1,
     pageSize: 20,

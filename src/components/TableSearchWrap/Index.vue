@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import SearchWrap from './SearchWrap/Index.vue'
-import { useRequest } from 'vue-request'
+import SearchWrap from './SearchWrap/Index.vue';
+import { usePagination } from 'vue-request';
 import type {
     ColumnType,
     SearchOption,
@@ -9,43 +9,49 @@ import type {
     TableRowKey,
     TableSearchFormExpose,
     TableSearchWrapExpose,
-} from '@/interface/TableType'
+} from '@/interface/TableType';
+import { PagingDefaultConf } from '@/utils/constant';
+import { useSlots } from 'vue';
 
 /**
- * 表格区域最小纵向滚动高度
- * 防止在小数据量或大屏下表格区域过矮，影响视觉体验
+ * 表格区域最小纵向滚动高度。
+ * 即使屏幕再高，也保证列表区域至少维持一个稳定、可阅读的高度。
  */
-const TABLE_MIN_SCROLL_Y = 600
+const TABLE_MIN_SCROLL_Y = 600;
 
 /**
- * 视口底部预留间距
- * 用于计算表格自适应高度时，给页面底部保留一定空间
+ * 表格底部预留间距。
+ * 这里按你的要求，给视口底部固定留 20px 空白。
  */
-const TABLE_BOTTOM_GAP = 46
+const TABLE_BOTTOM_GAP = 50;
 
 /**
- * 表格滚动配置
+ * 表格滚动配置。
+ * x 主要用于横向滚动，y 用于启用并约束纵向滚动。
  */
 interface TableScrollConfig {
-    x?: number | string | true
-    y?: number | string
+    x?: number | string | true;
+    y?: number | string;
 }
 
 /**
- * 表格包装组件 Props
+ * 通用表格包装组件 Props。
+ * 这里继续保持你当前页面层的调用方式，避免迁移分页实现时影响业务页面。
  */
 interface TableSearchWrapProps {
-    searchConf?: SearchOption[]
-    isMore?: boolean
-    apiFetch: (params?: Record<string, unknown>) => Promise<TableFetchResult>
-    tableColumns: ColumnType[]
-    defaultParams?: SearchParams
-    immediate?: boolean
-    rowKey?: TableRowKey
-    emptyText?: string
-    scroll?: TableScrollConfig
-    tableProps?: Record<string, unknown>
-    showRefresh?: boolean
+    searchConf?: SearchOption[];
+    isMore?: boolean;
+    apiFetch: (params?: Record<string, unknown>) => Promise<TableFetchResult>;
+    tableColumns: ColumnType[];
+    defaultParams?: SearchParams;
+    immediate?: boolean;
+    rowKey?: TableRowKey;
+    emptyText?: string;
+    scroll?: TableScrollConfig;
+    tableProps?: Record<string, unknown>;
+    showRefresh?: boolean;
+    showSkeleton?: boolean;
+    skeletonRows?: number;
 }
 
 const props = withDefaults(defineProps<TableSearchWrapProps>(), {
@@ -55,179 +61,223 @@ const props = withDefaults(defineProps<TableSearchWrapProps>(), {
     immediate: true,
     rowKey: 'id',
     emptyText: '暂无数据',
-    scroll: () => ({ x: 1000, y: 600 }),
+    scroll: () => ({ x: 1000 }),
     tableProps: () => ({}),
     showRefresh: false,
-})
+    showSkeleton: true,
+    skeletonRows: 8,
+});
 
-const { t } = useI18n()
-const slots = useSlots()
+const { t } = useI18n();
+const slots = useSlots();
 
 /**
- * 搜索表单实例
- * 用于在外部触发 reset 时，同步重置搜索表单 UI
+ * 搜索表单实例。
+ * reset 时优先通过表单实例重置 UI，再回到第一页重新请求。
  */
-const searchWrapRef = ref<TableSearchFormExpose | null>(null)
+const searchWrapRef = ref<TableSearchFormExpose | null>(null);
 
 /**
- * 表格容器 DOM 引用
- * 用于动态计算表格滚动高度
+ * 表格容器 DOM。
+ * 用于按真实视口位置动态计算 scroll.y。
  */
-const tableContainerRef = ref<HTMLElement | null>(null)
+const tableContainerRef = ref<HTMLElement | null>(null);
 
 /**
- * 当前自动计算后的表格纵向滚动高度
+ * 当前自动计算后的纵向滚动高度。
+ * 当页面高度、顶部结构高度、数据量或分页区高度变化时都会重新计算。
  */
-const autoScrollY = ref<number>(TABLE_MIN_SCROLL_Y)
+const autoScrollY = ref<number>(TABLE_MIN_SCROLL_Y);
 
 /**
- * ResizeObserver 实例
- * 监听表格容器尺寸变化后重新计算 scrollY
+ * 监听表格容器尺寸变化的观察器。
  */
-let tableResizeObserver: ResizeObserver | null = null
+let tableResizeObserver: ResizeObserver | null = null;
 
 /**
- * 当前实际生效的查询参数
- * 作用：
- * 1. 搜索后缓存条件
- * 2. 刷新时沿用当前条件
- * 3. 翻页时继续使用同一组筛选参数
+ * 当前实际生效的查询参数。
+ * 这里作为“业务筛选条件缓存”，让翻页、刷新、分页切换都能沿用同一组搜索条件。
  */
-const currentSearchParams = ref<SearchParams>({ ...props.defaultParams })
+const currentSearchParams = ref<SearchParams>({ ...props.defaultParams });
 
 /**
- * 统一规范化列配置
- *
- * 处理内容：
- * 1. 如果列未显式设置 key，则自动兜底生成
- * 2. 递归处理 children，保证子列结构一致
+ * 统一规范化列配置：
+ * 1. 自动补齐缺失的 key
+ * 2. 递归处理 children，保证列树结构一致
  */
 const normalizeColumns = (columns: ColumnType[]): ColumnType[] =>
     columns.map((column) => ({
         ...column,
         key: column.key ?? column.dataIndex ?? String(column.title),
         children: column.children ? normalizeColumns(column.children) : undefined,
-    }))
+    }));
 
 /**
- * 规范化后的表格列
+ * 规范化后的列定义。
  */
-const normalizedColumns = computed(() => normalizeColumns(props.tableColumns))
+const normalizedColumns = computed(() => normalizeColumns(props.tableColumns));
 
 /**
- * 需要进行具名插槽透传的列
- * 只有定义了 slotName 的列，才需要在 a-table 中动态挂插槽
+ * 需要透传具名插槽的列。
+ * 只有定义了 slotName 的列，才会在 a-table 中动态挂接插槽。
  */
-const slotColumns = computed(() => normalizedColumns.value.filter((column) => column.slotName))
+const slotColumns = computed(() => normalizedColumns.value.filter((column) => column.slotName));
 
 /**
- * 合并表格 locale 配置
- *
- * 主要用于统一处理 emptyText：
- * - 优先使用外部 tableProps.locale.emptyText
- * - 否则使用当前组件传入的 emptyText，并走 i18n
+ * 合并表格 locale 配置。
+ * 优先尊重外部 tableProps.locale，其次兜底 emptyText 的 i18n 文案。
  */
 const getTableLocale = (): Record<string, unknown> => {
     const locale =
         props.tableProps.locale && typeof props.tableProps.locale === 'object'
             ? (props.tableProps.locale as Record<string, unknown>)
-            : {}
+            : {};
 
     return {
         ...locale,
         emptyText: locale.emptyText ?? t(props.emptyText),
-    }
-}
+    };
+};
 
 /**
- * 表格数据请求
+ * 这里改为使用 vue-request 的 usePagination。
  *
- * 每次请求时会：
- * 1. 合并 defaultParams 和当前传入参数
- * 2. 自动带上 pageNo / pageSize
- * 3. 请求成功后同步更新分页信息
+ * 设计目标：
+ * 1. 让分页状态交给库统一维护
+ * 2. 仍然兼容你现有 pageNo / pageSize / totalSize 这套后端字段
+ * 3. 外部页面依旧通过 search / reset / refresh 等命令式方法控制
  */
 const {
-    data: dataSource,
+    data: tableResult,
     loading,
-    runAsync: fetchTableData,
-} = useRequest(
-    async (params: SearchParams = currentSearchParams.value): Promise<unknown[]> => {
-        currentSearchParams.value = {
+    runAsync: runTableRequest,
+    refreshAsync,
+    current,
+    pageSize,
+    total,
+    changeCurrent,
+    changePageSize,
+} = usePagination<TableFetchResult, [SearchParams & { pageNo: number; pageSize: number }]>(
+    async (params) => {
+        return props.apiFetch({
             ...props.defaultParams,
             ...params,
-        }
-
-        const { list, pageNo, pageSize, totalSize } = await props.apiFetch({
-            ...currentSearchParams.value,
-            pageNo: paginationConfig.current,
-            pageSize: paginationConfig.pageSize,
-        })
-
-        updatePagination(pageNo, pageSize, totalSize)
-
-        return list
+        });
     },
     {
         manual: true,
+        defaultParams: [
+            {
+                ...props.defaultParams,
+                pageNo: PagingDefaultConf.current,
+                pageSize: PagingDefaultConf.pageSize,
+            },
+        ],
+        pagination: {
+            currentKey: 'pageNo',
+            pageSizeKey: 'pageSize',
+            totalKey: 'totalSize',
+            totalPageKey: 'totalPages',
+        },
     },
-)
+);
 
 /**
- * 发起搜索
- *
- * 搜索时默认回到第一页，避免沿用旧页码造成结果异常
+ * 当前列表数据。
+ * usePagination 返回的是完整响应对象，这里抽出 list 给表格渲染。
  */
-const searchTable = (params: SearchParams = currentSearchParams.value): Promise<unknown[]> => {
-    paginationConfig.current = 1
-    return fetchTableData(params)
-}
+const dataSource = computed<unknown[]>(() => tableResult.value?.list ?? []);
 
 /**
- * 刷新表格
- * 使用当前缓存的搜索条件重新拉取数据
+ * 当前总条数。
+ * 优先用 vue-request 已经折叠好的 total，保持与分页插件内部状态一致。
  */
-const refreshTable = (): Promise<unknown[]> => fetchTableData(currentSearchParams.value)
+const totalCount = computed(() => Number(total.value ?? 0));
 
 /**
- * 重置表格
+ * 是否展示首屏骨架屏。
  *
- * 逻辑：
- * 1. 如果存在搜索表单组件，则优先调用其 reset，保持 UI 与数据同步
- * 2. 否则直接重置内部查询参数并请求第一页数据
+ * 展示条件：
+ * 1. 组件开启骨架屏能力
+ * 2. 当前处于 loading
+ * 3. 当前还没有任何列表数据可渲染
+ *
+ * 这样可以保证：
+ * - 首屏/首次搜索时展示骨架屏
+ * - 已有表格数据时刷新，不会把真实内容闪成骨架
+ */
+const showTableSkeleton = computed(
+    () => props.showSkeleton && loading.value && dataSource.value.length === 0,
+);
+
+/**
+ * 当前页码和每页数量的展示值。
+ * 优先使用服务端响应里的 pageNo / pageSize，避免后端校正页码时前端显示旧值。
+ */
+const currentPageNo = computed(() => Number(tableResult.value?.pageNo ?? current.value ?? 1));
+const currentPageSize = computed(() =>
+    Number(tableResult.value?.pageSize ?? pageSize.value ?? PagingDefaultConf.pageSize),
+);
+
+/**
+ * 搜索时重置为第一页，并替换当前缓存条件。
+ * 这里保留现有语义，页面侧无需感知内部已经切换到 usePagination。
+ */
+const searchTable = async (
+    params: SearchParams = currentSearchParams.value,
+): Promise<unknown[]> => {
+    currentSearchParams.value = {
+        ...props.defaultParams,
+        ...params,
+    };
+
+    const result = await runTableRequest({
+        ...currentSearchParams.value,
+        pageNo: 1,
+        pageSize: currentPageSize.value,
+    });
+
+    return result.list;
+};
+
+/**
+ * 刷新时继续沿用当前筛选条件与当前分页状态。
+ * 如果还没有发起过请求，则补一次默认分页参数请求。
+ */
+const refreshTable = async (): Promise<unknown[]> => {
+    if (!tableResult.value) {
+        return searchTable(currentSearchParams.value);
+    }
+
+    const result = await refreshAsync();
+    return result.list;
+};
+
+/**
+ * 重置时优先同步重置搜索表单 UI；
+ * 如果没有搜索表单实例，则直接用默认条件重新请求第一页。
  */
 const resetTable = (): void => {
     if (searchWrapRef.value) {
-        searchWrapRef.value.reset()
-        return
+        searchWrapRef.value.reset();
+        return;
     }
 
-    currentSearchParams.value = { ...props.defaultParams }
-    paginationConfig.current = 1
-    fetchTableData(currentSearchParams.value)
-}
+    currentSearchParams.value = { ...props.defaultParams };
+    runTableRequest({
+        ...currentSearchParams.value,
+        pageNo: 1,
+        pageSize: PagingDefaultConf.pageSize,
+    }).then();
+};
 
 /**
- * 获取当前查询参数
- * 对外暴露时返回拷贝，避免被外部直接修改内部状态
+ * 对外只暴露参数拷贝，避免外部直接改内部缓存状态。
  */
-const getSearchParams = (): SearchParams => ({ ...currentSearchParams.value })
+const getSearchParams = (): SearchParams => ({ ...currentSearchParams.value });
 
 /**
- * 表格分页配置与分页事件
- * 来自你项目里的 useTableConf
- */
-const { paginationConfig, onSizeChange, updatePagination, onPageSizeChange } =
-    useTableConf<SearchParams>(refreshTable)
-
-/**
- * 是否展示工具栏
- *
- * 工具栏展示条件：
- * 1. 开启刷新按钮
- * 2. 存在 roleBtnWrap 插槽
- * 3. 存在 totalWrap 插槽
- * 4. 存在 actionsWrap 插槽
+ * 是否需要展示工具栏。
  */
 const showToolbar = computed(
     () =>
@@ -235,157 +285,211 @@ const showToolbar = computed(
         Boolean(slots.roleBtnWrap) ||
         Boolean(slots.totalWrap) ||
         Boolean(slots.actionsWrap),
-)
+);
 
 /**
- * 当前数据总条数
- */
-const totalCount = computed(() => Number(paginationConfig.total ?? 0))
-
-/**
- * 基础滚动配置
- *
- * 优先级：
- * tableProps.scroll > props.scroll
+ * 基础滚动配置。
+ * 优先使用外部 tableProps.scroll，其次才是组件 props.scroll。
  */
 const baseScrollConfig = computed<TableScrollConfig>(() => {
-    const scrollConfig = props.tableProps.scroll ?? props.scroll
-    return scrollConfig && typeof scrollConfig === 'object' ? { ...scrollConfig } : {}
-})
+    const scrollConfig = props.tableProps.scroll ?? props.scroll;
+    return scrollConfig && typeof scrollConfig === 'object' ? { ...scrollConfig } : {};
+});
 
 /**
- * 是否启用自动纵向高度计算
- * 只有当 scroll.y 存在时才进行自动计算
+ * 只有当外部显式声明了 scroll.y，才启用自动高度计算。
+ * 这里把传入的 y 当成“需要纵向滚动”的信号，同时把它视为最小高度基准。
  */
-const shouldAutoScrollY = computed(() => typeof baseScrollConfig.value.y !== 'undefined')
+const shouldAutoScrollY = computed(() => typeof baseScrollConfig.value.y !== 'undefined');
 
 /**
- * 获取最小纵向滚动高度
- *
- * 如果外部传入的是数字，则取外部值与 TABLE_MIN_SCROLL_Y 中的较大值
- * 否则回退到默认最小高度
+ * 获取自动滚动高度的最小值。
+ * 规则：
+ * 1. 永远不少于 600
+ * 2. 如果页面显式传了更大的 y，则以更大的值为最低值
  */
 const getMinScrollY = (): number => {
-    const scrollY = baseScrollConfig.value.y
+    const scrollY = baseScrollConfig.value.y;
 
     if (typeof scrollY === 'number' && Number.isFinite(scrollY)) {
-        return Math.max(scrollY, TABLE_MIN_SCROLL_Y)
+        return Math.max(scrollY, TABLE_MIN_SCROLL_Y);
     }
 
-    return TABLE_MIN_SCROLL_Y
-}
+    return TABLE_MIN_SCROLL_Y;
+};
 
 /**
- * 同步自动滚动高度
+ * 根据真实 DOM 位置自动计算可用表格高度。
  *
- * 计算公式：
- * 当前视口剩余可用高度
- * - 表头高度
- * - 分页器高度
- * - 页面底部预留间距
+ * 计算方式：
+ * 1. 取表格容器距离视口顶部的位置
+ * 2. 用视口总高度减去当前位置
+ * 3. 再减去分页区高度和底部预留 20px
+ * 4. 最终结果保证不低于最小高度
  */
 const syncAutoScrollY = (): void => {
-    if (!shouldAutoScrollY.value || !tableContainerRef.value) return
+    if (!shouldAutoScrollY.value || !tableContainerRef.value) return;
 
-    const tableRect = tableContainerRef.value.getBoundingClientRect()
-    const tableHeader = tableContainerRef.value.querySelector(
-        '.arco-table-header',
-    ) as HTMLElement | null
-    const tablePagination = tableContainerRef.value.querySelector(
-        '.arco-pagination',
-    ) as HTMLElement | null
+    const tableRect = tableContainerRef.value.getBoundingClientRect();
+    const tableHeader = tableContainerRef.value.querySelector('.arco-table-header') as HTMLElement | null;
+    const tablePagination = tableContainerRef.value.querySelector('.arco-pagination') as HTMLElement | null;
 
-    const availableViewportHeight = window.innerHeight - tableRect.top - TABLE_BOTTOM_GAP
-    const occupiedHeight = (tableHeader?.offsetHeight ?? 46) + (tablePagination?.offsetHeight ?? 64)
+    const availableViewportHeight = window.innerHeight - tableRect.top - TABLE_BOTTOM_GAP;
+    const occupiedHeight =
+        (tableHeader?.offsetHeight ?? 46) + (tablePagination?.offsetHeight ?? 64);
 
     autoScrollY.value = Math.max(
         Math.floor(availableViewportHeight - occupiedHeight),
         getMinScrollY(),
-    )
-}
+    );
+};
 
 /**
- * 合并后的滚动配置
- *
- * 如果未启用自动高度，则直接使用基础配置
- * 如果启用，则动态替换 y
+ * 最终传给 a-table 的滚动配置。
+ * 当启用自动纵向滚动时，用动态计算后的 y 覆盖外部传入的静态值。
  */
 const mergedScrollConfig = computed<TableScrollConfig>(() => {
     if (!shouldAutoScrollY.value) {
-        return baseScrollConfig.value
+        return baseScrollConfig.value;
     }
 
     return {
         ...baseScrollConfig.value,
         y: autoScrollY.value,
-    }
-})
+    };
+});
 
 /**
- * 合并后的 a-table props
- *
- * 统一注入：
- * 1. rowKey
- * 2. scroll
- * 3. locale
- * 4. pagination
+ * 骨架屏高度。
+ * 如果当前已经算出了动态表格高度，就沿用同一高度；
+ * 否则使用最小滚动高度作为兜底，避免骨架区域过矮。
+ */
+const skeletonMinHeight = computed(() => {
+    if (shouldAutoScrollY.value) {
+        return `${autoScrollY.value}px`;
+    }
+
+    return `${TABLE_MIN_SCROLL_Y}px`;
+});
+
+/**
+ * 骨架屏行数。
+ * 这里根据当前可用高度动态估算行数，并和外部传入的最小骨架行数取最大值，
+ * 这样骨架既不会太少，也能尽量铺满当前表格区域。
+ */
+const skeletonRowCount = computed(() => {
+    const estimatedRows = Math.ceil((Number.parseInt(skeletonMinHeight.value, 10) || TABLE_MIN_SCROLL_Y) / 68);
+    return Math.max(props.skeletonRows, estimatedRows);
+});
+
+/**
+ * 骨架屏列数。
+ * 为了兼顾复杂表格和可读性：
+ * 1. 至少展示 4 个占位块
+ * 2. 最多展示 6 个占位块
+ * 3. 优先参考当前列配置数量
+ */
+const skeletonColumnCount = computed(() =>
+    Math.min(Math.max(normalizedColumns.value.length || 0, 4), 6),
+);
+
+/**
+ * 骨架屏每一行单元格宽度。
+ * 这里做轻微错位变化，让每一行看起来更像真实数据，而不是完全机械重复。
+ */
+const getSkeletonCellWidth = (rowIndex: number, columnIndex: number): string => {
+    const widthMatrix = [
+        ['90%', '62%', '80%', '68%', '86%', '54%'],
+        ['72%', '58%', '88%', '60%', '76%', '50%'],
+        ['84%', '64%', '74%', '70%', '92%', '56%'],
+    ];
+
+    return widthMatrix[rowIndex % widthMatrix.length][columnIndex] ?? '70%';
+};
+
+/**
+ * Arco Table 分页配置。
+ * 仍然保持和你当前页面 slot 里读取 `pagination.current / pageSize` 的方式兼容。
+ */
+const paginationConfig = computed(() => ({
+    ...PagingDefaultConf,
+    current: currentPageNo.value,
+    pageSize: currentPageSize.value,
+    total: totalCount.value,
+}));
+
+/**
+ * 合并最终表格 props。
  */
 const mergedTableProps = computed(() => ({
     ...props.tableProps,
     rowKey: props.rowKey,
     scroll: mergedScrollConfig.value,
     locale: getTableLocale(),
-    pagination: props.tableProps.pagination ?? paginationConfig,
-}))
+    pagination: props.tableProps.pagination ?? paginationConfig.value,
+}));
 
 /**
- * 如果配置为立即加载，则组件初始化后自动请求一次数据
+ * 表格 loading 状态。
+ * 当骨架屏已经接管列表内容区时，这里不再给 a-table 开启内置 loading，
+ * 避免表头区域再叠一个 spinner。
  */
+const tableLoading = computed(() => loading.value && !showTableSkeleton.value);
+
+/**
+ * 切换页码时，交给 vue-request 的分页状态管理。
+ * 这样 search params 会继续保留在第一个参数对象中。
+ */
+const onPageChange = (pageNo: number): void => {
+    changeCurrent(pageNo);
+};
+
+/**
+ * 切换每页条数时，保留当前 usePagination 行为。
+ * 这里不额外重置第一页，尽量保持现有交互语义不变。
+ */
+const onPageSizeChange = (nextPageSize: number): void => {
+    changePageSize(nextPageSize);
+};
+
 if (props.immediate) {
-    fetchTableData(currentSearchParams.value)
+    runTableRequest({
+        ...props.defaultParams,
+        pageNo: PagingDefaultConf.current,
+        pageSize: PagingDefaultConf.pageSize,
+    }).then();
 }
 
-/**
- * 挂载后：
- * 1. 初始化一次自适应高度
- * 2. 监听容器尺寸变化
- * 3. 监听窗口 resize
- */
 onMounted(() => {
     nextTick(() => {
-        syncAutoScrollY()
-    })
+        syncAutoScrollY();
+    });
 
     if (tableContainerRef.value) {
         tableResizeObserver = new ResizeObserver(() => {
-            syncAutoScrollY()
-        })
-
-        tableResizeObserver.observe(tableContainerRef.value)
+            syncAutoScrollY();
+        });
+        tableResizeObserver.observe(tableContainerRef.value);
     }
 
-    window.addEventListener('resize', syncAutoScrollY)
-})
+    window.addEventListener('resize', syncAutoScrollY);
+});
 
-/**
- * 卸载前清理事件与观察器
- */
 onBeforeUnmount(() => {
-    window.removeEventListener('resize', syncAutoScrollY)
-    tableResizeObserver?.disconnect()
-    tableResizeObserver = null
-})
+    window.removeEventListener('resize', syncAutoScrollY);
+    tableResizeObserver?.disconnect();
+    tableResizeObserver = null;
+});
 
 /**
- * 监听影响表格高度的关键状态
+ * 这些状态变化都会影响表格实际可用高度：
+ * - 搜索区展开/收起
+ * - 工具栏显隐
+ * - 数据量变化
+ * - 分页变化
+ * - loading 切换
  *
- * 当以下任一变化时，下一帧重新计算表格滚动高度：
- * 1. 搜索区配置数量
- * 2. 工具栏显示状态
- * 3. loading
- * 4. totalCount
- * 5. 当前分页
- * 6. 数据长度
+ * 所以统一在 nextTick 后重算一遍 scroll.y。
  */
 watch(
     () => [
@@ -393,35 +497,34 @@ watch(
         showToolbar.value,
         loading.value,
         totalCount.value,
-        paginationConfig.pageSize,
-        paginationConfig.current,
-        dataSource.value?.length ?? 0,
+        currentPageNo.value,
+        currentPageSize.value,
+        dataSource.value.length,
     ],
     () => {
         nextTick(() => {
-            syncAutoScrollY()
-        })
+            syncAutoScrollY();
+        });
     },
-)
+);
 
 /**
- * 对外暴露的方法
- * 方便父组件通过 ref 主动调用
+ * 对外暴露的命令式方法保持不变。
+ * 这样页面层不需要因为内部切换到 usePagination 而重写调用逻辑。
  */
 defineExpose<TableSearchWrapExpose>({
     refresh: refreshTable,
     search: searchTable,
     reset: resetTable,
     getSearchParams,
-})
+});
 </script>
-
 <template>
-    <div class="flex h-auto min-h-[auto] flex-col gap-[14px] bg-white p-2 rounded-lg">
-        <!-- 搜索区 -->
+    <div class="table-container flex h-auto min-h-0 flex-col gap-[14px]">
+        <!-- 搜索区域：如果页面传了 searchConf 或自定义 searchWrap，就显示 -->
         <div
             v-if="props.searchConf.length || slots.searchWrap"
-            class="border-b border-[var(--app-divider)] bg-transparent pb-[14px]"
+            class="rounded-[10px] border-b border-[var(--app-divider)] bg-transparent pb-[14px]"
         >
             <slot name="searchWrap">
                 <SearchWrap
@@ -434,18 +537,17 @@ defineExpose<TableSearchWrapExpose>({
             </slot>
         </div>
 
-        <!-- 工具栏 -->
+        <!-- 工具栏：按钮区、统计区、操作区统一放在这里 -->
         <div v-if="showToolbar" class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex flex-wrap items-center gap-3">
                 <slot name="roleBtnWrap" />
                 <slot
                     name="totalWrap"
                     :total="totalCount"
-                    :data-source="dataSource || []"
+                    :data-source="dataSource"
                     :loading="loading"
                 />
             </div>
-
             <div class="flex flex-wrap items-center justify-end gap-3">
                 <slot
                     name="actionsWrap"
@@ -454,21 +556,20 @@ defineExpose<TableSearchWrapExpose>({
                     :loading="loading"
                     :search-params="getSearchParams()"
                 />
-
                 <a-button v-if="props.showRefresh" @click="refreshTable">
                     {{ t('刷新') }}
                 </a-button>
             </div>
         </div>
 
-        <!-- 表格区 -->
+        <!-- 表格主体区域：scroll.y 会在这里按真实 DOM 高度自动计算 -->
         <div
             ref="tableContainerRef"
-            class="overflow-hidden rounded-[10px] bg-[var(--app-surface-strong)]"
+            class="overflow-hidden rounded-[10px] bg-[var(--app-surface-strong)] [&_.arco-table-container]:rounded-[4px] [&_.arco-table-th]:bg-[#f5f7fa] [&_.arco-table-th]:font-semibold [&_.arco-table-th]:text-[#4b5563] [&_.arco-table-tr-empty_.arco-table-td]:p-0 [&_.arco-table-tr_.arco-table-td]:[border-bottom-color:var(--app-divider)] [&_.arco-table-tr:hover_.arco-table-td]:bg-[#f8fafc]"
         >
             <slot
                 name="table"
-                :data-source="dataSource || []"
+                :data-source="dataSource"
                 :loading="loading"
                 :pagination="paginationConfig"
                 :refresh="refreshTable"
@@ -479,11 +580,43 @@ defineExpose<TableSearchWrapExpose>({
                     v-bind="mergedTableProps"
                     class="w-full"
                     :columns="normalizedColumns"
-                    :data="dataSource || []"
-                    :loading="loading"
+                    :data="dataSource"
+                    :loading="tableLoading"
                     @page-size-change="onPageSizeChange"
-                    @page-change="onSizeChange"
+                    @page-change="onPageChange"
                 >
+                    <!-- 空状态区域：首屏加载时显示内容骨架，否则显示正常 empty 文案 -->
+                    <template #empty>
+                        <div
+                            v-if="showTableSkeleton"
+                            class="flex w-full flex-col px-4 py-4"
+                            :style="{ minHeight: skeletonMinHeight }"
+                        >
+                            <!-- 只模拟列表内容，不额外绘制表头骨架 -->
+                            <div class="flex flex-1 flex-col divide-y divide-[var(--app-divider)]">
+                                <div
+                                    v-for="rowIndex in skeletonRowCount"
+                                    :key="`skeleton-row-${rowIndex}`"
+                                    class="grid items-center gap-4 py-4"
+                                    :style="{ gridTemplateColumns: `repeat(${skeletonColumnCount}, minmax(0, 1fr))` }"
+                                >
+                                    <div
+                                        v-for="columnIndex in skeletonColumnCount"
+                                        :key="`skeleton-cell-${rowIndex}-${columnIndex}`"
+                                        class="h-3 animate-pulse rounded-full bg-slate-100"
+                                        :style="{ width: getSkeletonCellWidth(rowIndex, columnIndex - 1) }"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            v-else
+                            class="py-8 text-center text-sm text-[var(--app-text-muted)]"
+                        >
+                            {{ t(props.emptyText) }}
+                        </div>
+                    </template>
+
                     <template
                         v-for="column in slotColumns"
                         :key="column.key"
@@ -495,7 +628,7 @@ defineExpose<TableSearchWrapExpose>({
                                 ...slotProps,
                                 pagination: paginationConfig,
                                 loading,
-                                dataSource: dataSource || [],
+                                dataSource,
                                 searchParams: getSearchParams(),
                             }"
                         />
@@ -505,28 +638,3 @@ defineExpose<TableSearchWrapExpose>({
         </div>
     </div>
 </template>
-
-<style scoped lang="scss">
-/**
- * 这里只保留 Arco Table 内部节点的覆盖样式
- * 组件外层布局、间距、背景、圆角都已经迁移到 Tailwind
- */
-
-:deep(.arco-table-container) {
-    border-radius: 4px;
-}
-
-:deep(.arco-table-th) {
-    background: #f5f7fa;
-    color: #4b5563;
-    font-weight: 600;
-}
-
-:deep(.arco-table-tr .arco-table-td) {
-    border-bottom-color: var(--app-divider);
-}
-
-:deep(.arco-table-tr:hover .arco-table-td) {
-    background: #f8fafc;
-}
-</style>

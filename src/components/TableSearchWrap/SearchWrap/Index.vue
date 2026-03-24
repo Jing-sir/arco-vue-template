@@ -233,12 +233,12 @@ defineExpose<TableSearchFormExpose>({
 });
 </script>
 <template>
-    <div class="search-panel">
-        <header class="search-panel__header">
-            <div class="search-panel__top">
+    <div class="w-full">
+        <header class="w-full">
+            <div class="flex w-full flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div
                     v-if="hasQuickSearch"
-                    class="search-panel__quick-search"
+                    class="flex w-full flex-col gap-3 sm:flex-row sm:items-center lg:max-w-[48rem]"
                 >
                     <a-select
                         v-model="searchState.searchKey"
@@ -273,7 +273,7 @@ defineExpose<TableSearchFormExpose>({
                 </div>
                 <a-space
                     v-if="props.isMore && props.searchConf.length > 1"
-                    class="search-panel__actions"
+                    class="justify-end"
                     wrap
                 >
                     <a-checkbox v-model="isDefaVal" :value="false" @change="onChangeCheck">
@@ -294,7 +294,7 @@ defineExpose<TableSearchFormExpose>({
         <div
             v-if="isSearch && props.searchConf.length > 1"
             :class="[
-                'search-panel__advanced animate__animated',
+                'mt-[10px] flex flex-col rounded-[10px] bg-[#f7f8fa] animate__animated',
                 isSearch ? 'animate__fadeIn' : 'animate__fadeOut',
                 'animate__delay-0.6s',
             ]"
@@ -366,7 +366,7 @@ defineExpose<TableSearchFormExpose>({
                     </a-row>
                 </div>
             </a-form>
-            <div class="search-panel__footer">
+            <div class="flex justify-end border-t border-[var(--app-divider)] bg-transparent px-3 pt-[10px] pb-3">
                 <a-button type="primary" size="small" class="mr-2" @click.stop="emitSearch">
                     {{ t('搜索') }}
                 </a-button>
@@ -377,66 +377,3 @@ defineExpose<TableSearchFormExpose>({
         </div>
     </div>
 </template>
-
-<style scoped lang="scss">
-.search-panel {
-    width: 100%;
-}
-
-.search-panel__header {
-    width: 100%;
-}
-
-.search-panel__top {
-    display: flex;
-    width: 100%;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.search-panel__quick-search {
-    display: flex;
-    width: 100%;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.search-panel__actions {
-    justify-content: flex-end;
-}
-
-.search-panel__advanced {
-    margin-top: 10px;
-    display: flex;
-    flex-direction: column;
-    border-radius: 10px;
-    background: #f7f8fa;
-}
-
-.search-panel__footer {
-    display: flex;
-    justify-content: flex-end;
-    padding: 10px 12px 12px;
-    border-top: 1px solid var(--app-divider);
-    background: transparent;
-}
-
-@media (min-width: 640px) {
-    .search-panel__quick-search {
-        align-items: center;
-        flex-direction: row;
-    }
-}
-
-@media (min-width: 1024px) {
-    .search-panel__top {
-        align-items: center;
-        flex-direction: row;
-        justify-content: space-between;
-    }
-
-    .search-panel__quick-search {
-        max-width: 48rem;
-    }
-}
-</style>

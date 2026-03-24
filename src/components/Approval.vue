@@ -39,70 +39,45 @@ defineExpose({ fetchFlowInfo });
 </script>
 
 <template>
-  <div>
-    <div v-if="formatFlow.length">
-      <div v-if="props.amount">
-        <div class="is-flex flex-direction-row align-items-center">
-          <div class="is-flex  flex-direction-row flow-item">
-            <div class="is-flex flex-direction-column align-items-center">
-              <span class="block"></span>
-              <span class="desc">{{ t('发起') }}</span>
+    <div>
+        <div v-if="formatFlow.length">
+            <div v-if="props.amount">
+                <div class="flex flex-row items-center">
+                    <div class="flex flex-row text-xs">
+                        <div class="flex flex-col items-center">
+                            <span class="h-[10px] w-[10px] rounded-full bg-[#1677ff]"></span>
+                            <span class="mt-1.5 w-10 truncate text-center text-[12px] text-[darkgray]">{{ t('发起') }}</span>
+                        </div>
+                        <div class="mt-1 mx-[6px] h-px w-5 bg-[#1677ff]"></div>
+                    </div>
+                    <div
+                        v-for="(item, i) of formatFlow"
+                        :key="i"
+                        class="flex flex-row text-xs"
+                    >
+                        <div class="flex flex-col items-center">
+                            <span class="h-[10px] w-[10px] rounded-full bg-[#1677ff]"></span>
+                            <a-tooltip placement="topLeft" :title="item.checkUserName">
+                                <span
+                                    class="mt-1.5 w-10 truncate text-center text-[12px] text-[darkgray]"
+                                    :title="item.checkUserName"
+                                >
+                                    {{ item.checkUserName || '1' }}
+                                </span>
+                            </a-tooltip>
+                        </div>
+                        <div class="mt-1 mx-[6px] h-px w-5 bg-[#1677ff]"></div>
+                    </div>
+                    <div class="flex flex-row text-xs">
+                        <div class="flex flex-col items-center">
+                            <span class="h-[10px] w-[10px] rounded-full bg-[#1677ff]"></span>
+                            <span class="mt-1.5 w-10 truncate text-center text-[12px] text-[darkgray]">{{ t('结束') }}</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="line"></div>
-          </div>
-          <div v-for="(item, i) of formatFlow" :key="i" class="is-flex  flex-direction-row flow-item">
-            <div class="is-flex flex-direction-column align-items-center">
-              <span class="block"></span>
-              <a-tooltip placement="topLeft" :title="item.checkUserName">
-                <span class="desc" :title="item.checkUserName">{{ item.checkUserName || '1' }}</span>
-              </a-tooltip>
-            </div>
-            <div class="line"></div>
-          </div>
-          <div class="is-flex  flex-direction-row flow-item">
-            <div class="is-flex flex-direction-column align-items-center">
-              <span class="block"></span>
-              <span class="desc">{{ t('结束') }}</span>
-            </div>
-          </div>
+            <span v-else class="text-[darkgray]">{{ t('填入转账金额后，显示对应审批流程') }}</span>
         </div>
-      </div>
-      <span v-else class="desc">{{ t('填入转账金额后，显示对应审批流程') }}</span>
+        <span v-else>--</span>
     </div>
-    <span v-else>--</span>
-  </div>
 </template>
-
-<style scoped lang="scss">
-
-.flow-item {
-  font-size: 12px;
-
-  .block {
-    width: 10px;
-    height: 10px;
-    background: #1677ff;
-    border-radius: 50%;
-  }
-
-  .desc {
-    margin-top: 6px;
-    width: 40px;
-    text-align: center;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .line {
-    height: 1px;
-    background: #1677ff;
-    width: 20px;
-    margin: 4px 6px 0 6px;
-  }
-}
-
-.desc {
-  color: darkgray;
-}
-</style>
