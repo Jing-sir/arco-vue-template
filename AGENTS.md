@@ -33,6 +33,14 @@ Keep `AGENTS.md` and `CLAUDE.md` identical.
 - Do not recreate `.eslintrc.*` or `.eslintignore`. 不要重新引入 `.eslintrc.*` 或 `.eslintignore`。
 - Keep `package.json` and `yarn.lock` in sync when dependencies change. 修改依赖时，保持 `package.json` 和 `yarn.lock` 同步。
 
+## 3.1 Styling Rules / 样式规则
+
+- Prefer Tailwind CSS utility classes for component styling by default. 组件样式默认优先使用 Tailwind CSS 原子类。
+- In Vue components, avoid standalone `<style>` blocks whenever Tailwind classes can express the layout or visual result clearly. 在 Vue 组件中，只要 Tailwind 类能清晰表达布局和视觉结果，就不要额外写独立 `<style>`。
+- If local component CSS is truly necessary, keep it minimal and Tailwind-oriented: prefer `@apply`, CSS variables, and targeted `:deep(...)` overrides for third-party components. 如果组件局部 CSS 确实不可避免，也要保持最小化，并优先使用 `@apply`、CSS 变量，以及针对第三方组件的 `:deep(...)` 定向覆盖。
+- Plain CSS/SCSS inside components is only a fallback for cases such as long repeated selector logic, pseudo-elements, keyframes, complex media queries, or third-party internals that utilities cannot reasonably cover. 组件内的普通 CSS/SCSS 只作为兜底方案，适用于重复选择器较长、伪元素、关键帧、复杂响应式规则、或 Tailwind 无法合理覆盖的第三方内部结构。
+- For layout, spacing, radius, typography, and color choices, Tailwind should remain the first implementation path and local CSS should not recreate existing utility behavior. 布局、间距、圆角、字体、颜色等实现应优先走 Tailwind，本地 CSS 不要重复造已有 utility 的轮子。
+
 ## 4. Directory Rules / 目录总规则
 
 - `src/components`: shared UI components only. 放公用 UI 组件，不放整页业务实现。

@@ -1,21 +1,5 @@
-<template>
-    <div class="tags-view-container">
-        <div class="tags-view-wrapper overflow-x">
-            <span class="tags-view-item" :class="{active:$route.path==='/'}" @click="$router.push('/')">{{ formatRouteTitle('首页') }}</span>
-                <span
-                    v-for="({name,path, meta,fullPath},i) in visitedViews" :key="path"
-                    class="tags-view-item" :class="{active:$route.name===name}"
-                    @click="handleGoCacheRoute({ fullPath })">
-                    {{ formatRouteTitle(meta.title) }}
-                <span class="icon-close" @click.stop="deleteVisitedView(i,$route.path===path)">x</span>
-            </span>
-        </div>
-    </div>
-</template>
-
-<script lang="ts">
-import { defineComponent, watch } from 'vue';
-import { useRoute, useRouter, type RouteLocationNormalizedLoaded } from 'vue-router';
+<script setup lang="ts">
+import type { RouteLocationNormalizedLoaded } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import useTagsView from '@/store/tagsView';
 import i18n from '@/setup/i18n-setup';
@@ -24,145 +8,97 @@ type CachedRouteLocation = {
     fullPath: string;
 };
 
-export default defineComponent({
-    name: 'TagsView',
-    setup() {
-        const store = useTagsView();
-        const route = useRoute();
-        const router = useRouter();
-        watch(() => route.path,
-            (o: string, n?: string) => {
-                if (o && o !== n) store.addVisitedView(route);
-            }, { deep: true, immediate: true }); // 监听路由更新tabs
+const store = useTagsView();
+const route = useRoute();
+const router = useRouter();
 
-        const { visitedViews: _visitedViews } = storeToRefs(store);
-        const visitedViews = _visitedViews as unknown as RouteLocationNormalizedLoaded[];
+const { visitedViews: rawVisitedViews } = storeToRefs(store);
 
-        const deleteVisitedView = (index: number, isActive: boolean): void => store.deleteVisitedView(index, isActive);
+const visitedViews = computed(
+    () => rawVisitedViews.value as unknown as RouteLocationNormalizedLoaded[],
+);
 
-        const handleGoCacheRoute = (route: CachedRouteLocation): void => {
-            router.replace(`${route.fullPath}#no-refresh`);
-        };
+watch(
+    () => route.fullPath,
+    () => {
+        if (route.path.startsWith('/redirect/')) return;
+        store.addVisitedView(route);
+    },
+    { immediate: true },
+);
 
-        const formatRouteTitle = (title?: string | Function): string =>
-            title
-                ? String(i18n.global.t(String(typeof title === 'function' ? title() : title)))
-                : '';
+const deleteVisitedView = (index: number, isActive: boolean): void =>
+    store.deleteVisitedView(index, isActive);
 
-        return {
-            visitedViews,
-            deleteVisitedView,
-            handleGoCacheRoute,
-            formatRouteTitle,
-        };
-    }
-});
+const handleGoCacheRoute = (targetRoute: CachedRouteLocation): void => {
+    router.replace(`${targetRoute.fullPath}#no-refresh`);
+};
+
+const handleGoHome = (): void => {
+    router.push('/');
+};
+
+const formatRouteTitle = (title?: string | (() => string)): string =>
+    title ? String(i18n.global.t(String(typeof title === 'function' ? title() : title))) : '';
+
+const normalizeFullPath = (path = ''): string => path.replace(/#no-refresh$/, '');
+
+const isActiveHome = computed(() => route.path === '/');
+
+const isActiveTab = (item: {
+    name?: RouteLocationNormalizedLoaded['name'];
+    path: string;
+    fullPath: string;
+}): boolean => {
+    if (item.name && route.name === item.name) return true;
+    if (route.path === item.path) return true;
+
+    return normalizeFullPath(route.fullPath) === normalizeFullPath(item.fullPath);
+};
+
+const getActiveTabStyle = (isActive: boolean): Record<string, string> =>
+    isActive
+        ? {
+            backgroundColor: 'var(--color-primary-6)',
+            color: '#ffffff',
+        }
+        : {};
 </script>
 
-<style lang="scss" scoped>
-.tags-view-container {
-    overflow-x: auto;
-    overflow-y: hidden;
-    height: 40px;
-    line-height: 40px;
-    width: 100%;
-    background: #fff;
-    border-bottom: 1px solid #d8dce5;
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 12%), 0 0 3px 0 rgb(0 0 0 / 4%);
-    white-space: nowrap;
-    padding-left: 10px;
-    box-sizing: border-box;
-
-    .tags-view-wrapper {
-        overflow-x: scroll;
-
-        .tags-view-item {
-            display: inline-block;
-            position: relative;
-            cursor: pointer;
-            height: 30px;
-            line-height: 30px;
-            border: 1px solid #d8dce5;
-            color: #495060;
-            background: #fff;
-            padding: 0 8px;
-            font-size: 12px;
-            border-radius: 2px;
-            margin-right: 6px;
-
-            // &:first-of-type {
-            //     margin-left: 15px;
-            // }
-
-            // &:last-of-type {
-            //     margin-right: 15px;
-            // }
-
-            &.active {
-                background-color: var(--primary-color);
-                color: #fff;
-                border-color: var(--primary-color);
-
-                &::before {
-                    content: '';
-                    background: #fff;
-                    display: inline-block;
-                    width: 8px;
-                    height: 8px;
-                    border-radius: 50%;
-                    position: relative;
-                    margin-right: 2px;
-                }
-            }
-        }
-    }
-
-    .icon-close {
-        width: 12px;
-        height: 12px;
-        line-height: 12px;
-        font-size: 12px;
-        display: inline-block;
-        margin-left: 2px;
-        border-radius: 50%;
-        text-align: center;
-        transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
-        transform-origin: 100% 50%;
-
-        &::before {
-            transform: scale(0.6);
-            display: inline-block;
-            vertical-align: -3px;
-        }
-
-        &:hover {
-            background-color: #b4bccc;
-            color: #fff;
-        }
-    }
-
-    .contextmenu {
-        margin: 0;
-        background: #fff;
-        z-index: 3000;
-        position: absolute;
-        list-style-type: none;
-        padding: 5px 0;
-        border-radius: 4px;
-        font-size: 12px;
-        font-weight: 400;
-        color: #333;
-        box-shadow: 2px 2px 3px 0 rgb(0 0 0 / 30%);
-
-        li {
-            margin: 0;
-            padding: 7px 16px;
-            cursor: pointer;
-
-            &:hover {
-                background: #eee;
-            }
-        }
-    }
-}
-</style>
+<template>
+    <div class="w-full overflow-hidden pb-[14px]">
+        <div class="flex gap-2 overflow-x-auto rounded-xl bg-[#e8edf3] p-2">
+            <button
+                type="button"
+                class="group inline-flex min-h-[38px] shrink-0 items-center gap-2 rounded-lg px-[14px] text-[13px] font-semibold text-[var(--app-text-muted)] transition-colors hover:bg-[rgba(255,255,255,0.58)] hover:text-[var(--app-text)]"
+                :class="isActiveHome ? 'text-white hover:text-white' : ''"
+                :style="getActiveTabStyle(isActiveHome)"
+                @click="handleGoHome"
+            >
+                <span class="whitespace-nowrap">{{ formatRouteTitle('首页') }}</span>
+            </button>
+            <button
+                v-for="({ name, path, meta, fullPath }, index) in visitedViews"
+                :key="path"
+                type="button"
+                class="group inline-flex min-h-[38px] shrink-0 items-center gap-2 rounded-lg px-[14px] text-[13px] font-semibold text-[var(--app-text-muted)] transition-colors hover:bg-[rgba(255,255,255,0.58)] hover:text-[var(--app-text)]"
+                :class="isActiveTab({ name, path, fullPath }) ? 'text-white hover:text-white' : ''"
+                :style="getActiveTabStyle(isActiveTab({ name, path, fullPath }))"
+                @click="handleGoCacheRoute({ fullPath })"
+            >
+                <span class="whitespace-nowrap">{{ formatRouteTitle(meta.title) }}</span>
+                <span
+                    class="inline-flex h-4 w-4 items-center justify-center rounded-full text-xs text-[#98a2b3] opacity-0 transition-all hover:text-[var(--app-text)]"
+                    :class="
+                        isActiveTab({ name, path, fullPath })
+                            ? 'opacity-100 text-white/80 hover:text-white'
+                            : 'group-hover:opacity-100'
+                    "
+                    @click.stop="deleteVisitedView(index, $route.path === path)"
+                >
+                    ×
+                </span>
+            </button>
+        </div>
+    </div>
+</template>

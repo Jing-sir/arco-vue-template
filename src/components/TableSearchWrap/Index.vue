@@ -38,7 +38,7 @@ const props = withDefaults(defineProps<TableSearchWrapProps>(), {
     immediate: true,
     rowKey: 'id',
     emptyText: '暂无数据',
-    scroll: () => ({ x: 1000 }),
+    scroll: () => ({ x: 1000, y: 600 }),
     tableProps: () => ({}),
     showRefresh: false,
 })
@@ -153,19 +153,21 @@ defineExpose<TableSearchWrapExpose>({
 })
 </script>
 <template>
-    <div class="table-container">
-        <slot name="searchWrap">
-            <SearchWrap
-                v-if="props.searchConf.length"
-                ref="searchWrapRef"
-                :search-conf="props.searchConf"
-                :is-more="props.isMore"
-                @searchCallback="searchTable"
-            />
-        </slot>
+    <div class="table-container table-shell">
+        <div v-if="props.searchConf.length || slots.searchWrap" class="table-shell__filters">
+            <slot name="searchWrap">
+                <SearchWrap
+                    v-if="props.searchConf.length"
+                    ref="searchWrapRef"
+                    :search-conf="props.searchConf"
+                    :is-more="props.isMore"
+                    @searchCallback="searchTable"
+                />
+            </slot>
+        </div>
 
-        <div v-if="showToolbar" class="flex flex-wrap items-center justify-between gap-3">
-            <div class="flex flex-wrap items-center gap-3">
+        <div v-if="showToolbar" class="table-shell__toolbar">
+            <div class="table-shell__toolbar-group">
                 <slot name="roleBtnWrap" />
                 <slot
                     name="totalWrap"
@@ -174,7 +176,7 @@ defineExpose<TableSearchWrapExpose>({
                     :loading="loading"
                 />
             </div>
-            <div class="flex flex-wrap items-center gap-2">
+            <div class="table-shell__toolbar-group table-shell__toolbar-group--actions">
                 <slot
                     name="actionsWrap"
                     :refresh="refreshTable"
@@ -188,43 +190,102 @@ defineExpose<TableSearchWrapExpose>({
             </div>
         </div>
 
-        <slot
-            name="table"
-            :data-source="dataSource || []"
-            :loading="loading"
-            :pagination="paginationConfig"
-            :refresh="refreshTable"
-            :reset="resetTable"
-            :search-params="getSearchParams()"
-        >
-            <a-table
-                v-bind="mergedTableProps"
-                class="w-full"
-                :columns="normalizedColumns"
-                :data="dataSource || []"
+        <div class="table-shell__table">
+            <slot
+                name="table"
+                :data-source="dataSource || []"
                 :loading="loading"
-                @page-size-change="onPageSizeChange"
-                @page-change="onSizeChange"
+                :pagination="paginationConfig"
+                :refresh="refreshTable"
+                :reset="resetTable"
+                :search-params="getSearchParams()"
             >
-                <template
-                    v-for="column in slotColumns"
-                    :key="column.key"
-                    #[column.slotName]="slotProps"
+                <a-table
+                    v-bind="mergedTableProps"
+                    class="w-full"
+                    :scroll="scroll"
+                    :columns="normalizedColumns"
+                    :data="dataSource || []"
+                    :loading="loading"
+                    @page-size-change="onPageSizeChange"
+                    @page-change="onSizeChange"
                 >
-                    <slot
-                        :name="column.slotName"
-                        v-bind="{
-                            ...slotProps,
-                            pagination: paginationConfig,
-                            loading,
-                            dataSource: dataSource || [],
-                            searchParams: getSearchParams(),
-                        }"
-                    />
-                </template>
-            </a-table>
-        </slot>
+                    <template
+                        v-for="column in slotColumns"
+                        :key="column.key"
+                        #[column.slotName]="slotProps"
+                    >
+                        <slot
+                            :name="column.slotName"
+                            v-bind="{
+                                ...slotProps,
+                                pagination: paginationConfig,
+                                loading,
+                                dataSource: dataSource || [],
+                                searchParams: getSearchParams(),
+                            }"
+                        />
+                    </template>
+                </a-table>
+            </slot>
+        </div>
     </div>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.table-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.table-shell__filters {
+    border-radius: 10px;
+    background: transparent;
+    border-bottom: 1px solid var(--app-divider);
+    padding: 0 0 14px;
+}
+
+.table-shell__toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.table-shell__toolbar-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+
+.table-shell__toolbar-group--actions {
+    justify-content: flex-end;
+}
+
+.table-shell__table {
+    overflow: hidden;
+    border-radius: 10px;
+    background: var(--app-surface-strong);
+}
+
+:deep(.table-shell__table .arco-table-container) {
+    border-radius: 4px;
+}
+
+:deep(.table-shell__table .arco-table-th) {
+    background: #f5f7fa;
+    color: #4b5563;
+    font-weight: 600;
+}
+
+:deep(.table-shell__table .arco-table-tr .arco-table-td) {
+    border-bottom-color: var(--app-divider);
+}
+
+:deep(.table-shell__table .arco-table-tr:hover .arco-table-td) {
+    background: #f8fafc;
+}
+</style>

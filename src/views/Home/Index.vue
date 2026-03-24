@@ -165,17 +165,9 @@ const tableColumns = computed<ColumnType[]>(() => [
 ]);
 </script>
 <template>
-    <div class="main-wrapper">
-        <TableSearchWrap :api-fetch="fetchRedemptionList" :table-columns="tableColumns" :search-conf="searchConf">
-            <template #optional>
-                <a-button type="text">{{ t('编辑') }}</a-button>
-            </template>
-        </TableSearchWrap>
-    </div>
+    <TableSearchWrap :api-fetch="fetchRedemptionList" :table-columns="tableColumns" :search-conf="searchConf">
+        <template #optional>
+            <a-button type="text">{{ t('编辑') }}</a-button>
+        </template>
+    </TableSearchWrap>
 </template>
-
-<style lang="scss" scoped>
-.home {
-  background: red;
-}
-</style>

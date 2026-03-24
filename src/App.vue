@@ -33,8 +33,8 @@ store.getPwdIv();
 #app {
     width: 100%;
     min-height: 100%;
-    min-width: 1200px;
-    background: #f5f6f8;
+    min-width: var(--app-min-width);
+    background: var(--app-bg);
 
     /* min-width: 1310px; */
 }

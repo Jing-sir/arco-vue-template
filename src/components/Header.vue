@@ -1,159 +1,250 @@
 <script setup lang="ts">
-import { IconMenuFold, IconMenuUnfold } from '@arco-design/web-vue/es/icon';
-import BindGoogle from '@/components/Modal/BindGoogle.vue';
-import { RouteRecordRaw } from 'vue-router';
-import cookies from 'cookies-js';
-import api from '@/api/sys';
+import { IconMenuFold, IconMenuUnfold } from '@arco-design/web-vue/es/icon'
+import BindGoogle from '@/components/Modal/BindGoogle.vue'
+import type { RouteRecordRaw } from 'vue-router'
+import { Message } from '@arco-design/web-vue'
+import cookies from 'cookies-js'
+import api from '@/api/sys'
 
-const { t } = useI18n();
-
-const googleRef = ref();
-const resetPassRef = ref();
-const hasRoute = useRoute();
-const routes = ref<RouteRecordRaw[]>([]);
-
-const store = sideBar();
-const userStore = user();
-const { push } = useRouter();
-const storeTagsView = tagsView();
-const { isSidebar } = storeToRefs(store);
-
-const onIsSidebar = (status: boolean) => { // 开关左侧列表
-    store.updateIsSidebar(!status);
-};
-
-const isHome = (route: RouteRecordRaw) => { // 是否是首页
-    const name = route && route.name;
-    if (!name) return false;
-    return String(name).trim().toLocaleLowerCase() === 'main'.toLocaleLowerCase();
-};
-
-const onOpenGoogle = (): void => { // 打开google绑定二维码弹窗
-    googleRef.value.onShowDialog(true);
-};
-
-const onOpenPass = (): void => { // 打开重置密码弹窗
-    resetPassRef.value.onShowDialog(true);
-};
-
-const fetchBreadcrumb = () => { // 获取routes
-    let hasMatched: RouteRecordRaw[] = hasRoute.matched.filter((item: RouteRecordRaw) => item.meta && item.meta.title);
-    const hasRouteList: RouteRecordRaw[] = [{ path: '/', meta: { title: '首页', role: '' }, redirect: '/Home' }];
-
-    if (!isHome(hasMatched[0])) {
-        hasMatched = hasRouteList.concat(hasMatched);
+type HeaderRouteRecord = RouteRecordRaw & {
+    meta?: RouteRecordRaw['meta'] & {
+        title?: string | (() => string)
     }
+}
 
-    routes.value = hasMatched.filter((item: RouteRecordRaw) => item.meta && item.meta.title);
-};
+const props = withDefaults(
+    defineProps<{
+        isOnline?: boolean
+    }>(),
+    {
+        isOnline: true,
+    },
+)
 
-const onLink = (item: RouteRecordRaw) => { // 跳转路由
-    const { redirect, path } = item;
+const { t } = useI18n()
+
+const googleRef = ref<InstanceType<typeof BindGoogle> | null>(null)
+const hasRoute = useRoute()
+
+const store = sideBar()
+const userStore = user()
+const { push } = useRouter()
+const storeTagsView = tagsView()
+const { isSidebar } = storeToRefs(store)
+
+const homeRoute: HeaderRouteRecord = {
+    path: '/',
+    meta: { title: '首页', role: '' },
+    redirect: '/Home',
+}
+
+const pageTitleOverrides: Record<string, string> = {
+    addAccount: '新增管理员',
+    editAccount: '编辑管理员',
+    addRolePermissions: '新增角色',
+    editRolePermissions: '编辑角色权限',
+    viewRolePermissions: '查看角色权限',
+}
+
+const pageSummaryMap: Record<string, string> = {
+    Home: '汇总关键业务数据与筛选入口',
+    operationLog: '查看系统访问行为与操作追踪记录',
+    rolePermissions: '配置角色范围与系统功能访问边界',
+    addRolePermissions: '新增角色并配置权限范围',
+    editRolePermissions: '编辑角色权限范围与功能访问控制',
+    viewRolePermissions: '查看角色权限分配详情',
+    accountManage: '维护后台账号、状态与访问权限',
+    addAccount: '新增后台账号并配置角色与状态',
+    editAccount: '编辑后台账号信息与角色配置',
+}
+
+const onIsSidebar = (status: boolean) => {
+    store.updateIsSidebar(!status)
+}
+
+const isHome = (route?: HeaderRouteRecord) => {
+    const name = route?.name
+    if (!name) return false
+    return String(name).trim().toLocaleLowerCase() === 'main'
+}
+
+const onOpenGoogle = (): void => {
+    googleRef.value?.onShowDialog(true)
+}
+
+const onOpenPass = (): void => {
+    Message.info(t('请前往账号管理修改密码'))
+}
+
+const onLink = (item: HeaderRouteRecord) => {
+    const { redirect, path } = item
     if (redirect) {
-        const routePath = redirect === '/Home' ? '/' : redirect;
-        push(String(routePath));
-        return;
+        const routePath = redirect === '/Home' ? '/' : redirect
+        push(String(routePath))
+        return
     }
-    push(path);
-};
+    push(path)
+}
 
-const onLoginOut = (): void => { // 退出登录
+const onLoginOut = (): void => {
     api.loginOut().then(() => {
-        cookies.set('manageToken', '');
-        storeTagsView.clearVisitedView();
-        push('/login');
-    });
-};
+        cookies.set('manageToken', '')
+        storeTagsView.clearVisitedView()
+        push('/login')
+    })
+}
 
-const getName = computed<string>(() => userStore.userInfo?.fullName);
-const getUserName = computed<string>(() => userStore.userInfo?.fullName?.substr(0, 1) || '');
-const formatRouteTitle = (title?: string | Function): string =>
-    title ? t(String(typeof title === 'function' ? title() : title)) : '';
+const formatRouteTitle = (title?: string | (() => string)): string =>
+    title ? t(String(typeof title === 'function' ? title() : title)) : ''
 
-watch(() => hasRoute.path, () => { // 监听路由变化
-    if (hasRoute.path.startsWith('/redirect/')) return;
-    fetchBreadcrumb();
-});
+const breadcrumbRoutes = computed<HeaderRouteRecord[]>(() => {
+    const matched = hasRoute.matched.filter((item) =>
+        Boolean(item.meta?.title),
+    ) as HeaderRouteRecord[]
 
-userStore.getUserInfo();
+    if (!matched.length) {
+        return [homeRoute]
+    }
+
+    return isHome(matched[0]) ? matched : [homeRoute, ...matched]
+})
+
+const routeName = computed(() => String(hasRoute.name ?? ''))
+
+const currentPageTitleKey = computed(
+    () =>
+        pageTitleOverrides[routeName.value] ||
+        String(
+            breadcrumbRoutes.value[breadcrumbRoutes.value.length - 1]?.meta?.title ||
+                hasRoute.meta?.title ||
+                '首页',
+        ),
+)
+
+const currentPageTitle = computed(() => formatRouteTitle(currentPageTitleKey.value))
+
+const currentPageSummary = computed(() =>
+    t(pageSummaryMap[routeName.value] || '当前页面的业务视图与操作入口'),
+)
+
+const userDisplayName = computed(() => userStore.userInfo?.fullName || '')
+const userInitial = computed(() => userDisplayName.value.slice(0, 1).toUpperCase() || 'A')
+
+onMounted(() => {
+    userStore.getUserInfo()
+})
 </script>
 
 <template>
-    <div>
+    <div class="px-0.5 py-2 bg-white rounded-xl mt-2">
         <BindGoogle ref="googleRef" />
-        <div class="flex justify-between items-center header">
-            <div class="flex flex-row items-center">
-                <div class="cursor-pointer" @click.stop="onIsSidebar(isSidebar)">
-                    <icon-menu-fold v-if="isSidebar" :style="{ fontSize: 22 }" />
-                    <icon-menu-unfold v-else :style="{ fontSize: 22 }" />
+
+        <div class="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_auto]">
+            <div class="flex min-w-0 items-start gap-3">
+                <button
+                    type="button"
+                    class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--app-surface-strong)] text-[#5f6876] transition-colors hover:bg-[var(--app-surface-muted)] hover:text-[var(--app-text)]"
+                    @click.stop="onIsSidebar(isSidebar)"
+                >
+                    <IconMenuFold v-if="isSidebar" :style="{ fontSize: '18px' }" />
+                    <IconMenuUnfold v-else :style="{ fontSize: '18px' }" />
+                </button>
+
+                <div class="flex min-w-0 flex-1 flex-col gap-2">
+                    <a-breadcrumb class="m-0">
+                        <a-breadcrumb-item
+                            v-for="(item, index) in breadcrumbRoutes"
+                            :key="`${item.path}-${index}`"
+                        >
+                            <span
+                                v-if="
+                                    item.redirect === 'noRedirect' ||
+                                    index === breadcrumbRoutes.length - 1
+                                "
+                                class="cursor-text text-[11px] leading-none text-[#98a2b3]"
+                            >
+                                {{ formatRouteTitle(item.meta?.title) }}
+                            </span>
+                            <a
+                                v-else
+                                class="text-[11px] leading-none text-[var(--app-text-muted)]"
+                                @click.prevent="onLink(item)"
+                            >
+                                {{ formatRouteTitle(item.meta?.title) }}
+                            </a>
+                        </a-breadcrumb-item>
+                    </a-breadcrumb>
+
+                    <div class="flex flex-wrap items-center gap-2.5">
+                        <h1
+                            class="m-0 text-[25px] font-semibold leading-[1.1] tracking-[-0.03em] text-[var(--app-text)]"
+                        >
+                            {{ currentPageTitle }}
+                        </h1>
+                        <span
+                            class="inline-flex items-center gap-1.5 text-[10px] font-medium tracking-[0.02em]"
+                            :class="
+                                props.isOnline ? 'text-[var(--color-primary-6)]' : 'text-[#8f5f5a]'
+                            "
+                        >
+                            <span class="h-1.5 w-1.5 rounded-full bg-current" />
+                            {{ props.isOnline ? t('在线') : t('离线') }}
+                        </span>
+                    </div>
+
+                    <p
+                        class="m-0 max-w-[620px] text-xs leading-[1.55] text-[var(--app-text-muted)]"
+                    >
+                        {{ currentPageSummary }}
+                    </p>
                 </div>
-                <a-breadcrumb>
-                    <a-breadcrumb-item v-for="(item,index) in routes" :key="item.path">
-                        <span v-if="item.redirect === 'noRedirect'|| index === routes.length - 1" class="no-redirect">{{ formatRouteTitle(item.meta?.title) }}</span>
-                        <a v-else @click.prevent="onLink(item)">{{ formatRouteTitle(item.meta?.title) }}</a>
-                    </a-breadcrumb-item>
-                </a-breadcrumb>
             </div>
-            <a-space :size="20">
-                <ColorPicker/>
+
+            <div class="flex items-center gap-2 lg:self-start">
+                <div
+                    class="inline-flex min-h-9 items-center justify-center rounded-lg bg-[var(--app-surface-strong)] px-2"
+                    :title="t('主题色')"
+                >
+                    <ColorPicker />
+                </div>
+
                 <a-dropdown trigger="hover">
-                    <div class="flex flex-row items-center cursor-pointer">
-                        <div class="user-header">{{ getUserName }}</div>
-                        <p class="user-text">{{ getName }}</p>
+                    <div
+                        class="flex cursor-pointer items-center gap-2 rounded-lg bg-[var(--app-surface-strong)] px-[10px] py-1 pl-1 transition-colors hover:bg-[var(--app-surface-muted)]"
+                    >
+                        <div
+                            class="inline-flex h-[30px] w-[30px] items-center justify-center rounded-[7px] bg-[var(--color-primary-6)] text-xs font-bold text-white"
+                        >
+                            {{ userInitial }}
+                        </div>
+                        <div class="min-w-0">
+                            <p
+                                class="m-0 max-w-[180px] overflow-hidden text-xs font-semibold text-[var(--app-text)] text-ellipsis whitespace-nowrap"
+                            >
+                                {{ userDisplayName || '--' }}
+                            </p>
+                            <p
+                                class="mt-0.5 mb-0 text-[11px] leading-none text-[var(--app-text-muted)]"
+                            >
+                                {{ t('系统账户') }}
+                            </p>
+                        </div>
                     </div>
                     <template #content>
                         <a-menu>
-                            <a-menu-item key="0" @click="onOpenGoogle">{{ t('修改2FA') }}</a-menu-item>
-                            <a-menu-item key="0" @click="onOpenPass">{{ t('修改密码') }}</a-menu-item>
-                            <a-menu-item key="0" @click="onLoginOut">{{ t('退出登录') }}</a-menu-item>
+                            <a-menu-item key="google" @click="onOpenGoogle">{{
+                                t('修改2FA')
+                            }}</a-menu-item>
+                            <a-menu-item key="password" @click="onOpenPass">{{
+                                t('修改密码')
+                            }}</a-menu-item>
+                            <a-menu-item key="logout" @click="onLoginOut">{{
+                                t('退出登录')
+                            }}</a-menu-item>
                         </a-menu>
                     </template>
                 </a-dropdown>
-            </a-space>
+            </div>
         </div>
     </div>
 </template>
-<style lang="scss" scoped>
-.header {
-    height: 55px;
-    overflow: hidden;
-    position: relative;
-    padding-left: 10px;
-    background: #fff;
-    box-shadow: 0 1px 4px rgb(0 21 41 / 8%);
-}
-
-.sidebar-btn-active {
-    width: 32px;
-    height: 32px;
-    text-align: center;
-    line-height: 32px;
-    background: #e5e9f1;
-    border-radius: 8px;
-    cursor: pointer;
-    margin-right: 10px;
-}
-
-.user-header {
-    width: 32px;
-    height: 32px;
-    border-radius: 16px;
-    margin-right: 8px;
-    background: var(--color-primary-6);
-    color: #fff;
-    font-size: 15px;
-    text-align: center;
-    line-height: 32px;
-}
-
-.user-text {
-    font-size: 14px;
-    color: rgb(0 0 0 / 60%);
-    margin-right: 30px;
-}
-
-.no-redirect {
-    color: #97a8be;
-    cursor: text;
-}
-</style>

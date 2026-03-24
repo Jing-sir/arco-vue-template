@@ -35,7 +35,7 @@ const constantRoutes: RouteRecordRaw[] = [
                 name: 'operationLog',
                 component: () =>
                     import(/* webpackChunkName: "systemManage" */ '@/views/SystemManage/operation-log/Index.vue'),
-                meta: { title: '操作日志', role: 'operationLog', requiresAuth: true },
+                meta: { title: '操作日志', role: 'operationLog', icon: 'operationLog', requiresAuth: true },
             },
             {
                 // 角色与权限
@@ -43,7 +43,7 @@ const constantRoutes: RouteRecordRaw[] = [
                 name: 'rolePermissions',
                 component: () =>
                     import(/* webpackChunkName: "systemManage" */ '@/views/SystemManage/role-permissions/Index.vue'),
-                meta: { title: '角色与权限', role: 'rolePermissions', requiresAuth: true },
+                meta: { title: '角色与权限', role: 'rolePermissions', icon: 'rolePermissions', requiresAuth: true },
             },
             {
                 // 角色与权限
@@ -75,7 +75,7 @@ const constantRoutes: RouteRecordRaw[] = [
                 name: 'accountManage',
                 component: () =>
                     import(/* webpackChunkName: "addRolePermissions" */ '@/views/SystemManage/account-manage/Index.vue'),
-                meta: { title: '账号管理', role: 'accountManage', requiresAuth: true },
+                meta: { title: '账号管理', role: 'accountManage', icon: 'accountManage', requiresAuth: true },
             },
             {
                 // 账号管理-新增

@@ -1,10 +1,24 @@
 /* src/assets/styles/index.css */
 
 :root {
-    --color-primary-6: #165DFF;
-    --app-header-height: 61px;
+    --color-primary-6: #EB116F;
+    --app-min-width: 1120px;
+    --app-bg: #eef2f6;
+    --app-surface: #fcfcfd;
+    --app-surface-strong: #ffffff;
+    --app-surface-soft: #eef2f6;
+    --app-surface-muted: #e4eaf1;
+    --app-accent-soft: rgb(68 86 111 / 16%);
+    --app-divider: #dde4ec;
+    --app-text: #1b2430;
+    --app-text-muted: #667085;
+    --app-sider-width: 260px;
+    --app-sider-collapsed-width: 88px;
+    --app-header-height: 88px;
+    --app-shell-top-height: 154px;
     --page-shell-gap: 8px;
-    --content-pane-min-height: calc(100dvh - var(--app-header-height) - (var(--page-shell-gap) * 2));
+    --app-pane-radius: 10px;
+    --content-pane-min-height: calc(100dvh - var(--app-shell-top-height) - (var(--page-shell-gap) * 3));
     --scrollbar-size: 10px;
     --scrollbar-track: rgb(148 163 184 / 8%);
     --scrollbar-thumb: rgb(100 116 139 / 42%);
@@ -17,17 +31,30 @@
 .table-container {
     box-sizing: border-box;
     display: flow-root;
-    margin: 0 8px 8px 8px;
-    padding: 16px;
-    border-radius: 12px;
-    background: #fff;
+    padding: 20px;
+    border-radius: var(--app-pane-radius);
+    background: var(--app-surface-strong);
     min-height: var(--content-pane-min-height);
     height: fit-content;
     overflow: visible;
 }
 
+html,
+body,
+#app {
+    min-height: 100%;
+}
+
 html {
     scrollbar-gutter: stable;
+}
+
+body {
+    min-width: var(--app-min-width);
+    background:
+        radial-gradient(circle at top left, rgb(255 255 255 / 80%) 0%, rgb(255 255 255 / 0%) 34%),
+        linear-gradient(180deg, #f7f9fb 0%, var(--app-bg) 100%);
+    color: var(--app-text);
 }
 
 * {
