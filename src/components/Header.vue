@@ -46,18 +46,6 @@ const pageTitleOverrides: Record<string, string> = {
     viewRolePermissions: '查看角色权限',
 }
 
-const pageSummaryMap: Record<string, string> = {
-    Home: '汇总关键业务数据与筛选入口',
-    operationLog: '查看系统访问行为与操作追踪记录',
-    rolePermissions: '配置角色范围与系统功能访问边界',
-    addRolePermissions: '新增角色并配置权限范围',
-    editRolePermissions: '编辑角色权限范围与功能访问控制',
-    viewRolePermissions: '查看角色权限分配详情',
-    accountManage: '维护后台账号、状态与访问权限',
-    addAccount: '新增后台账号并配置角色与状态',
-    editAccount: '编辑后台账号信息与角色配置',
-}
-
 const onIsSidebar = (status: boolean) => {
     store.updateIsSidebar(!status)
 }
@@ -123,10 +111,6 @@ const currentPageTitleKey = computed(
 
 const currentPageTitle = computed(() => formatRouteTitle(currentPageTitleKey.value))
 
-const currentPageSummary = computed(() =>
-    t(pageSummaryMap[routeName.value] || '当前页面的业务视图与操作入口'),
-)
-
 const userDisplayName = computed(() => userStore.userInfo?.fullName || '')
 const userInitial = computed(() => userDisplayName.value.slice(0, 1).toUpperCase() || 'A')
 
@@ -191,12 +175,6 @@ onMounted(() => {
                             {{ props.isOnline ? t('在线') : t('离线') }}
                         </span>
                     </div>
-
-                    <p
-                        class="m-0 max-w-[620px] text-xs leading-[1.55] text-[var(--app-text-muted)]"
-                    >
-                        {{ currentPageSummary }}
-                    </p>
                 </div>
             </div>
 
