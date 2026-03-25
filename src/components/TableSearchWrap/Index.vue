@@ -538,7 +538,7 @@ defineExpose<TableSearchWrapExpose>({
         <!-- 搜索区域：如果页面传了 searchConf 或自定义 searchWrap，就显示 -->
         <div
             v-if="props.searchConf.length || slots.searchWrap"
-            class="rounded-[10px] border-b border-[var(--app-divider)] bg-transparent pb-[14px]"
+            class="rounded-[10px] bg-transparent pb-[14px]"
         >
             <slot name="searchWrap">
                 <SearchWrap

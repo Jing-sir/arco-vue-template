@@ -328,14 +328,15 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="table-container h-[var(--content-pane-min-height)] overflow-hidden">
-        <a-spin :loading="isSpinning" class="block h-full w-full">
+    <!-- 页面根容器直接锁定为当前内容区的一屏高度，避免被全局 table-container 的 fit-content 撑开。 -->
+    <div class="table-container min-h-0 overflow-hidden" style="height: var(--content-pane-min-height)">
+        <a-spin :loading="isSpinning" class="block h-full w-full overflow-hidden">
             <a-form
                 ref="formRef"
                 :model="currState"
                 :rules="rules"
                 layout="vertical"
-                class="flex h-full flex-col"
+                class="flex h-full min-h-0 flex-col"
             >
                 <div class="shrink-0 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                     <a-form-item
@@ -376,9 +377,10 @@ onMounted(async () => {
                     </div>
                 </div>
 
-                <div class="grid min-h-0 flex-1 !mt-0 gap-4 xl:grid-cols-[280px_minmax(0,1fr)_320px] xl:items-stretch">
+                <!-- 三栏主体统一锁定在当前页面可用高度内，避免任一栏内容过多时把整体布局继续向下撑开。 -->
+                <div class="grid h-0 min-h-0 flex-1 !mt-0 gap-4 overflow-hidden xl:grid-cols-[280px_minmax(0,1fr)_320px] xl:items-stretch">
                     <section
-                        class="flex min-h-0 h-full flex-col rounded-xl border border-[var(--app-divider)] bg-[var(--app-surface)] p-3"
+                        class="flex min-h-0 h-full flex-col overflow-hidden rounded-xl border border-[var(--app-divider)] bg-[var(--app-surface)] p-3"
                     >
                         <div class="mb-3">
                             <p class="text-sm font-semibold text-[var(--app-text)]">{{ t('模块导航') }}</p>
@@ -387,12 +389,13 @@ onMounted(async () => {
                             </p>
                         </div>
 
-                        <div class="grid min-h-0 flex-1 grid-cols-2 gap-2 overflow-y-auto pr-1">
+                        <!-- 模块按钮网格固定行高，避免单个标题撑高整行后造成卡片高度变形。 -->
+                        <div class="grid h-0 min-h-0 flex-1 auto-rows-[60px] grid-cols-2 gap-2 overflow-y-auto pr-1">
                             <button
                                 v-for="module in moduleList"
                                 :key="module.key"
                                 type="button"
-                                class="flex min-h-[72px] w-full flex-col items-start justify-between rounded-lg border px-3 py-2 text-left transition"
+                                class="flex h-full w-full flex-col items-start justify-between overflow-hidden rounded-lg border px-3 py-1 text-left transition"
                                 :class="
                                     currentModuleKey === module.key
                                         ? 'border-[var(--color-primary-6)] bg-[var(--app-control-bg)] text-[var(--app-text)]'
@@ -400,9 +403,9 @@ onMounted(async () => {
                                 "
                                 @click="focusModule(module.key)"
                             >
-                                <span class="line-clamp-2 text-sm font-medium leading-5">{{ module.title }}</span>
+                                <span class="line-clamp-2 text-sm font-medium leading-4">{{ module.title }}</span>
                                 <span
-                                    class="rounded-full px-2 py-0.5 text-xs"
+                                    class="rounded-full px-2 py-0 text-xs"
                                     :class="
                                         currentModuleKey === module.key
                                             ? 'bg-[var(--app-surface-strong)] text-[var(--color-primary-6)]'
@@ -415,7 +418,7 @@ onMounted(async () => {
                         </div>
                     </section>
 
-                    <section class="flex min-h-0 h-full flex-col rounded-xl border border-[var(--app-divider)] bg-[var(--app-surface-strong)]">
+                    <section class="flex min-h-0 h-full flex-col overflow-hidden rounded-xl border border-[var(--app-divider)] bg-[var(--app-surface-strong)]">
                         <div class="border-b border-[var(--app-divider)] px-4 py-3">
                             <div class="flex flex-wrap items-center justify-between gap-3">
                                 <div>
@@ -452,7 +455,7 @@ onMounted(async () => {
                             </div>
                         </div>
 
-                        <div class="min-h-0 flex-1 overflow-y-auto p-4">
+                        <div class="h-0 min-h-0 flex-1 overflow-y-auto p-4">
                             <a-tree
                                 v-if="readonlyTreeData.length"
                                 v-model:checked-keys="currState.checkedKeys"
@@ -471,7 +474,7 @@ onMounted(async () => {
                     </section>
 
                     <aside
-                        class="flex min-h-0 h-full flex-col rounded-xl border border-[var(--app-divider)] bg-[var(--app-surface)] p-3"
+                        class="flex min-h-0 h-full flex-col overflow-hidden rounded-xl border border-[var(--app-divider)] bg-[var(--app-surface)] p-3"
                     >
                         <div class="mb-3">
                             <p class="text-sm font-semibold text-[var(--app-text)]">
@@ -484,7 +487,7 @@ onMounted(async () => {
 
                         <div
                             v-if="groupedSelectedPermissions.length"
-                            class="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1"
+                            class="h-0 min-h-0 flex-1 space-y-4 overflow-y-auto pr-1"
                         >
                             <div
                                 v-for="group in groupedSelectedPermissions"
