@@ -115,6 +115,13 @@ const currentPageTitle = computed(() => formatRouteTitle(currentPageTitleKey.val
 
 const userDisplayName = computed(() => userStore.userInfo?.fullName || '')
 const userInitial = computed(() => userDisplayName.value.slice(0, 1).toUpperCase() || 'A')
+/**
+ * 在线状态在页面标题区和用户区都可能复用，集中到 computed 可以避免模板里重复分支。
+ */
+const onlineStatusClassName = computed(() =>
+    props.isOnline ? 'text-[var(--color-primary-6)]' : 'text-[var(--app-status-offline)]',
+)
+const onlineStatusLabel = computed(() => (props.isOnline ? t('在线') : t('离线')))
 
 /**
  * 主题模式按钮直接复用中文 i18n key。
@@ -183,21 +190,12 @@ onMounted(() => {
                         </a-breadcrumb-item>
                     </a-breadcrumb>
 
-                    <div class="flex flex-wrap items-center gap-2.5">
+                    <div class="flex items-center">
                         <h1
                             class="m-0 text-[25px] font-semibold leading-[1.1] tracking-[-0.03em] text-[var(--app-text)]"
                         >
                             {{ currentPageTitle }}
                         </h1>
-                        <span
-                            class="inline-flex items-center gap-1.5 text-[10px] font-medium tracking-[0.02em]"
-                            :class="
-                                props.isOnline ? 'text-[var(--color-primary-6)]' : 'text-[var(--app-status-offline)]'
-                            "
-                        >
-                            <span class="h-1.5 w-1.5 rounded-full bg-current" />
-                            {{ props.isOnline ? t('在线') : t('离线') }}
-                        </span>
                     </div>
                 </div>
             </div>
@@ -254,17 +252,19 @@ onMounted(() => {
                         >
                             {{ userInitial }}
                         </div>
-                        <div class="min-w-0">
+                        <div class="flex min-w-0 flex-col gap-0.5">
                             <p
                                 class="m-0 max-w-[180px] overflow-hidden text-xs font-semibold text-[var(--app-text)] text-ellipsis whitespace-nowrap"
                             >
                                 {{ userDisplayName || '--' }}
                             </p>
-                            <p
-                                class="mt-0.5 mb-0 text-[11px] leading-none text-[var(--app-text-muted)]"
+                            <span
+                                class="inline-flex items-center gap-1 text-[10px] font-medium leading-none tracking-[0.02em]"
+                                :class="onlineStatusClassName"
                             >
-                                {{ t('系统账户') }}
-                            </p>
+                                <span class="h-1.5 w-1.5 rounded-full bg-current" />
+                                {{ onlineStatusLabel }}
+                            </span>
                         </div>
                     </div>
                     <template #content>

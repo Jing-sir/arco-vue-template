@@ -58,6 +58,7 @@ declare module 'vue' {
     PermissionButton: typeof import('./components/TableSearchWrap/components/PermissionButton.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    Settings2FA: typeof import('./components/Settings2FA.vue')['default']
     SideNavigationBar: typeof import('./components/SideNavigationBar/index.vue')['default']
     StatusText: typeof import('./components/TableSearchWrap/components/StatusText.vue')['default']
     TagsView: typeof import('./components/TagsView.vue')['default']
