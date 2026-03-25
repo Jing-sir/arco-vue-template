@@ -8,9 +8,11 @@ import type {
     TableFetchResult,
     TableRowKey,
     TableSearchFormExpose,
+    TableSearchSorterConfig,
     TableSearchWrapExpose,
 } from '@/interface/TableType';
 import { PagingDefaultConf } from '@/utils/constant';
+import useTableSorter from '@/use/useTableSorter';
 import { useSlots } from 'vue';
 
 /**
@@ -52,6 +54,8 @@ interface TableSearchWrapProps {
     showRefresh?: boolean;
     showSkeleton?: boolean;
     skeletonRows?: number;
+    searchSorter?: TableSearchSorterConfig;
+    enableColumnSort?: boolean;
 }
 
 const props = withDefaults(defineProps<TableSearchWrapProps>(), {
@@ -66,6 +70,7 @@ const props = withDefaults(defineProps<TableSearchWrapProps>(), {
     showRefresh: false,
     showSkeleton: true,
     skeletonRows: 8,
+    enableColumnSort: true,
 });
 
 const { t } = useI18n();
@@ -99,29 +104,6 @@ let tableResizeObserver: ResizeObserver | null = null;
  * 这里作为“业务筛选条件缓存”，让翻页、刷新、分页切换都能沿用同一组搜索条件。
  */
 const currentSearchParams = ref<SearchParams>({ ...props.defaultParams });
-
-/**
- * 统一规范化列配置：
- * 1. 自动补齐缺失的 key
- * 2. 递归处理 children，保证列树结构一致
- */
-const normalizeColumns = (columns: ColumnType[]): ColumnType[] =>
-    columns.map((column) => ({
-        ...column,
-        key: column.key ?? column.dataIndex ?? String(column.title),
-        children: column.children ? normalizeColumns(column.children) : undefined,
-    }));
-
-/**
- * 规范化后的列定义。
- */
-const normalizedColumns = computed(() => normalizeColumns(props.tableColumns));
-
-/**
- * 需要透传具名插槽的列。
- * 只有定义了 slotName 的列，才会在 a-table 中动态挂接插槽。
- */
-const slotColumns = computed(() => normalizedColumns.value.filter((column) => column.slotName));
 
 /**
  * 合并表格 locale 配置。
@@ -186,7 +168,39 @@ const {
  * 当前列表数据。
  * usePagination 返回的是完整响应对象，这里抽出 list 给表格渲染。
  */
-const dataSource = computed<unknown[]>(() => tableResult.value?.list ?? []);
+const rawDataSource = computed<Record<string, unknown>[]>(() => tableResult.value?.list ?? []);
+
+/**
+ * 表格排序能力统一交给 useTableSorter 管理：
+ * 1. 搜索字段排序
+ * 2. 当前列点击排序
+ * 3. 文本/数字/时间/枚举的统一比较规则
+ */
+const {
+    normalizedColumns,
+    onSorterChange,
+    sortedDataSource,
+    sortRecords,
+} = useTableSorter({
+    columns: computed(() => props.tableColumns),
+    rawDataSource,
+    searchConf: computed(() => props.searchConf),
+    currentSearchParams,
+    searchSorter: computed(() => props.searchSorter),
+    enableColumnSort: props.enableColumnSort,
+});
+
+/**
+ * 表格最终渲染数据。
+ * 这里始终以排序后的数据源为准，让分页、刷新和筛选结果保持同一套展示逻辑。
+ */
+const dataSource = computed<Record<string, unknown>[]>(() => sortedDataSource.value);
+
+/**
+ * 需要透传具名插槽的列。
+ * 只有定义了 slotName 的列，才会在 a-table 中动态挂接插槽。
+ */
+const slotColumns = computed(() => normalizedColumns.value.filter((column) => column.slotName));
 
 /**
  * 当前总条数。
@@ -237,7 +251,7 @@ const searchTable = async (
         pageSize: currentPageSize.value,
     });
 
-    return result.list;
+    return sortRecords(result.list);
 };
 
 /**
@@ -250,7 +264,7 @@ const refreshTable = async (): Promise<unknown[]> => {
     }
 
     const result = await refreshAsync();
-    return result.list;
+    return sortRecords(result.list);
 };
 
 /**
@@ -584,6 +598,7 @@ defineExpose<TableSearchWrapExpose>({
                     :loading="tableLoading"
                     @page-size-change="onPageSizeChange"
                     @page-change="onPageChange"
+                    @sorter-change="onSorterChange"
                 >
                     <!-- 空状态区域：首屏加载时显示内容骨架，否则显示正常 empty 文案 -->
                     <template #empty>

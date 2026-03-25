@@ -33,6 +33,35 @@ export interface TabsType  {
     role?: string;
 }
 
+export type TableSortDirection = 'ascend' | 'descend';
+
+export type TableSortValueType = 'text' | 'number' | 'date' | 'enum';
+
+export type TableSortEnumValue = string | number | boolean;
+
+export interface TableSortFieldConfig<T = Record<string, unknown>> {
+    field: string;
+    type?: TableSortValueType;
+    direction?: TableSortDirection;
+    enumOrder?: TableSortEnumValue[];
+    emptyPlacement?: 'first' | 'last';
+    getValue?: (record: T) => unknown;
+}
+
+export interface TableColumnSortConfig<T = Record<string, unknown>>
+    extends Omit<TableSortFieldConfig<T>, 'field' | 'direction'> {
+    field?: string;
+}
+
+export type TableSortField<T = Record<string, unknown>> =
+    | string
+    | TableSortFieldConfig<T>;
+
+export interface TableSearchSorterConfig<T = Record<string, unknown>> {
+    enabled?: boolean;
+    fields?: TableSortField<T>[];
+}
+
 export interface ColumnType<T = Record<string, unknown>> { // column type
     title: string;
     dataIndex?: string;
@@ -47,7 +76,13 @@ export interface ColumnType<T = Record<string, unknown>> { // column type
     width?: string | number;
     customRender?: (data: { index: number, text: string | number, record: T}) => void;
     fixed?: string;
-    ellipsis?: boolean
+    ellipsis?: boolean;
+    sorter?: boolean | TableColumnSortConfig<T>;
+    sortable?: {
+        sorter?: boolean;
+        sortDirections?: TableSortDirection[];
+        sortOrder?: TableSortDirection | '';
+    };
 }
 
 // 搜索字段值类型
@@ -63,6 +98,9 @@ interface BaseSearchOption {
     label: string;
     type: string;
     placeholder?: string;
+    sortField?: string;
+    sortType?: TableSortValueType;
+    sortEnumOrder?: TableSortEnumValue[];
     optionsArr?:
         | SearchOptionItem[]
         | ComputedRef<SearchOptionItem[]>;
@@ -91,7 +129,17 @@ export interface SelectSearchOption extends BaseSearchOption {
 export interface DateRangeSearchOption extends BaseSearchOption {
     type: 'date';
     modelKey: string[]; // 两个字段的数组
-    [key: string]: SearchFieldValue | string[] | BaseSearchOption['label'] | BaseSearchOption['optionsArr'] | BaseSearchOption['props'] | BaseSearchOption['timeFormat'] | BaseSearchOption['type'];
+    [key: string]:
+        | SearchFieldValue
+        | string[]
+        | BaseSearchOption['label']
+        | BaseSearchOption['sortField']
+        | BaseSearchOption['sortType']
+        | BaseSearchOption['sortEnumOrder']
+        | BaseSearchOption['optionsArr']
+        | BaseSearchOption['props']
+        | BaseSearchOption['timeFormat']
+        | BaseSearchOption['type'];
 }
 
 // 单日期搜索选项

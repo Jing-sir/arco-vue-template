@@ -24,6 +24,7 @@ const tableColumns = computed<ColumnType[]>(() => [
         slotName: 'action',
         fixed: 'right',
         width: 180,
+        sorter: false,
     },
 ]);
 

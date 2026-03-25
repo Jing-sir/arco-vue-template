@@ -4,6 +4,7 @@ import StatusText from '@/components/TableSearchWrap/components/StatusText.vue';
 import type {
     ColumnType,
     SearchOption,
+    TableSearchSorterConfig,
     TableSearchWrapExpose,
 } from '@/interface/TableType';
 import api from '@/api/fetchTest/index';
@@ -30,25 +31,72 @@ const searchConf = ref<SearchOption[]>([
     {
         label: '操作时间',
         modelKey: ['startTime', 'endTime'],
+        sortField: 'opTime',
+        sortType: 'date',
         type: 'date',
         value: [],
     },
 ]);
 
+const searchSorter: TableSearchSorterConfig = {
+    enabled: true,
+};
+
 const tableColumns = computed<ColumnType[]>(() => [
-    { title: 'ID', dataIndex: 'id', width: 180, fixed: 'left' },
+    {
+        title: 'ID',
+        dataIndex: 'id',
+        width: 180,
+        fixed: 'left',
+        sorter: {
+            type: 'number',
+        },
+    },
     { title: t('操作人'), dataIndex: 'opAccount', width: 120 },
-    { title: t('操作时间'), dataIndex: 'opTime', width: 180 },
+    {
+        title: t('操作时间'),
+        dataIndex: 'opTime',
+        width: 180,
+        sorter: {
+            type: 'date',
+        },
+    },
     { title: 'IP', dataIndex: 'ip', width: 140 },
     { title: t('请求功能'), dataIndex: 'reqFunc', width: 180 },
     { title: t('请求URL'), dataIndex: 'reqUrl', width: 220 },
     { title: t('请求报文'), dataIndex: 'reqData', slotName: 'reqData', width: 100 },
     { title: t('响应报文'), dataIndex: 'respData', slotName: 'respData', width: 100 },
     { title: t('请求方式'), dataIndex: 'reqMethod', width: 120 },
-    { title: t('执行耗时(毫秒)'), dataIndex: 'elapsedTime', width: 150 },
-    { title: t('是否发生错误的表示'), dataIndex: 'occurErr', slotName: 'occurErr', width: 160 },
+    {
+        title: t('执行耗时(毫秒)'),
+        dataIndex: 'elapsedTime',
+        width: 150,
+        sorter: {
+            type: 'number',
+        },
+    },
+    {
+        title: t('是否发生错误的表示'),
+        dataIndex: 'occurErr',
+        slotName: 'occurErr',
+        width: 160,
+        sorter: {
+            type: 'enum',
+            enumOrder: [true, 1, false, 0],
+        },
+    },
     { title: t('发生错误的信息'), dataIndex: 'errMsg', slotName: 'errMsg', width: 200 },
-    { title: t('响应状态'), dataIndex: 'success', slotName: 'success', width: 120, fixed: 'right' },
+    {
+        title: t('响应状态'),
+        dataIndex: 'success',
+        slotName: 'success',
+        width: 120,
+        fixed: 'right',
+        sorter: {
+            type: 'enum',
+            enumOrder: [true, 1, false, 0],
+        },
+    },
 ]);
 
 const fetchOperationLogList = (params: Record<string, unknown> = {}) =>
@@ -75,6 +123,7 @@ useOnActivated(() => {
         :api-fetch="fetchOperationLogList"
         :table-columns="tableColumns"
         :search-conf="searchConf"
+        :search-sorter="searchSorter"
         row-key="id"
     >
         <template #reqData="{ record }">

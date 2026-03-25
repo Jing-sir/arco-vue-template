@@ -87,7 +87,7 @@ function httpInit(instance: AxiosInstance): AxiosInstance {
         const newData: {[key: string]: any} = deepCopy(data);
 
         if (typeOf(newData) !== 'object' || !headers?.pretreatment) return newData;
-        if ([10005].includes(newData.code)) {
+        if ([10005, 10021].includes(newData.code)) {
             // 去登录，错误提示、异常抛出由后续流程继续处理
             cookies.set('manageToken', '') // 使凭证过期
             await router.push('/login') // 主动登录

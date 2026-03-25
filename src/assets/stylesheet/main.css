@@ -1,4 +1,9 @@
-/* src/assets/styles/index.css */
+/* Tailwind layers live in the project stylesheet entry so Vite always compiles them with the local config. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Shared app design tokens and global shell styles. */
 
 :root {
     --color-primary-6: #EB116F;
@@ -24,6 +29,13 @@
     --scrollbar-thumb: rgb(100 116 139 / 42%);
     --scrollbar-thumb-hover: rgb(22 93 255 / 52%);
     --scrollbar-thumb-active: rgb(22 93 255 / 68%);
+}
+
+/* Arco writes its default radius tokens on `body`, so we override them here with higher selector priority. */
+html body {
+    --border-radius-small: 6px;
+    --border-radius-medium: 6px;
+    --border-radius-large: 6px;
 }
 
 .main-wrapper,

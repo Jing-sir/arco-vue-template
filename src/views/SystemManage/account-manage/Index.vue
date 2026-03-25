@@ -6,6 +6,7 @@ import StatusText from '@/components/TableSearchWrap/components/StatusText.vue';
 import type {
     ColumnType,
     SearchOption,
+    TableSearchSorterConfig,
     TableSearchWrapExpose,
 } from '@/interface/TableType';
 import { Message } from '@arco-design/web-vue';
@@ -38,19 +39,40 @@ const searchConf = ref<SearchOption[]>([
     },
 ]);
 
+const searchSorter: TableSearchSorterConfig = {
+    enabled: true,
+};
+
 const tableColumns = computed<ColumnType[]>(() => [
     { title: t('序号'), slotName: 'index', width: 80 },
     { title: t('管理员账号'), dataIndex: 'account' },
     { title: t('姓名'), dataIndex: 'realName' },
     { title: t('角色'), dataIndex: 'roleName' },
-    { title: t('账号状态'), dataIndex: 'state', slotName: 'state', width: 140 },
-    { title: t('最后登陆时间'), dataIndex: 'lastLoginTime', width: 180 },
+    {
+        title: t('账号状态'),
+        dataIndex: 'state',
+        slotName: 'state',
+        width: 140,
+        sorter: {
+            type: 'enum',
+            enumOrder: [1, 2, 3],
+        },
+    },
+    {
+        title: t('最后登陆时间'),
+        dataIndex: 'lastLoginTime',
+        width: 180,
+        sorter: {
+            type: 'date',
+        },
+    },
     {
         title: t('操作'),
         dataIndex: 'action',
         slotName: 'action',
         fixed: 'right',
         width: 280,
+        sorter: false,
     },
 ]);
 
@@ -82,6 +104,7 @@ useOnActivated(() => {
             :api-fetch="fetchUserList"
             :table-columns="tableColumns"
             :search-conf="searchConf"
+            :search-sorter="searchSorter"
             row-key="userId"
             :scroll="{ x: 1100, y: 800 }"
         >

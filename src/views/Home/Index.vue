@@ -147,21 +147,29 @@ const searchConf = ref<SearchOption[]>([
 ]);
 
 const tableColumns = computed<ColumnType[]>(() => [
-    { title: t('ID'), dataIndex: 'id', width: 80, fixed: 'left' },
+    { title: t('ID'), dataIndex: 'id', width: 80, fixed: 'left', sorter: { type: 'number' } },
     { title: t('内部卡ID'), dataIndex: 'ditchCardId', width: 140 },
     { title: t('渠道卡ID'), dataIndex: 'internalCardId', key: 'internalCardId', width: 140 },
     { title: t('交易关联ID'), dataIndex: 'transactionId', key: 'transactionId', width: 140 },
     { title: t('渠道交易ID'), dataIndex: 'uuid', key: 'uuid', width: 140 },
     { title: t('账户号'), dataIndex: 'accountNo', width: 140 },
-    { title: t('业务类型'), dataIndex: 'type', width: 140 },
-    { title: t('交易金额'), dataIndex: 'amount', width: 140 },
+    {
+        title: t('业务类型'),
+        dataIndex: 'type',
+        width: 140,
+        sorter: {
+            type: 'enum',
+            enumOrder: [1, 2],
+        },
+    },
+    { title: t('交易金额'), dataIndex: 'amount', width: 140, sorter: { type: 'number' } },
     { title: t('交易币种'), dataIndex: 'currencyCode', width: 140 },
-    { title: t('变动后余额'), dataIndex: 'newAmount', width: 140 },
-    { title: t('冻结金额'), dataIndex: 'frozenAmount', width: 140 },
-    { title: t('变动后冻结余额'), dataIndex: 'newFrozenAmount', width: 140 },
-    { title: t('交易发生时间'), dataIndex: 'createTime', width: 140 },
+    { title: t('变动后余额'), dataIndex: 'newAmount', width: 140, sorter: { type: 'number' } },
+    { title: t('冻结金额'), dataIndex: 'frozenAmount', width: 140, sorter: { type: 'number' } },
+    { title: t('变动后冻结余额'), dataIndex: 'newFrozenAmount', width: 140, sorter: { type: 'number' } },
+    { title: t('交易发生时间'), dataIndex: 'createTime', width: 140, sorter: { type: 'date' } },
     { title: t('备注'), dataIndex: 'note', width: 140 },
-    { title: t('操作'), dataIndex: 'optional', slotName: 'optional', fixed: 'right', width: 160 },
+    { title: t('操作'), dataIndex: 'optional', slotName: 'optional', fixed: 'right', width: 160, sorter: false },
 ]);
 </script>
 <template>

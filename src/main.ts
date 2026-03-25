@@ -11,7 +11,6 @@ import numberOperation from '@/filters/numberOperation';
 
 import 'nprogress/nprogress.css';
 import '@/assets/stylesheet/main.css';
-import 'tailwindcss/tailwind.css';
 import '@arco-design/web-vue/dist/arco.css';
 
 createApp(App)
