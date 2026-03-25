@@ -51,8 +51,14 @@ const routerGuards: Record<string, RouterGuardHandler> = {
     },
 
     async setRequiresAuth(to): Promise<GuardResult> {
-        const hasToken = cookies.get('manageToken');
-        if (!hasToken) return true;
+        const hasToken = Boolean(cookies.get('manageToken'));
+        const requiresAuth = Boolean(to.meta.requiresAuth);
+
+        // 未登录访问受保护路由时，统一跳转登录页并保留目标地址，登录后可回跳。
+        if (!hasToken) {
+            if (!requiresAuth) return true;
+            return `/login?redirect=${encodeURIComponent(to.fullPath || to.path || '/')}`;
+        }
 
         if (to.path === '/login') {
             return '/';
@@ -71,8 +77,6 @@ const routerGuards: Record<string, RouterGuardHandler> = {
         );
 
         const routeRole = typeof to.meta.role === 'string' ? to.meta.role : '';
-        const requiresAuth = Boolean(to.meta.requiresAuth);
-
         if (!requiresAuth) return true;
         if (!routeRole) return '/error';
         if (!permissionMap[routeRole]) return '/error/404';

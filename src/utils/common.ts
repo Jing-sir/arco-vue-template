@@ -140,8 +140,8 @@ export function addEventListener( // 原生事件监听
 
     if ('attachEvent' in Element.prototype) {
         // IE 8 及更早 IE 版本
-        // @ts-ignore
-        el.attachEvent(`on${type}`, method, options?.capture);
+        const legacyEl = el as unknown as { attachEvent?: (eventName: string, eventHandler: EventListenerOrEventListenerObject, useCapture?: boolean) => void };
+        legacyEl.attachEvent?.(`on${event}`, handler, options?.capture);
     }
 }
 
@@ -159,8 +159,8 @@ export function removeEventListener( // 原生事件移除监听
 
     if ('detachEvent' in Element.prototype) {
         // IE 8 及更早IE版本
-        // @ts-ignore
-        el.detachEvent(`on${type}`, method, options?.capture);
+        const legacyEl = el as unknown as { detachEvent?: (eventName: string, eventHandler: EventListenerOrEventListenerObject, useCapture?: boolean) => void };
+        legacyEl.detachEvent?.(`on${event}`, handler, options?.capture);
     }
 }
 
@@ -173,7 +173,7 @@ export function randomString(len: number = 32): string {
     /** **默认去掉了容易混淆的字符oOLl,9gq,Vv,Uu,I1*** */
     return new Array(len)
         .fill(undefined)
-        .reduce<string>((acc, cur) => acc + $chars.charAt(Math.floor(Math.random() * maxPos)), '');
+        .reduce<string>((acc) => acc + $chars.charAt(Math.floor(Math.random() * maxPos)), '');
 }
 
 export function urlEncode(clearString: string): string {
@@ -303,15 +303,15 @@ export function buildTree<T extends Record<string, any>>(
     key: string = 'id',
     parentKey: string = 'parentId'
 ): T[] {
-    // @ts-ignore
-    const itemMap = new Map<string, T & { [childrenKey]: T[] }>();
+    type TreeNode = T & Record<string, T[]>;
+    const itemMap = new Map<string, TreeNode>();
     const rootNodes: T[] = [];
 
     // 第一次遍历，构建 Map 和找到根节点
     for (const item of array) {
         const itemId = item[key] as string;
         const parentId = item[parentKey] as string;
-        const currentItem = { ...item, [childrenKey]: [] };
+        const currentItem = { ...item, [childrenKey]: [] as T[] } as TreeNode;
 
         itemMap.set(itemId, currentItem);
 
@@ -326,9 +326,10 @@ export function buildTree<T extends Record<string, any>>(
         const parentId = item[parentKey] as string;
 
         if (parentId && parentId !== '0') {
-            const parentItem = itemMap.get(parentId) as T & { childrenKey: T[] };
-            if (parentItem) {
-                parentItem[childrenKey].push(itemMap.get(itemId) as T);
+            const parentItem = itemMap.get(parentId);
+            const childItem = itemMap.get(itemId);
+            if (parentItem && childItem) {
+                parentItem[childrenKey].push(childItem);
             }
         }
     }
@@ -372,13 +373,9 @@ export function recursionFind<T extends object>( // 同Array.find方法，支持
     // 数组递归查找
     if (!hasChildren) return (buildFlat<T>(array, key, false) as T[]).find(callback);
 
-    // eslint-disable-next-line no-restricted-syntax
-    for (const [
-        index,
-        // @ts-ignore
-        item,
-    ] of array.entries()) {
-        if (callback(item as T, index as number, array as T[])) return item; // 已查找到
+    for (let index = 0; index < array.length; index += 1) {
+        const item = array[index] as T;
+        if (callback(item, index, array as T[])) return item; // 已查找到
 
         const children = (item as { [name: string]: T[] })?.[key] as T[];
 
@@ -442,7 +439,7 @@ export const onCopyCode = (val: string): void => { // 复制code / 链接
     try {
         copyToClipboard(val);
         Message.success(formatText('复制成功'));
-    } catch (e) {
-        Message.success(formatText('复制失败'));
+    } catch {
+        Message.error(formatText('复制失败'));
     }
 };

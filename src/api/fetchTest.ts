@@ -1,4 +1,4 @@
-import { TableResultType } from '@/interface/TableType';
+import type { TableResultType } from '@/interface/TableType';
 import { Api } from './api';
 
 class FetchTest extends Api {

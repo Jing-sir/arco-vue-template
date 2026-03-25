@@ -6,6 +6,7 @@ import router from './setup/router-setup';
 import ArcoVue from '@arco-design/web-vue';
 import dateFormat from '@/filters/dateFormat';
 import DefaultEmpty from '@/directives/whenEmpty';
+import onlyNumber from '@/directives/onlyNumber';
 import dataThousands from '@/filters/dataThousands';
 import numberOperation from '@/filters/numberOperation';
 
@@ -20,6 +21,7 @@ createApp(App)
     .use(router)
     .use(dateFormat)
     .use(DefaultEmpty)
+    .use(onlyNumber)
     .use(dataThousands)
     .use(numberOperation)
     .mount('#app');

@@ -36,7 +36,7 @@ const i18n = createI18n({
 
 export const getI18nLanguage = (): LangKeyString => i18n.global.locale.value; // 获取语言
 export function setI18nLanguage(lang: LangKeyString = fallbackLocale): Locale { // 设置规则：完全匹配 -> 模糊匹配 -> 默认语言
-    const { global: { locale, availableLocales }, mode } = i18n;
+    const { global: { locale, availableLocales } } = i18n;
 
     if (locale.value === lang) return lang; // 不允许重复设置语言
     const language: LangKeyString = availableLocales.includes(lang)

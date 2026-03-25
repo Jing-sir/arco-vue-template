@@ -1,4 +1,3 @@
-import { AxiosInstance } from 'axios';
 import { Api } from './api';
 
 class FetchTest extends Api {

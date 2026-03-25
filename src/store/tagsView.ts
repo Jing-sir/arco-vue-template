@@ -1,6 +1,7 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
-import { useRouter, useRoute, RouteLocationNormalized } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
+import type { RouteLocationNormalized } from 'vue-router';
 
 export default defineStore('tagsView', () => {
     const visitedViews = ref(Object.create([])); // tabs数据存储

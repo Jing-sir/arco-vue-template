@@ -1,6 +1,5 @@
 import type { App } from 'vue';
 import dayjs from 'dayjs';
-import { arraySort, ArrayItemType } from '@/filters/arraySort';
 
 export interface DateDiff {
     years: number

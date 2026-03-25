@@ -1,7 +1,7 @@
 import type { TabsType } from '@/interface/TableType';
 import sideBar from '@/store/sideBar';
 import { storeToRefs } from 'pinia';
-import api from '@/api/permission';
+import type api from '@/api/permission';
 
 export default  function useTabsRole(tabs: TabsType[], key: string) {
     const activeKey = ref(key);

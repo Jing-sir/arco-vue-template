@@ -1,4 +1,4 @@
-import { App, DirectiveBinding } from 'vue';
+import type { App, DirectiveBinding } from 'vue';
 
 const DefaultEmpty = {
     mounted(el: Element, binding: DirectiveBinding) {

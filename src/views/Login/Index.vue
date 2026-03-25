@@ -26,6 +26,7 @@ const formState = reactive<LoginFormState>({
 
 const store = user()
 const router = useRouter()
+const route = useRoute()
 
 const rules = {
     account: [{ required: true, message: t('请输入账号'), trigger: 'blur' }],
@@ -54,9 +55,15 @@ const setManageToken = (token = ''): void => {
     cookies.set('manageToken', token)
 }
 
+const resolveLoginRedirect = (): string => {
+    const { redirect } = route.query
+    if (typeof redirect !== 'string') return '/'
+    return redirect.startsWith('/') ? redirect : '/'
+}
+
 const finishLogin = async (): Promise<void> => {
     Message.success(t('登录成功'))
-    await router.push('/')
+    await router.push(resolveLoginRedirect())
 }
 
 const onOk = async (): Promise<void> => {

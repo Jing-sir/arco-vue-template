@@ -31,8 +31,6 @@ const xhrDefaultConfig: AxiosRequestConfig = {
     // timeout: 1000,
 };
 
-const curDate = timeStampToDate(String(new Date()));
-
 function httpInit(instance: AxiosInstance): AxiosInstance {
     instance.interceptors.request.use(async (config: AxiosRequestConfig): Promise<any> => {
         // const cryptoKey =  await generateKey(String(config.url));
@@ -48,7 +46,8 @@ function httpInit(instance: AxiosInstance): AxiosInstance {
                 'X-B3-Spanid': moment().valueOf() * 1000, // Spanid
                 'Accept-Language': getI18nLanguage(), // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language
                 language: getI18nLanguage(),
-                DateTime: curDate,
+                // 每次请求都生成新的时间戳，避免长期复用启动时的旧值。
+                DateTime: timeStampToDate(Date.now()),
                 ...config.headers
             },
             transformRequest: [
@@ -74,7 +73,7 @@ function httpInit(instance: AxiosInstance): AxiosInstance {
     instance.interceptors.response.use(async (response: AxiosResponse): Promise<any> => {
         const {
             data,
-            config: { headers, url }
+            config: { headers }
         }: {
             data: any,
             config: AxiosRequestConfig
@@ -99,9 +98,20 @@ function httpInit(instance: AxiosInstance): AxiosInstance {
         Message.error(newData?.msg || newData?.message);
         return Promise.reject(newData?.msg || newData?.message);
     }, (error) => {
-        const { response, /* __CANCEL__ */ } = error;
-        // if (!__CANCEL__) message.error(response.data.msg || response.data.message); // 非主动取消请求的接口
-        throw new Error(response);
+        if (error?.code === 'ERR_CANCELED') {
+            return Promise.reject(error);
+        }
+
+        const { response } = error;
+        const rawMessage = response?.data?.msg ?? response?.data?.message ?? error?.message;
+        const errorMessage = rawMessage ? String(rawMessage) : '';
+
+        if (errorMessage) {
+            Message.error(errorMessage);
+            return Promise.reject(errorMessage);
+        }
+
+        return Promise.reject(error);
     });
 
     return instance;
@@ -145,7 +155,6 @@ export default typeof Proxy === 'undefined' ? {
         get(target, key: string): AxiosInstance | null {
             if (key === 'instance') {
                 throw new Error('当前运行环境支持Proxy，已阻断调用instance方法获取HTTP实例');
-                return null;
             }
             const { baseURL = key, timeout, headers } = xhrDefaultConfig;
             return httpInit(http.create({

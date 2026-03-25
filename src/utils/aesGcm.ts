@@ -51,6 +51,7 @@ export async function encryptAESGCM(plainText: string, keyStr: string, ivStr: st
         // 将加密后的 ArrayBuffer 转换为 Base64 编码的字符串
         return btoa(String.fromCharCode(...new Uint8Array(encrypted)));
     } catch (err) {
+        console.error(formatText('加密失败'), err);
         throw new Error(formatText('加密失败'));
     }
 }

@@ -1,13 +1,11 @@
-import md5 from 'md5';
-
 /// NOTE: web.crypto 仅在 HTTPS 环境下可用
 export const generateKey = (urlStr: string) => { // 根据url生成key
     return window.crypto.subtle.importKey(
         'raw',
         new TextEncoder().encode(urlStr),
         { name: 'AES-GCM' },
-        false,
-        ['encrypt']
+        true,
+        ['encrypt', 'decrypt']
     );
 };
 
