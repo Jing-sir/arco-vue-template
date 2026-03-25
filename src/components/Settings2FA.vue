@@ -2,7 +2,7 @@
 import type { FieldRule, FormInstance } from '@arco-design/web-vue'
 import { Message } from '@arco-design/web-vue'
 import apiSys from '@/api/sys'
-import apiUser from '@/api/userApi/userList'
+import apiUser from '@/api/userApi/sys/security'
 import { handlePaste } from '@/utils/common'
 import VueQr from 'vue-qr/src/packages/vue-qr.vue'
 import cookies from 'cookies-js'
@@ -117,7 +117,7 @@ const getQrcode = async (): Promise<void> => {
     isSubmitLoading.value = true
 
     try {
-        const result = await apiUser.fetchSysUserQrcode()
+        const result = await apiUser.getUserQrcode()
         secretKey.value = result.secret
         qrCode.value = result.qrcode
     } finally {
@@ -156,16 +156,16 @@ const handleAddOrEditSubmit = async (): Promise<void> => {
         try {
             const userId = String(userStore.userInfo?.userId ?? '')
             if (props.type === 'add') {
-                await apiUser.fetchSysUserCheckCipher({ password: formState.password, userId })
+                await apiUser.checkUserCipher({ password: formState.password, userId })
             } else {
-                await apiUser.fetchSysUserCheckCipherAnd2FA({
+                await apiUser.checkUserCipherAnd2FA({
                     password: formState.password,
                     facode: formState.facode,
                     userId,
                 })
             }
 
-            const qrcodeResult = await apiUser.fetchSysUserQrcode()
+            const qrcodeResult = await apiUser.getUserQrcode()
             secretKey.value = qrcodeResult.secret
             qrCode.value = qrcodeResult.qrcode
             step.value = 2
@@ -182,7 +182,7 @@ const handleAddOrEditSubmit = async (): Promise<void> => {
 
     isSubmitLoading.value = true
     try {
-        await apiUser.fetchSysUserCheckGoogleCodeAnd({ code: formState.code })
+        await apiUser.verifyGoogleCodeAndBind({ code: formState.code })
         emit('onClose')
         Message.success(t(props.type === 'add' ? '2FA绑定成功' : '2FA更换成功'))
         await handleLogoutAfterSecurityChange()
@@ -199,7 +199,7 @@ const handleVerifySubmit = async (): Promise<void> => {
 
     isSubmitLoading.value = true
     try {
-        await apiUser.fetchSysUserCheckGoogleCode({ googleCode: formState.code })
+        await apiUser.validateGoogleCode({ googleCode: formState.code })
         emit('onSuccess')
         Message.success(t('验证成功'))
     } finally {

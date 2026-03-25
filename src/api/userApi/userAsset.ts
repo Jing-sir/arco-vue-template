@@ -1,8 +1,9 @@
 import type { TableResultType } from '@/interface/TableType';
 import { Api } from '../api';
 
-class FetchTest extends Api {
-    fetchUserAssetListOfSkyee(params: {
+class UserAssetApi extends Api {
+    /** Skyee 退款数据列表 */
+    getSkyeeUserAssetList(params: {
         // 退款数据
         pageNo: number; //
         pageSize: number; // 页面大小
@@ -29,17 +30,19 @@ class FetchTest extends Api {
         return this.api.post('/userAsset/userAssetListOfSkyee', params);
     }
 
-    excelWriterUserAssetListOfSkyee(params: {
+    /** 导出 Skyee 退款数据 */
+    exportSkyeeUserAssetList(params: {
         // 导出退款数据
         pageNo: number; //
         pageSize: number; // 页面大小
         accountId: string; // 账号ID
         cardNumber: string; // 卡号
     }) {
-        return this.api.post('/userAsset/excelWriterUserAssetListOfSkyee', params, { responseType: 'blob' });
+        return this.api.post('/userAsset/exportSkyeeUserAssetList', params, { responseType: 'blob' });
     }
 
-    fetchUserAssetList(params: {
+    /** 用户资产列表 */
+    getUserAssetList(params: {
         pageNo: number; // pageNo.默认值:1
         pageSize: number; // pageSize.默认值:10
         coinId?: string; // 资产类型：币种id
@@ -67,7 +70,8 @@ class FetchTest extends Api {
         return this.api.post('/userAsset/newUserAssetList', params);
     }
 
-    fetchgetUserAssetListAmountTotal(params: {
+    /** 用户资产列表汇总金额 */
+    getUserAssetAmountTotal(params: {
         pageNo: number; // 1
         pageSize: number; // 10
         coinId: string; // 资产类型：币种id
@@ -87,8 +91,8 @@ class FetchTest extends Api {
         return this.api.post('/userAsset/getUserAssetListAmountTotal', params);
     }
 
-    // 用户资产 冻结
-    fetchUserfreezeData(params: {
+    /** 用户资产冻结 */
+    freezeUserAsset(params: {
         userId: string; // 用户ID
         coinId: string; // 币种id
         pageNo: number;
@@ -105,8 +109,8 @@ class FetchTest extends Api {
         return this.api.post('/userAsset/manualFreeze', params);
     }
 
-    // 用户资产 解冻
-    fetchUserThawData(params: {
+    /** 用户资产解冻 */
+    unfreezeUserAsset(params: {
         userId: string; // 用户ID
         coinId: string; // 币种id
         pageNo: number;
@@ -119,16 +123,18 @@ class FetchTest extends Api {
         return this.api.post('/userAsset/manualUnfreeze', params);
     }
 
-    fetchgetUpdateUserAssetStatus(params: { id: string; showMinusAccount: 1 | 2 }) {
+    /** 更新用户资产展示状态 */
+    updateUserAssetStatus(params: { id: string; showMinusAccount: 1 | 2 }) {
         return this.api.post('/userAsset/updateUserAssetStatus', params);
     }
 
-    fetchUserAssetListSnapshot(): Promise<any> {
-        // 用户资产快照
+    /** 创建用户资产快照 */
+    createUserAssetSnapshot(): Promise<any> {
         return this.api.get('/userAsset/snapshot');
     }
 
-    fetchUAssetUserAssetSnapshotList(params: {
+    /** 用户资产快照列表 */
+    getUserAssetSnapshotList(params: {
         // 用户资产快照列表
         pageNo: number; // 页数
         pageSize: number; // 条数
@@ -154,7 +160,8 @@ class FetchTest extends Api {
         return this.api.get('/userAsset/userAssetSnapshotList', { params });
     }
 
-    fetchgetUserAssetSnapshotAmountTotalt(params: {
+    /** 用户资产快照汇总金额 */
+    getUserAssetSnapshotAmountTotal(params: {
         // 用户资产快照 金额
         endTime: string; // 结束时间
         startTime: string; // 开始时间
@@ -167,7 +174,8 @@ class FetchTest extends Api {
         return this.api.get('/userAsset/getUserAssetSnapshotAmountTotal', { params });
     }
 
-    fetchUserAssetListExcel(params: {
+    /** 导出用户资产列表 */
+    exportUserAssetList(params: {
         // 用户资产列表
         coinId?: string; // 资产类型：币种id
         endBalance?: string; // 结束金额
@@ -183,7 +191,8 @@ class FetchTest extends Api {
         return this.api.post('/userAsset/userAssetList/excelWriter', params, { responseType: 'blob' });
     }
 
-    fetchUserAssetUserAssetSnapshotListExcelWriter(params: {
+    /** 导出用户资产快照列表 */
+    exportUserAssetSnapshotList(params: {
         // 用户资产快照导出
         type?: null | 1 | 2; //
         startTime?: string; // 开始时间
@@ -194,4 +203,4 @@ class FetchTest extends Api {
     }
 }
 
-export default new FetchTest();
+export default new UserAssetApi();

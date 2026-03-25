@@ -227,6 +227,16 @@ Current files / 当前文件职责:
   - currently includes redemption list request
 - `examine.ts`:
   - approval-flow-related API
+- `userApi/`:
+  - prefix-oriented business API modules for user domain
+  - URL first segment decides file/folder placement
+  - examples:
+    - `/account/...` -> `userApi/account/`
+    - `/sys/...` -> `userApi/sys/`
+    - `/tag/...` -> `userApi/tag.ts`
+    - `/referral/...` -> `userApi/referral.ts`
+    - `/userAsset/...` -> `userApi/userAsset.ts`
+  - when one prefix has too many endpoints, use `<prefix>/index.ts` as main export and split by concern under that directory (for example `account/list.ts`, `account/auth.ts`)
 
 API rules / 接口规则:
 
@@ -234,6 +244,9 @@ API rules / 接口规则:
 - Keep API return types explicit. 接口返回类型要明确。
 - Avoid direct `axios` usage in components or views. 不要在页面和组件里直接用 `axios`。
 - Use `src/plugins/http.ts` preprocessing contract unless there is a documented reason not to. 默认走 `src/plugins/http.ts` 的响应预处理契约。
+- API modules must be grouped by backend URL prefix, not by page name or temporary business grouping. 接口模块必须按后端 URL 前缀归档，不要按页面名或临时业务分组。
+- New endpoints must be added to the matching prefix module first; do not append unrelated prefixes into existing files. 新接口必须优先进入对应前缀模块，不要把不相关前缀继续堆进旧文件。
+- Keep compatibility entry files (such as `userApi/index.ts`, `userApi/userList.ts`) as thin aggregation layers only; put actual endpoint implementations in prefix modules. 兼容入口文件（如 `userApi/index.ts`、`userApi/userList.ts`）只做轻量聚合，不要继续承载真实接口实现。
 
 ### 5.7 `src/store` / 状态管理目录
 
