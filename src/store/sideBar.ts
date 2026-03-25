@@ -22,12 +22,16 @@ export default defineStore('sideBar', () => {
         fetchRoleObj: Record<string, string>,
     ): RouteRecordRaw[] => routeList.filter((routeItem) => {
         const role = routeItem.meta?.role;
+        const ignorePermission = Boolean(routeItem.meta?.ignorePermission);
 
         if (routeItem.children?.length) {
             routeItem.children = getAsyRouter(routeItem.children, fetchRoleObj);
         }
 
-        return Boolean(role && fetchRoleObj[role]);
+        // 允许 route.meta.ignorePermission 的路由跳过后端权限菜单校验；
+        // 同时如果子路由中存在可访问节点，也保留父级菜单分组。
+        const hasAccessibleChildren = Boolean(routeItem.children?.length);
+        return Boolean(ignorePermission || (role && fetchRoleObj[role]) || hasAccessibleChildren);
     });
 
     // 遍历后台传来的路由字符串，转换为组件对象
@@ -51,7 +55,7 @@ export default defineStore('sideBar', () => {
                 r.map((item: MenuItem) => [item.component, item.component]),
             )
 
-            if (route.meta.requiresAuth && !fetchObj[String(route.meta.role)]) {
+            if (route.meta.requiresAuth && !route.meta.ignorePermission && !fetchObj[String(route.meta.role)]) {
                 router.push('/error/404')
             }
         }).finally(() => {

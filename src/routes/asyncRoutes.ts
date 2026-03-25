@@ -18,7 +18,8 @@ const constantRoutes: RouteRecordRaw[] = [
                 path: '',
                 name: 'Home',
                 component: () => import(/* webpackChunkName: "Home" */ '@/views/Home/Index.vue'),
-                meta: { title: '首页', role: 'Home', isShow: true, requiresAuth: true },
+                // 首页仍然要求登录态，但不参与后端权限菜单校验。
+                meta: { title: '首页', role: 'Home', isShow: true, requiresAuth: true, ignorePermission: true },
             },
         ],
     },

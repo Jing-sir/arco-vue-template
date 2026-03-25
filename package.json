@@ -13,6 +13,7 @@
     "dependencies": {
         "@iconfu/svg-inject": "^1.2.3",
         "cookies-js": "^1.2.3",
+        "echarts": "^6.0.0",
         "md5": "^2.3.0",
         "nprogress": "^0.2.0",
         "pinia": "^3.0.4",

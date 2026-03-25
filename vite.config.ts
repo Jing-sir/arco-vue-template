@@ -63,5 +63,16 @@ export default defineConfig(({ mode }) => {
                 },
             },
         },
+        build: {
+            rollupOptions: {
+                output: {
+                    // JS 资源统一输出到 dist/js，便于 CDN 与缓存策略按目录管理。
+                    entryFileNames: 'js/[name]-[hash].js',
+                    chunkFileNames: 'js/[name]-[hash].js',
+                    // 非 JS 资源（css、图片、字体等）统一归档到 dist/assets。
+                    assetFileNames: 'assets/[name]-[hash][extname]',
+                },
+            },
+        },
     }
 });

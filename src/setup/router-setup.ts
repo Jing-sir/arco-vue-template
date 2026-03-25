@@ -53,6 +53,7 @@ const routerGuards: Record<string, RouterGuardHandler> = {
     async setRequiresAuth(to): Promise<GuardResult> {
         const hasToken = Boolean(cookies.get('manageToken'));
         const requiresAuth = Boolean(to.meta.requiresAuth);
+        const ignorePermission = Boolean(to.meta.ignorePermission);
 
         // 未登录访问受保护路由时，统一跳转登录页并保留目标地址，登录后可回跳。
         if (!hasToken) {
@@ -78,6 +79,8 @@ const routerGuards: Record<string, RouterGuardHandler> = {
 
         const routeRole = typeof to.meta.role === 'string' ? to.meta.role : '';
         if (!requiresAuth) return true;
+        // 支持路由级别跳过权限菜单校验，常用于首页总览等公共工作台。
+        if (ignorePermission) return true;
         if (!routeRole) return '/error';
         if (!permissionMap[routeRole]) return '/error/404';
 
@@ -141,6 +144,7 @@ declare module 'vue-router' {
         lang?: string;
         title?: string | (() => string);
         requiresAuth?: boolean;
+        ignorePermission?: boolean;
         isShow?: boolean;
         role?: string;
         icon?: string;
