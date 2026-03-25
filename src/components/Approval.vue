@@ -45,10 +45,10 @@ defineExpose({ fetchFlowInfo });
                 <div class="flex flex-row items-center">
                     <div class="flex flex-row text-xs">
                         <div class="flex flex-col items-center">
-                            <span class="h-[10px] w-[10px] rounded-full bg-[#1677ff]"></span>
-                            <span class="mt-1.5 w-10 truncate text-center text-[12px] text-[darkgray]">{{ t('发起') }}</span>
+                            <span class="h-[10px] w-[10px] rounded-full bg-[var(--color-primary-6)]"></span>
+                            <span class="mt-1.5 w-10 truncate text-center text-[12px] text-[var(--app-text-muted)]">{{ t('发起') }}</span>
                         </div>
-                        <div class="mt-1 mx-[6px] h-px w-5 bg-[#1677ff]"></div>
+                        <div class="mt-1 mx-[6px] h-px w-5 bg-[var(--color-primary-6)]"></div>
                     </div>
                     <div
                         v-for="(item, i) of formatFlow"
@@ -56,27 +56,27 @@ defineExpose({ fetchFlowInfo });
                         class="flex flex-row text-xs"
                     >
                         <div class="flex flex-col items-center">
-                            <span class="h-[10px] w-[10px] rounded-full bg-[#1677ff]"></span>
+                            <span class="h-[10px] w-[10px] rounded-full bg-[var(--color-primary-6)]"></span>
                             <a-tooltip placement="topLeft" :title="item.checkUserName">
                                 <span
-                                    class="mt-1.5 w-10 truncate text-center text-[12px] text-[darkgray]"
+                                    class="mt-1.5 w-10 truncate text-center text-[12px] text-[var(--app-text-muted)]"
                                     :title="item.checkUserName"
                                 >
                                     {{ item.checkUserName || '1' }}
                                 </span>
                             </a-tooltip>
                         </div>
-                        <div class="mt-1 mx-[6px] h-px w-5 bg-[#1677ff]"></div>
+                        <div class="mt-1 mx-[6px] h-px w-5 bg-[var(--color-primary-6)]"></div>
                     </div>
                     <div class="flex flex-row text-xs">
                         <div class="flex flex-col items-center">
-                            <span class="h-[10px] w-[10px] rounded-full bg-[#1677ff]"></span>
-                            <span class="mt-1.5 w-10 truncate text-center text-[12px] text-[darkgray]">{{ t('结束') }}</span>
+                            <span class="h-[10px] w-[10px] rounded-full bg-[var(--color-primary-6)]"></span>
+                            <span class="mt-1.5 w-10 truncate text-center text-[12px] text-[var(--app-text-muted)]">{{ t('结束') }}</span>
                         </div>
                     </div>
                 </div>
             </div>
-            <span v-else class="text-[darkgray]">{{ t('填入转账金额后，显示对应审批流程') }}</span>
+            <span v-else class="text-[var(--app-text-muted)]">{{ t('填入转账金额后，显示对应审批流程') }}</span>
         </div>
         <span v-else>--</span>
     </div>

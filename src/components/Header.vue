@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IconMenuFold, IconMenuUnfold } from '@arco-design/web-vue/es/icon'
+import { IconComputer, IconMenuFold, IconMenuUnfold, IconMoonFill, IconSunFill } from '@arco-design/web-vue/es/icon'
 import BindGoogle from '@/components/Modal/BindGoogle.vue'
 import type { RouteRecordRaw } from 'vue-router'
 import { Message } from '@arco-design/web-vue'
@@ -27,10 +27,12 @@ const googleRef = ref<InstanceType<typeof BindGoogle> | null>(null)
 const hasRoute = useRoute()
 
 const store = sideBar()
+const themeStore = theme()
 const userStore = user()
 const { push } = useRouter()
 const storeTagsView = tagsView()
 const { isSidebar } = storeToRefs(store)
+const { themeMode, resolvedThemeMode } = storeToRefs(themeStore)
 
 const homeRoute: HeaderRouteRecord = {
     path: '/',
@@ -114,20 +116,42 @@ const currentPageTitle = computed(() => formatRouteTitle(currentPageTitleKey.val
 const userDisplayName = computed(() => userStore.userInfo?.fullName || '')
 const userInitial = computed(() => userDisplayName.value.slice(0, 1).toUpperCase() || 'A')
 
+/**
+ * 主题模式按钮直接复用中文 i18n key。
+ * 这样按钮文案和下拉项都能跟随当前语言切换。
+ */
+const currentThemeModeLabel = computed(() => {
+    if (themeMode.value === 'system') return '跟随系统'
+    return themeMode.value === 'dark' ? '深色' : '浅色'
+})
+
+/**
+ * 跟随系统模式需要展示“用户当前选择的是 system”，但图标要反映真正生效的明暗结果。
+ * 这样既能表达偏好来源，也能让按钮图标保持直观。
+ */
+const currentThemeModeIcon = computed(() => {
+    if (themeMode.value === 'system') return IconComputer
+    return resolvedThemeMode.value === 'dark' ? IconMoonFill : IconSunFill
+})
+
+const onUpdateThemeMode = (mode: 'light' | 'dark' | 'system'): void => {
+    themeStore.updateThemeMode(mode)
+}
+
 onMounted(() => {
     userStore.getUserInfo()
 })
 </script>
 
 <template>
-    <div class="px-0.5 py-2 bg-white rounded-xl mt-2">
+    <div class="mt-2 rounded-xl border border-[var(--app-divider)] bg-[var(--app-surface-strong)] px-0.5 py-2">
         <BindGoogle ref="googleRef" />
 
         <div class="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_auto]">
             <div class="flex min-w-0 items-start gap-3">
                 <button
                     type="button"
-                    class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--app-surface-strong)] text-[#5f6876] transition-colors hover:bg-[var(--app-surface-muted)] hover:text-[var(--app-text)]"
+                    class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--app-control-bg)] text-[var(--app-control-text)] transition-colors hover:bg-[var(--app-control-hover-bg)] hover:text-[var(--app-text)]"
                     @click.stop="onIsSidebar(isSidebar)"
                 >
                     <IconMenuFold v-if="isSidebar" :style="{ fontSize: '18px' }" />
@@ -145,7 +169,7 @@ onMounted(() => {
                                     item.redirect === 'noRedirect' ||
                                     index === breadcrumbRoutes.length - 1
                                 "
-                                class="cursor-text text-[11px] leading-none text-[#98a2b3]"
+                                class="cursor-text text-[11px] leading-none text-[var(--app-control-text-muted)]"
                             >
                                 {{ formatRouteTitle(item.meta?.title) }}
                             </span>
@@ -168,7 +192,7 @@ onMounted(() => {
                         <span
                             class="inline-flex items-center gap-1.5 text-[10px] font-medium tracking-[0.02em]"
                             :class="
-                                props.isOnline ? 'text-[var(--color-primary-6)]' : 'text-[#8f5f5a]'
+                                props.isOnline ? 'text-[var(--color-primary-6)]' : 'text-[var(--app-status-offline)]'
                             "
                         >
                             <span class="h-1.5 w-1.5 rounded-full bg-current" />
@@ -179,8 +203,43 @@ onMounted(() => {
             </div>
 
             <div class="flex items-center gap-2 lg:self-start">
+                <a-dropdown trigger="click">
+                    <button
+                        type="button"
+                        class="inline-flex min-h-9 items-center gap-2 rounded-lg bg-[var(--app-control-bg)] px-3 text-[var(--app-text)] transition-colors hover:bg-[var(--app-control-hover-bg)]"
+                        :title="t('主题模式')"
+                    >
+                        <component :is="currentThemeModeIcon" :style="{ fontSize: '15px' }" />
+                        <span class="hidden text-xs font-medium sm:inline">
+                            {{ t(currentThemeModeLabel) }}
+                        </span>
+                    </button>
+                    <template #content>
+                        <a-menu :selected-keys="[themeMode]">
+                            <a-menu-item key="light" @click="onUpdateThemeMode('light')">
+                                <div class="flex items-center gap-2">
+                                    <IconSunFill :style="{ fontSize: '15px' }" />
+                                    <span>{{ t('浅色') }}</span>
+                                </div>
+                            </a-menu-item>
+                            <a-menu-item key="dark" @click="onUpdateThemeMode('dark')">
+                                <div class="flex items-center gap-2">
+                                    <IconMoonFill :style="{ fontSize: '15px' }" />
+                                    <span>{{ t('深色') }}</span>
+                                </div>
+                            </a-menu-item>
+                            <a-menu-item key="system" @click="onUpdateThemeMode('system')">
+                                <div class="flex items-center gap-2">
+                                    <IconComputer :style="{ fontSize: '15px' }" />
+                                    <span>{{ t('跟随系统') }}</span>
+                                </div>
+                            </a-menu-item>
+                        </a-menu>
+                    </template>
+                </a-dropdown>
+
                 <div
-                    class="inline-flex min-h-9 items-center justify-center rounded-lg bg-[var(--app-surface-strong)] px-2"
+                    class="inline-flex min-h-9 items-center justify-center rounded-lg bg-[var(--app-control-bg)] px-2"
                     :title="t('主题色')"
                 >
                     <ColorPicker />
@@ -188,7 +247,7 @@ onMounted(() => {
 
                 <a-dropdown trigger="hover">
                     <div
-                        class="flex cursor-pointer items-center gap-2 rounded-lg bg-[var(--app-surface-strong)] px-[10px] py-1 pl-1 transition-colors hover:bg-[var(--app-surface-muted)]"
+                        class="flex cursor-pointer items-center gap-2 rounded-lg bg-[var(--app-control-bg)] px-[10px] py-1 pl-1 transition-colors hover:bg-[var(--app-control-hover-bg)]"
                     >
                         <div
                             class="inline-flex h-[30px] w-[30px] items-center justify-center rounded-[7px] bg-[var(--color-primary-6)] text-xs font-bold text-white"

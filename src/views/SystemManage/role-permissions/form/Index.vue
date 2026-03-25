@@ -355,21 +355,21 @@ onMounted(async () => {
                     </a-form-item>
 
                     <div class="grid gap-3 sm:grid-cols-3 xl:w-auto xl:min-w-[520px]">
-                        <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                            <p class="text-xs text-slate-500">{{ t('模块导航') }}</p>
-                            <p class="mt-1 text-xl font-semibold text-slate-800">
+                        <div class="rounded-xl border border-[var(--app-divider)] bg-[var(--app-surface)] px-4 py-3">
+                            <p class="text-xs text-[var(--app-text-muted)]">{{ t('模块导航') }}</p>
+                            <p class="mt-1 text-xl font-semibold text-[var(--app-text)]">
                                 {{ moduleList.length }}
                             </p>
                         </div>
-                        <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                            <p class="text-xs text-slate-500">{{ t('已选权限') }}</p>
-                            <p class="mt-1 text-xl font-semibold text-slate-800">
+                        <div class="rounded-xl border border-[var(--app-divider)] bg-[var(--app-surface)] px-4 py-3">
+                            <p class="text-xs text-[var(--app-text-muted)]">{{ t('已选权限') }}</p>
+                            <p class="mt-1 text-xl font-semibold text-[var(--app-text)]">
                                 {{ selectedPermissionCount }}
                             </p>
                         </div>
-                        <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                            <p class="text-xs text-slate-500">{{ t('当前模块') }}</p>
-                            <p class="mt-1 truncate text-sm font-semibold text-slate-800">
+                        <div class="rounded-xl border border-[var(--app-divider)] bg-[var(--app-surface)] px-4 py-3">
+                            <p class="text-xs text-[var(--app-text-muted)]">{{ t('当前模块') }}</p>
+                            <p class="mt-1 truncate text-sm font-semibold text-[var(--app-text)]">
                                 {{ currentModule?.menuName || '--' }}
                             </p>
                         </div>
@@ -378,11 +378,11 @@ onMounted(async () => {
 
                 <div class="grid min-h-0 flex-1 !mt-0 gap-4 xl:grid-cols-[280px_minmax(0,1fr)_320px] xl:items-stretch">
                     <section
-                        class="flex min-h-0 h-full flex-col rounded-xl border border-slate-200 bg-slate-50 p-3"
+                        class="flex min-h-0 h-full flex-col rounded-xl border border-[var(--app-divider)] bg-[var(--app-surface)] p-3"
                     >
                         <div class="mb-3">
-                            <p class="text-sm font-semibold text-slate-800">{{ t('模块导航') }}</p>
-                            <p class="mt-1 text-xs text-slate-500">
+                            <p class="text-sm font-semibold text-[var(--app-text)]">{{ t('模块导航') }}</p>
+                            <p class="mt-1 text-xs text-[var(--app-text-muted)]">
                                 {{ t('切换模块查看对应权限树') }}
                             </p>
                         </div>
@@ -395,8 +395,8 @@ onMounted(async () => {
                                 class="flex min-h-[72px] w-full flex-col items-start justify-between rounded-lg border px-3 py-2 text-left transition"
                                 :class="
                                     currentModuleKey === module.key
-                                        ? 'border-[var(--color-primary-6)] bg-blue-50 text-slate-900'
-                                        : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                                        ? 'border-[var(--color-primary-6)] bg-[var(--app-control-bg)] text-[var(--app-text)]'
+                                        : 'border-[var(--app-divider)] bg-[var(--app-surface-strong)] text-[var(--app-text-muted)] hover:border-[var(--app-text-muted)] hover:text-[var(--app-text)]'
                                 "
                                 @click="focusModule(module.key)"
                             >
@@ -405,8 +405,8 @@ onMounted(async () => {
                                     class="rounded-full px-2 py-0.5 text-xs"
                                     :class="
                                         currentModuleKey === module.key
-                                            ? 'bg-blue-100 text-blue-600'
-                                            : 'bg-slate-100 text-slate-500'
+                                            ? 'bg-[var(--app-surface-strong)] text-[var(--color-primary-6)]'
+                                            : 'bg-[var(--app-surface)] text-[var(--app-text-muted)]'
                                     "
                                 >
                                     {{ selectedCountByModule[module.key] ?? 0 }}
@@ -415,14 +415,14 @@ onMounted(async () => {
                         </div>
                     </section>
 
-                    <section class="flex min-h-0 h-full flex-col rounded-xl border border-slate-200 bg-white">
-                        <div class="border-b border-slate-100 px-4 py-3">
+                    <section class="flex min-h-0 h-full flex-col rounded-xl border border-[var(--app-divider)] bg-[var(--app-surface-strong)]">
+                        <div class="border-b border-[var(--app-divider)] px-4 py-3">
                             <div class="flex flex-wrap items-center justify-between gap-3">
                                 <div>
-                                    <p class="text-sm font-semibold text-slate-800">
+                                    <p class="text-sm font-semibold text-[var(--app-text)]">
                                         {{ t('权限配置') }}
                                     </p>
-                                    <p class="mt-1 text-xs text-slate-500">
+                                    <p class="mt-1 text-xs text-[var(--app-text-muted)]">
                                         {{ t('当前模块：{name}', { name: currentModule?.menuName || '--' }) }}
                                     </p>
                                 </div>
@@ -471,13 +471,13 @@ onMounted(async () => {
                     </section>
 
                     <aside
-                        class="flex min-h-0 h-full flex-col rounded-xl border border-slate-200 bg-slate-50 p-3"
+                        class="flex min-h-0 h-full flex-col rounded-xl border border-[var(--app-divider)] bg-[var(--app-surface)] p-3"
                     >
                         <div class="mb-3">
-                            <p class="text-sm font-semibold text-slate-800">
+                            <p class="text-sm font-semibold text-[var(--app-text)]">
                                 {{ t('已选权限清单') }}
                             </p>
-                            <p class="mt-1 text-xs text-slate-500">
+                            <p class="mt-1 text-xs text-[var(--app-text-muted)]">
                                 {{ t('从已选清单点击可快速定位模块') }}
                             </p>
                         </div>
@@ -489,17 +489,17 @@ onMounted(async () => {
                             <div
                                 v-for="group in groupedSelectedPermissions"
                                 :key="group.key"
-                                class="rounded-lg border border-slate-200 bg-white p-3"
+                                class="rounded-lg border border-[var(--app-divider)] bg-[var(--app-surface-strong)] p-3"
                             >
                                 <div class="mb-2 flex items-center justify-between">
                                     <button
                                         type="button"
-                                        class="truncate text-left text-sm font-semibold text-slate-700"
+                                        class="truncate text-left text-sm font-semibold text-[var(--app-text)]"
                                         @click="focusModule(group.key)"
                                     >
                                         {{ group.title }}
                                     </button>
-                                    <span class="text-xs text-slate-400">
+                                    <span class="text-xs text-[var(--app-text-muted)]">
                                         {{ t('共 {count} 项', { count: group.permissions.length }) }}
                                     </span>
                                 </div>
@@ -508,17 +508,17 @@ onMounted(async () => {
                                     <div
                                         v-for="permission in group.permissions"
                                         :key="permission.key"
-                                        class="flex items-start justify-between gap-2 rounded-md bg-slate-50 px-2 py-1.5"
+                                        class="flex items-start justify-between gap-2 rounded-md bg-[var(--app-surface)] px-2 py-1.5"
                                     >
                                         <button
                                             type="button"
                                             class="min-w-0 flex-1 text-left"
                                             @click="focusModule(permission.moduleKey)"
                                         >
-                                            <p class="truncate text-sm text-slate-700">
+                                            <p class="truncate text-sm text-[var(--app-text)]">
                                                 {{ permission.title }}
                                             </p>
-                                            <p class="truncate text-xs text-slate-400">
+                                            <p class="truncate text-xs text-[var(--app-text-muted)]">
                                                 {{ permission.path.join(' / ') }}
                                             </p>
                                         </button>
@@ -526,7 +526,7 @@ onMounted(async () => {
                                             v-if="!see"
                                             type="text"
                                             size="mini"
-                                            class="!px-0 text-slate-400 hover:!text-rose-500"
+                                            class="!px-0 text-[var(--app-text-muted)] hover:!text-rose-500"
                                             @click="removePermission(permission.key, permission.moduleKey)"
                                         >
                                             ×
@@ -542,11 +542,11 @@ onMounted(async () => {
                 </div>
 
                 <div
-                    class="mt-5 shrink-0 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white/95 px-4 py-3 backdrop-blur"
+                    class="mt-5 shrink-0 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--app-divider)] bg-[var(--app-surface-strong)] px-4 py-3"
                 >
-                    <div class="flex flex-wrap items-center gap-3 text-sm text-slate-600">
+                    <div class="flex flex-wrap items-center gap-3 text-sm text-[var(--app-text-muted)]">
                         <span>{{ t('已选 {count} 项', { count: selectedPermissionCount }) }}</span>
-                        <span class="text-slate-300">|</span>
+                        <span class="text-[var(--app-divider)]">|</span>
                         <span>
                             {{ t('当前模块：{name}', { name: currentModule?.menuName || '--' }) }}
                         </span>

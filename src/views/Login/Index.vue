@@ -20,11 +20,9 @@ const codeRef = ref<InstanceType<typeof GoogleCode> | null>(null)
 const formRef = ref<FormInstance | null>(null)
 
 const formState = reactive<LoginFormState>({
-    account: '',
-    password: '',
+    account: 'xiangnan',
+    password: 'xiangnan',
 } satisfies LoginFormState)
-
-const LOGIN_PAGE_BODY_CLASS = 'login-page-active'
 
 const store = user()
 const router = useRouter()
@@ -86,24 +84,16 @@ const getCode = async (val: string): Promise<void> => {
 const onCancelGoogleCode = (): void => {
     setManageToken('')
 }
-
-onMounted(() => {
-    document.body.classList.add(LOGIN_PAGE_BODY_CLASS)
-})
-
-onBeforeUnmount(() => {
-    document.body.classList.remove(LOGIN_PAGE_BODY_CLASS)
-})
 </script>
 
 <template>
-    <div class="min-h-screen bg-slate-100 text-slate-900">
+    <div class="min-h-screen bg-[var(--app-bg)] text-[var(--app-text)]">
         <div class="flex min-h-screen items-center justify-center px-4 py-6 sm:px-6 lg:px-10">
             <a-spin :loading="loading" class="w-[420px]">
                 <div
-                    class="overflow-hidden rounded-xl bg-white shadow-[0_20px_60px_rgba(15,23,42,0.08)]"
+                    class="overflow-hidden rounded-xl border border-[var(--app-divider)] bg-[var(--app-login-card-bg)] shadow-[0_20px_60px_rgba(15,23,42,0.18)]"
                 >
-                    <section class="bg-white px-6 py-8 text-slate-900">
+                    <section class="px-6 py-8 text-[var(--app-text)]">
                         <GoogleCode
                             ref="codeRef"
                             :loading="googleLoading"
@@ -113,24 +103,24 @@ onBeforeUnmount(() => {
 
                         <div>
                             <h2
-                                class="text-3xl font-semibold leading-tight text-slate-950 sm:text-4xl"
+                                class="text-3xl font-semibold leading-tight text-[var(--app-text)] sm:text-4xl"
                             >
                                 {{ t('欢迎回来') }}
                             </h2>
-                            <p class="mt-3 max-w-md text-sm leading-6 text-slate-500">
+                            <p class="mt-3 max-w-md text-sm leading-6 text-[var(--app-text-muted)]">
                                 {{ t('请使用您的管理账号进行登录') }}
                             </p>
                         </div>
 
-                        <div class="mt-8 rounded-xl border border-slate-200 bg-slate-50 p-6">
+                        <div class="mt-8 rounded-xl border border-[var(--app-divider)] bg-[var(--app-login-panel-bg)] p-6">
                             <div class="mb-6 flex items-center justify-between gap-4">
                                 <div>
-                                    <p class="text-lg font-semibold text-slate-950">
+                                    <p class="text-lg font-semibold text-[var(--app-text)]">
                                         {{ t('账号登录') }}
                                     </p>
                                 </div>
                                 <div
-                                    class="login-accent-soft flex h-12 w-12 items-center justify-center rounded-xl border border-slate-200"
+                                    class="flex h-12 w-12 items-center justify-center rounded-xl border border-[var(--app-divider)] bg-[var(--app-control-bg)]"
                                 >
                                     <img
                                         :src="logoUrl"
@@ -175,7 +165,7 @@ onBeforeUnmount(() => {
                             </a-form>
 
                             <div
-                                class="mt-5 rounded-lg border border-slate-200 bg-white px-4 py-3 text-xs leading-6 text-slate-500"
+                                class="mt-5 rounded-lg border border-[var(--app-divider)] bg-[var(--app-login-tip-bg)] px-4 py-3 text-xs leading-6 text-[var(--app-text-muted)]"
                             >
                                 {{ t('使用管理员账号登录，若已开启 2FA 将自动进入二次验证') }}
                             </div>

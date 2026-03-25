@@ -205,11 +205,11 @@ const handleMenuItemClick = (path: string): void => {
 </script>
 
 <template>
-    <div class="min-h-full bg-[#151a21] flex flex-col">
+    <div class="flex min-h-full flex-col bg-[var(--app-sidebar-bg)]">
         <!-- 品牌区 -->
         <div
             :class="[
-                'mx-[14px] mt-4 mb-5 grid h-16 overflow-hidden rounded-[10px] bg-white/4 transition-all duration-300 ease-out',
+                'mx-[14px] mb-5 mt-4 grid h-16 overflow-hidden rounded-[10px] bg-[var(--app-sidebar-surface)] transition-all duration-300 ease-out',
                 isSidebar
                     ? 'grid-cols-[1fr] px-2'
                     : 'grid-cols-[40px_minmax(0,1fr)] gap-3 px-3',
@@ -229,10 +229,10 @@ const handleMenuItemClick = (path: string): void => {
                         : 'w-full translate-x-0 opacity-100 delay-75',
                 ]"
             >
-                <p class="m-0 text-sm font-bold tracking-[0.01em] text-slate-50">
+                <p class="m-0 text-sm font-bold tracking-[0.01em] text-[var(--app-sidebar-text)]">
                     {{ t('管理后台') }}
                 </p>
-                <p class="mt-[2px] m-0 text-[11px] tracking-[0.04em] text-slate-200/70">
+                <p class="m-0 mt-[2px] text-[11px] tracking-[0.04em] text-[var(--app-sidebar-text-muted)]">
                     {{ t('权限与运营控制台') }}
                 </p>
             </div>
@@ -273,7 +273,7 @@ const handleMenuItemClick = (path: string): void => {
     min-height: 44px;
     margin-bottom: 6px;
     border-radius: 8px;
-    color: rgb(221 225 232 / 72%);
+    color: var(--app-sidebar-text-muted);
     transition:
         background-color 0.2s ease,
         color 0.2s ease;
@@ -281,14 +281,14 @@ const handleMenuItemClick = (path: string): void => {
 
 :deep(.side-nav__menu .arco-menu-item:hover),
 :deep(.side-nav__menu .arco-menu-inline-header:hover) {
-    color: #fff;
-    background: rgb(255 255 255 / 4%);
+    color: var(--app-sidebar-text);
+    background: var(--app-sidebar-surface);
 }
 
 :deep(.side-nav__menu .arco-menu-selected),
 :deep(.side-nav__menu .arco-menu-selected:hover),
 :deep(.side-nav__menu .arco-menu-selected-label) {
-    color: #fff;
+    color: var(--app-sidebar-text);
     background: var(--color-primary-6) !important;
 }
 
@@ -300,7 +300,7 @@ const handleMenuItemClick = (path: string): void => {
 :deep(.side-nav__menu .arco-menu-inline-header.arco-menu-selected),
 :deep(.side-nav__menu .arco-menu-inline-header.arco-menu-selected:hover) {
     color: var(--color-primary-6);
-    background: rgb(255 255 255 / 6%) !important;
+    background: var(--app-sidebar-surface-strong) !important;
     box-shadow: inset 2px 0 0 0 var(--color-primary-6);
 }
 

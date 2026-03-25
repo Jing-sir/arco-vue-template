@@ -579,7 +579,7 @@ defineExpose<TableSearchWrapExpose>({
         <!-- 表格主体区域：scroll.y 会在这里按真实 DOM 高度自动计算 -->
         <div
             ref="tableContainerRef"
-            class="overflow-hidden rounded-[10px] bg-[var(--app-surface-strong)] [&_.arco-table-container]:rounded-[4px] [&_.arco-table-th]:bg-[#f5f7fa] [&_.arco-table-th]:font-semibold [&_.arco-table-th]:text-[#4b5563] [&_.arco-table-tr-empty_.arco-table-td]:p-0 [&_.arco-table-tr_.arco-table-td]:[border-bottom-color:var(--app-divider)] [&_.arco-table-tr:hover_.arco-table-td]:bg-[#f8fafc]"
+            class="overflow-hidden rounded-[10px] bg-[var(--app-surface-strong)] [&_.arco-table-container]:rounded-[4px] [&_.arco-table-th]:bg-[var(--app-table-header-bg)] [&_.arco-table-th]:font-semibold [&_.arco-table-th]:text-[var(--app-table-header-text)] [&_.arco-table-tr-empty_.arco-table-td]:p-0 [&_.arco-table-tr_.arco-table-td]:[border-bottom-color:var(--app-divider)] [&_.arco-table-tr:hover_.arco-table-td]:bg-[var(--app-table-row-hover)]"
         >
             <slot
                 name="table"
@@ -618,7 +618,7 @@ defineExpose<TableSearchWrapExpose>({
                                     <div
                                         v-for="columnIndex in skeletonColumnCount"
                                         :key="`skeleton-cell-${rowIndex}-${columnIndex}`"
-                                        class="h-3 animate-pulse rounded-full bg-slate-100"
+                                        class="h-3 animate-pulse rounded-full bg-[var(--app-skeleton-bg)]"
                                         :style="{ width: getSkeletonCellWidth(rowIndex, columnIndex - 1) }"
                                     />
                                 </div>

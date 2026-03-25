@@ -132,10 +132,10 @@ watch(
                     v-else
                     class="flex min-h-[var(--content-pane-min-height)] flex-col items-center justify-center gap-2.5 rounded-[var(--app-pane-radius)] bg-[var(--app-surface)] text-center"
                 >
-                    <p class="text-xl font-bold text-[#0f172a]">
+                    <p class="text-xl font-bold text-[var(--app-text)]">
                         {{ t('网络异常') }}
                     </p>
-                    <p class="text-sm text-[#64748b]">
+                    <p class="text-sm text-[var(--app-text-muted)]">
                         {{ t('请检查网络状态后刷新重试') }}
                     </p>
                 </div>
@@ -150,7 +150,7 @@ watch(
     :deep(.arco-layout-sider-trigger) {
         @apply border-0 text-white/80 transition-colors duration-200;
         height: 48px;
-        background: linear-gradient(180deg, rgb(255 255 255 / 5%) 0%, rgb(255 255 255 / 2%) 100%);
+        background: linear-gradient(180deg, var(--app-sidebar-surface-strong) 0%, var(--app-sidebar-surface) 100%);
         backdrop-filter: blur(10px);
     }
 

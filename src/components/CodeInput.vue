@@ -28,10 +28,10 @@ const inputRefs = ref<Array<HTMLInputElement | null>>([])
 
 const inputClass = computed(() => [
     'h-[50px] w-[46px] rounded border text-center text-xl font-bold outline-none transition-colors',
-    'disabled:cursor-not-allowed disabled:border-neutral-200 disabled:bg-neutral-100 disabled:text-neutral-400',
+    'bg-[var(--app-surface-strong)] text-[var(--app-text)] disabled:cursor-not-allowed disabled:border-[var(--app-divider)] disabled:bg-[var(--app-surface-soft)] disabled:text-[var(--app-text-muted)]',
     isError.value
         ? 'border-red-500 focus:border-red-500'
-        : 'border-[#CCCCCC] focus:border-[var(--color-primary-6)]',
+        : 'border-[var(--app-divider)] focus:border-[var(--color-primary-6)]',
 ])
 
 function createEmptyValues(length: number): string[] {

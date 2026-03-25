@@ -294,7 +294,7 @@ defineExpose<TableSearchFormExpose>({
         <div
             v-if="isSearch && props.searchConf.length > 1"
             :class="[
-                'mt-[10px] flex flex-col rounded-[10px] bg-[#f7f8fa] animate__animated',
+                'mt-[10px] flex flex-col rounded-[10px] bg-[var(--app-search-panel-bg)] animate__animated',
                 isSearch ? 'animate__fadeIn' : 'animate__fadeOut',
                 'animate__delay-0.6s',
             ]"

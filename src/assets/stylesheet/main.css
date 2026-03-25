@@ -17,18 +17,131 @@
     --app-divider: #dde4ec;
     --app-text: #1b2430;
     --app-text-muted: #667085;
+    --app-overlay: rgb(15 23 42 / 8%);
+    --app-sidebar-bg: #151a21;
+    --app-sidebar-surface: rgb(255 255 255 / 4%);
+    --app-sidebar-surface-strong: rgb(255 255 255 / 6%);
+    --app-sidebar-text: rgb(248 250 252 / 94%);
+    --app-sidebar-text-muted: rgb(226 232 240 / 70%);
+    --app-control-bg: #ffffff;
+    --app-control-hover-bg: #eef2f6;
+    --app-control-text: #5f6876;
+    --app-control-text-muted: #98a2b3;
+    --app-status-offline: #8f5f5a;
+    --app-tags-track-bg: #e8edf3;
+    --app-tags-hover-bg: rgb(255 255 255 / 58%);
+    --app-tag-close-text: #98a2b3;
+    --app-tag-close-hover-text: #1b2430;
+    --app-table-header-bg: #f5f7fa;
+    --app-table-header-text: #4b5563;
+    --app-table-row-hover: #f8fafc;
+    --app-search-panel-bg: #f7f8fa;
+    --app-skeleton-bg: #f1f5f9;
+    --app-login-card-bg: #ffffff;
+    --app-login-panel-bg: #f8fafc;
+    --app-login-tip-bg: #ffffff;
     --app-sider-width: 260px;
     --app-sider-collapsed-width: 88px;
     --app-header-height: 88px;
     --app-shell-top-height: 154px;
     --page-shell-gap: 8px;
     --app-pane-radius: 10px;
+    --app-body-glow-start: rgb(255 255 255 / 80%);
+    --app-body-glow-end: rgb(255 255 255 / 0%);
+    --app-body-gradient-start: #f7f9fb;
+    --app-body-gradient-end: var(--app-bg);
     --content-pane-min-height: calc(100dvh - var(--app-shell-top-height) - (var(--page-shell-gap) * 3));
     --scrollbar-size: 10px;
     --scrollbar-track: rgb(148 163 184 / 8%);
     --scrollbar-thumb: rgb(100 116 139 / 42%);
     --scrollbar-thumb-hover: rgb(22 93 255 / 52%);
     --scrollbar-thumb-active: rgb(22 93 255 / 68%);
+}
+
+/* Dark mode only flips semantic tokens here; component-level migration can happen incrementally afterwards. */
+html body[data-app-theme-resolved='dark'] {
+    --app-bg: #121318;
+    --app-surface: #171920;
+    --app-surface-strong: #1f232c;
+    --app-surface-soft: #101217;
+    --app-surface-muted: #262b35;
+    --app-accent-soft: rgb(148 163 184 / 12%);
+    --app-divider: #343b48;
+    --app-text: #edf2f8;
+    --app-text-muted: #9ca7b8;
+    --app-overlay: rgb(10 12 18 / 48%);
+    --app-sidebar-bg: #101217;
+    --app-sidebar-surface: rgb(255 255 255 / 6%);
+    --app-sidebar-surface-strong: rgb(255 255 255 / 10%);
+    --app-sidebar-text: rgb(241 245 249 / 92%);
+    --app-sidebar-text-muted: rgb(226 232 240 / 66%);
+    --app-control-bg: #242933;
+    --app-control-hover-bg: #2d3440;
+    --app-control-text: #dbe3ee;
+    --app-control-text-muted: #9ca7b8;
+    --app-status-offline: #efb0aa;
+    --app-tags-track-bg: #161920;
+    --app-tags-hover-bg: rgb(255 255 255 / 10%);
+    --app-tag-close-text: #9ca7b8;
+    --app-tag-close-hover-text: #edf2f8;
+    --app-table-header-bg: #1f232c;
+    --app-table-header-text: #d7dfea;
+    --app-table-row-hover: rgb(255 255 255 / 5%);
+    --app-search-panel-bg: #1a1d24;
+    --app-skeleton-bg: #313743;
+    --app-login-card-bg: #1f232c;
+    --app-login-panel-bg: #171920;
+    --app-login-tip-bg: #121318;
+    --app-body-glow-start: rgb(148 163 184 / 14%);
+    --app-body-glow-end: rgb(18 19 24 / 0%);
+    --app-body-gradient-start: #101217;
+    --app-body-gradient-end: #171920;
+    --scrollbar-track: rgb(226 232 240 / 10%);
+    --scrollbar-thumb: rgb(226 232 240 / 22%);
+    --scrollbar-thumb-hover: rgb(226 232 240 / 32%);
+    --scrollbar-thumb-active: rgb(226 232 240 / 44%);
+}
+
+/* Arco dark mode defaults are too close to pure black for this project.
+   Re-map its dark palette to a berry-tinted neutral scale so popups, inputs, and menus
+   feel consistent with the existing primary brand color. */
+html body[arco-theme='dark'] {
+    --gray-1: 20, 22, 27;
+    --gray-2: 30, 33, 40;
+    --gray-3: 46, 50, 60;
+    --gray-4: 64, 69, 82;
+    --gray-5: 86, 92, 107;
+    --gray-6: 117, 124, 141;
+    --gray-7: 156, 164, 181;
+    --gray-8: 197, 204, 217;
+    --gray-9: 226, 231, 238;
+    --gray-10: 244, 247, 251;
+    --color-border: #343b48;
+    --color-bg-1: #15181e;
+    --color-bg-2: #1d2129;
+    --color-bg-3: #252a34;
+    --color-bg-4: #2e3440;
+    --color-bg-5: #373e4b;
+    --color-bg-popup: var(--color-bg-5);
+    --color-bg-white: #f8fafc;
+    --color-text-1: rgb(244 247 251 / 92%);
+    --color-text-2: rgb(226 232 240 / 76%);
+    --color-text-3: rgb(197 204 217 / 56%);
+    --color-text-4: rgb(197 204 217 / 34%);
+    --color-fill-1: rgb(255 255 255 / 5%);
+    --color-fill-2: rgb(255 255 255 / 9%);
+    --color-fill-3: rgb(255 255 255 / 14%);
+    --color-fill-4: rgb(255 255 255 / 18%);
+    --color-secondary: rgb(255 255 255 / 8%);
+    --color-secondary-hover: rgb(255 255 255 / 14%);
+    --color-secondary-active: rgb(255 255 255 / 20%);
+    --color-secondary-disabled: rgb(255 255 255 / 6%);
+    --color-tooltip-bg: #373e4b;
+    --color-spin-layer-bg: rgb(20 22 27 / 72%);
+    --color-menu-dark-bg: #15181e;
+    --color-menu-light-bg: #1d2129;
+    --color-menu-dark-hover: rgb(255 255 255 / 8%);
+    --color-mask-bg: rgb(10 12 18 / 68%);
 }
 
 /* Arco writes its default radius tokens on `body`, so we override them here with higher selector priority. */
@@ -64,8 +177,8 @@ html {
 body {
     min-width: var(--app-min-width);
     background:
-        radial-gradient(circle at top left, rgb(255 255 255 / 80%) 0%, rgb(255 255 255 / 0%) 34%),
-        linear-gradient(180deg, #f7f9fb 0%, var(--app-bg) 100%);
+        radial-gradient(circle at top left, var(--app-body-glow-start) 0%, var(--app-body-glow-end) 34%),
+        linear-gradient(180deg, var(--app-body-gradient-start) 0%, var(--app-body-gradient-end) 100%);
     color: var(--app-text);
 }
 

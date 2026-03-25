@@ -16,10 +16,13 @@ const renderKey = computed(() => `app-key-${i18n.global.locale}-${Math.random()}
 const currLang = computed(() => i18n.global.locale.value === 'zh-CN' ? zhCN : enUS); // antd-vue国际化语言key
 
 onBeforeMount(() => {
-    // 应用启动时先同步语言环境，再初始化主题色。
-    // 主题色优先取浏览器缓存，没有缓存时回退默认值，并写回 CSS 变量。
+    // 应用启动时先同步语言环境，再初始化主题外观。
+    // 主题外观包含两部分：
+    // 1. 品牌主色，驱动项目内的主强调色
+    // 2. 主题模式，驱动 light / dark 和 Arco dark token
     dayjs.locale(getI18nLanguage() === 'zh-CN' ? 'zh-cn' : 'en');
     themeStore.initThemeColor();
+    themeStore.initThemeMode();
 });
 
 userStore.getPwdIv();

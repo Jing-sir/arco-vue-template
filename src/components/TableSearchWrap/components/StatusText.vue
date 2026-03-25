@@ -98,7 +98,7 @@ const statusMeta = computed<StatusMeta | null>(() => {
 
 <template>
     <!-- 状态文本：只负责把常见状态值映射成统一的颜色和文案 -->
-    <span :class="statusMeta?.className ?? 'text-slate-400'">
+    <span :class="statusMeta?.className" :style="statusMeta ? undefined : { color: 'var(--app-text-muted)' }">
         {{ statusMeta ? t(statusMeta.label) : props.fallback }}
     </span>
 </template>

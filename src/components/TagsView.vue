@@ -67,10 +67,10 @@ const getActiveTabStyle = (isActive: boolean): Record<string, string> =>
 
 <template>
     <div class="w-full overflow-hidden pb-[14px]">
-        <div class="flex gap-2 overflow-x-auto rounded-xl bg-[#e8edf3] p-2">
+        <div class="flex gap-2 overflow-x-auto rounded-xl bg-[var(--app-tags-track-bg)] p-2">
             <button
                 type="button"
-                class="group inline-flex min-h-[32px] shrink-0 items-center gap-2 rounded-lg px-[14px] text-[12px] font-semibold text-[var(--app-text-muted)] transition-colors hover:bg-[rgba(255,255,255,0.58)] hover:text-[var(--app-text)]"
+                class="group inline-flex min-h-[32px] shrink-0 items-center gap-2 rounded-lg px-[14px] text-[12px] font-semibold text-[var(--app-text-muted)] transition-colors hover:bg-[var(--app-tags-hover-bg)] hover:text-[var(--app-text)]"
                 :class="isActiveHome ? 'text-white hover:text-white' : ''"
                 :style="getActiveTabStyle(isActiveHome)"
                 @click="handleGoHome"
@@ -81,14 +81,14 @@ const getActiveTabStyle = (isActive: boolean): Record<string, string> =>
                 v-for="({ name, path, meta, fullPath }, index) in visitedViews"
                 :key="path"
                 type="button"
-                class="group inline-flex min-h-[32px] shrink-0 items-center gap-2 rounded-lg px-[14px] text-[12px] font-semibold text-[var(--app-text-muted)] transition-colors hover:bg-[rgba(255,255,255,0.58)] hover:text-[var(--app-text)]"
+                class="group inline-flex min-h-[32px] shrink-0 items-center gap-2 rounded-lg px-[14px] text-[12px] font-semibold text-[var(--app-text-muted)] transition-colors hover:bg-[var(--app-tags-hover-bg)] hover:text-[var(--app-text)]"
                 :class="isActiveTab({ name, path, fullPath }) ? 'text-white hover:text-white' : ''"
                 :style="getActiveTabStyle(isActiveTab({ name, path, fullPath }))"
                 @click="handleGoCacheRoute({ fullPath })"
             >
                 <span class="whitespace-nowrap">{{ formatRouteTitle(meta.title) }}</span>
                 <span
-                    class="inline-flex h-4 w-4 items-center justify-center rounded-full text-xs text-[#98a2b3] opacity-0 transition-all hover:text-[var(--app-text)]"
+                    class="inline-flex h-4 w-4 items-center justify-center rounded-full text-xs text-[var(--app-tag-close-text)] opacity-0 transition-all hover:text-[var(--app-tag-close-hover-text)]"
                     :class="
                         isActiveTab({ name, path, fullPath })
                             ? 'opacity-100 text-white/80 hover:text-white'
