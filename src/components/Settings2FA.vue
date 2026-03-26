@@ -4,7 +4,7 @@ import { Message } from '@arco-design/web-vue'
 import apiSys from '@/api/sys'
 import apiUser from '@/api/userApi/sys/security'
 import { handlePaste } from '@/utils/common'
-import VueQr from 'vue-qr/src/packages/vue-qr.vue'
+import VueQr from 'vue-qr'
 import cookies from 'cookies-js'
 
 type Settings2FAType = 'add' | 'edit' | 'loginset' | 'login'

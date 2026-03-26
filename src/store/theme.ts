@@ -30,12 +30,84 @@ const SYSTEM_COLOR_SCHEME_MEDIA = '(prefers-color-scheme: dark)';
 
 type ThemeMode = 'light' | 'dark' | 'system';
 type ResolvedThemeMode = 'light' | 'dark';
+type RgbTuple = [number, number, number];
 
 /**
  * 校验主题色是否为合法十六进制颜色值。
  * 这里只接受 #RGB / #RRGGBB 两种常见格式，避免把异常字符串写进 CSS 变量。
  */
 const isValidHexColor = (value = ''): boolean => /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value);
+
+/**
+ * 将 #RGB / #RRGGBB 统一规范为 #RRGGBB。
+ * 这样后续做 RGB 计算时可以使用固定长度解析逻辑，避免分支散落在各处。
+ */
+const normalizeHexColor = (value = ''): string => {
+    const normalizedValue = value.trim().toLowerCase();
+    if (!/^#([0-9a-f]{3}|[0-9a-f]{6})$/.test(normalizedValue)) {
+        return DEFAULT_THEME_COLOR.toLowerCase();
+    }
+
+    if (normalizedValue.length === 7) return normalizedValue;
+
+    const r = normalizedValue[1];
+    const g = normalizedValue[2];
+    const b = normalizedValue[3];
+    return `#${r}${r}${g}${g}${b}${b}`;
+};
+
+/**
+ * 把十六进制颜色转换为 RGB 元组。
+ * Arco 的 primary 变量（--primary-x）要求的是 "r, g, b" 结构，
+ * 所以主题色更新时需要先做这一步转换。
+ */
+const hexToRgbTuple = (value: string): RgbTuple => {
+    const normalizedValue = normalizeHexColor(value);
+    return [
+        Number.parseInt(normalizedValue.slice(1, 3), 16),
+        Number.parseInt(normalizedValue.slice(3, 5), 16),
+        Number.parseInt(normalizedValue.slice(5, 7), 16),
+    ];
+};
+
+/**
+ * 将 RGB 通道约束在 0~255，避免浮点混色时出现越界。
+ */
+const clampColorChannel = (channel: number): number => Math.max(0, Math.min(255, Math.round(channel)));
+
+/**
+ * 按比例混合两个 RGB 颜色。
+ * ratio 越大，结果越靠近 target。
+ */
+const mixRgbColor = (base: RgbTuple, target: RgbTuple, ratio: number): RgbTuple => [
+    clampColorChannel(base[0] + (target[0] - base[0]) * ratio),
+    clampColorChannel(base[1] + (target[1] - base[1]) * ratio),
+    clampColorChannel(base[2] + (target[2] - base[2]) * ratio),
+];
+
+/**
+ * 将 RGB 元组转换为 Arco primary 变量可直接消费的 "r, g, b" 字符串。
+ */
+const formatRgbTuple = (rgb: RgbTuple): string => rgb.join(', ');
+
+/**
+ * 基于主题主色生成 Arco 10 阶 primary 调色板。
+ * Arco 按钮的 hover/active/focus 依赖 primary-5/7/3 等变量，
+ * 如果只改 primary-6，按钮状态色会退回默认蓝色，造成主题不一致。
+ */
+const buildArcoPrimaryPalette = (themeColor: string): string[] => {
+    const baseColor = hexToRgbTuple(themeColor);
+    const whiteColor: RgbTuple = [255, 255, 255];
+    const blackColor: RgbTuple = [0, 0, 0];
+
+    const lightMixRatios = [0.9, 0.76, 0.62, 0.46, 0.28];
+    const darkMixRatios = [0.16, 0.3, 0.44, 0.58];
+
+    const lightPalette = lightMixRatios.map((ratio) => mixRgbColor(baseColor, whiteColor, ratio));
+    const darkPalette = darkMixRatios.map((ratio) => mixRgbColor(baseColor, blackColor, ratio));
+
+    return [...lightPalette, baseColor, ...darkPalette].map(formatRgbTuple);
+};
 
 /**
  * 校验主题模式是否为项目支持的合法值。
@@ -74,7 +146,18 @@ export default defineStore('theme', () => {
      * 所有依赖 `--color-primary-6` 的地方都会立即响应。
      */
     const applyThemeColor = (color: string): void => {
-        document.documentElement.style.setProperty('--color-primary-6', color);
+        if (typeof document === 'undefined') return;
+
+        const nextColor = normalizeHexColor(color);
+        const primaryPalette = buildArcoPrimaryPalette(nextColor);
+        const styleTargets = [document.documentElement, document.body];
+
+        styleTargets.forEach((styleTarget) => {
+            styleTarget.style.setProperty('--color-primary-6', nextColor);
+            primaryPalette.forEach((paletteColor, index) => {
+                styleTarget.style.setProperty(`--primary-${index + 1}`, paletteColor);
+            });
+        });
     };
 
     /**

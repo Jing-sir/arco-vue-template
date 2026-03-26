@@ -2861,6 +2861,11 @@ vue-i18n@^11.3.0:
     "@intlify/shared" "11.3.0"
     "@vue/devtools-api" "^6.5.0"
 
+vue-qr@^5.0.3:
+  version "5.0.3"
+  resolved "https://registry.npmjs.org/vue-qr/-/vue-qr-5.0.3.tgz#67aac4c145d69923b7f2915bd13ac1e414fbde83"
+  integrity sha512-XBmBXBf8YDGttlbSf6B5kdPM5IT1pCt50tmZwBQkivWLi8CId5HDKTNyXY9KuhTIDoj/IKc62fTyjLzZs8wOCA==
+
 vue-request@^2.0.4:
   version "2.0.4"
   resolved "https://registry.npmjs.org/vue-request/-/vue-request-2.0.4.tgz"

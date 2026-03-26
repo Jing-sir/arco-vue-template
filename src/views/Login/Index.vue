@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { FormInstance } from '@arco-design/web-vue'
+import Settings2FA from '@/components/Settings2FA.vue'
 import GoogleCode from '@/components/GoogleCode.vue'
 import { Message } from '@arco-design/web-vue'
 import { encryptAESGCM } from '@/utils/aesGcm'
@@ -18,6 +19,7 @@ interface LoginFormState {
 
 const codeRef = ref<InstanceType<typeof GoogleCode> | null>(null)
 const formRef = ref<FormInstance | null>(null)
+const is2FAModalOpen = ref(false)
 
 const formState = reactive<LoginFormState>({
     account: 'xiangnan',
@@ -66,19 +68,41 @@ const finishLogin = async (): Promise<void> => {
     await router.push(resolveLoginRedirect())
 }
 
+/**
+ * 登录返回 googleState === 2 时进入“设置/绑定 2FA”流程。
+ * 关闭弹窗代表中断登录，需回收当前临时 token，避免残留登录态。
+ */
+const onClose2FAModal = (): void => {
+    is2FAModalOpen.value = false
+    setManageToken('')
+}
+
+/**
+ * 2FA 设置流程成功后，继续沿用现有登录成功跳转逻辑（支持 redirect 回跳）。
+ */
+const onSuccess2FA = async (): Promise<void> => {
+    is2FAModalOpen.value = false
+    await finishLogin()
+}
+
 const onOk = async (): Promise<void> => {
     const errors = await formRef.value?.validate()
     if (errors) return
 
     const loginData = await runAsync()
 
+    setManageToken(loginData.token)
+
+    if (loginData.googleState === 2) {
+        is2FAModalOpen.value = true
+        return
+    }
+
     if (loginData.googleState === 1) {
-        setManageToken(loginData.token)
         await codeRef.value?.onShowDialog(true)
         return
     }
 
-    setManageToken(loginData.token)
     await finishLogin()
 }
 
@@ -101,6 +125,14 @@ const onCancelGoogleCode = (): void => {
                     class="overflow-hidden rounded-xl border border-[var(--app-divider)] bg-[var(--app-login-card-bg)] shadow-[0_20px_60px_rgba(15,23,42,0.18)]"
                 >
                     <section class="px-6 py-8 text-[var(--app-text)]">
+                        <Settings2FA
+                            :visible="is2FAModalOpen"
+                            type="loginset"
+                            :active-data="{}"
+                            @onClose="onClose2FAModal"
+                            @onSuccess="onSuccess2FA"
+                        />
+
                         <GoogleCode
                             ref="codeRef"
                             :loading="googleLoading"
@@ -170,12 +202,6 @@ const onCancelGoogleCode = (): void => {
                                     {{ t('登录') }}
                                 </a-button>
                             </a-form>
-
-                            <div
-                                class="mt-5 rounded-lg border border-[var(--app-divider)] bg-[var(--app-login-tip-bg)] px-4 py-3 text-xs leading-6 text-[var(--app-text-muted)]"
-                            >
-                                {{ t('使用管理员账号登录，若已开启 2FA 将自动进入二次验证') }}
-                            </div>
                         </div>
                     </section>
                 </div>

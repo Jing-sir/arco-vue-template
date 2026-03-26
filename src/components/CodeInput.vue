@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { ComponentPublicInstance, VNodeRef } from 'vue'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 
 const { t } = useI18n()
@@ -23,16 +22,32 @@ const emit = defineEmits<{
 }>()
 
 const isError = ref(false)
+const isFocused = ref(false)
+const containerRef = ref<HTMLDivElement | null>(null)
 const inputValues = ref<string[]>(createEmptyValues(props.length))
-const inputRefs = ref<Array<HTMLInputElement | null>>([])
 
-const inputClass = computed(() => [
-    'h-[50px] w-[46px] rounded border text-center text-xl font-bold outline-none transition-colors',
-    'bg-[var(--app-surface-strong)] text-[var(--app-text)] disabled:cursor-not-allowed disabled:border-[var(--app-divider)] disabled:bg-[var(--app-surface-soft)] disabled:text-[var(--app-text-muted)]',
-    isError.value
-        ? 'border-red-500 focus:border-red-500'
-        : 'border-[var(--app-divider)] focus:border-[var(--color-primary-6)]',
+const boxClass = computed(() => [
+    'h-[50px] w-[46px] rounded border text-center text-xl font-bold leading-[48px] transition-colors select-none',
+    props.disabled
+        ? 'cursor-not-allowed border-[var(--app-divider)] bg-[var(--app-surface-soft)] text-[var(--app-text-muted)]'
+        : 'bg-[var(--app-surface-strong)] text-[var(--app-text)]',
+    isError.value ? 'border-red-500' : 'border-[var(--app-divider)]',
 ])
+
+/**
+ * 当前“输入光标”所在格子：
+ * - 优先定位到第一个空位，方便继续输入
+ * - 全部填满时定位到最后一格，方便用户继续删除
+ */
+const activeIndex = computed(() => {
+    const firstEmptyIndex = inputValues.value.findIndex((value) => !value)
+    return firstEmptyIndex === -1 ? props.length - 1 : firstEmptyIndex
+})
+
+const activeBoxClass = computed(() => {
+    if (props.disabled) return ''
+    return isError.value ? 'border-red-500' : 'border-[var(--color-primary-6)]'
+})
 
 function createEmptyValues(length: number): string[] {
     return Array.from({ length }, () => '')
@@ -40,17 +55,6 @@ function createEmptyValues(length: number): string[] {
 
 function normalizeCode(value: string): string {
     return value.replace(/\D/g, '').slice(0, props.length)
-}
-
-const itemRef = (index: number): VNodeRef =>
-    (el: Element | ComponentPublicInstance | null): void => {
-        inputRefs.value[index] = el instanceof HTMLInputElement ? el : null
-    }
-
-const focusInput = (index: number): void => {
-    if (props.disabled) return
-    const safeIndex = Math.min(Math.max(index, 0), props.length - 1)
-    nextTick(() => inputRefs.value[safeIndex]?.focus())
 }
 
 const emitValue = (): string => {
@@ -71,85 +75,75 @@ const syncInputValues = (value: string): void => {
     )
 }
 
-const writeValue = (value: string, startIndex: number): void => {
+/**
+ * 统一写入整段验证码。
+ * 键盘逐位输入、整段粘贴、父组件回填都走同一逻辑，避免状态分叉。
+ */
+const writeFullCode = (value: string): void => {
     const normalizedValue = normalizeCode(value)
     isError.value = value.trim() !== '' && normalizedValue === ''
 
-    if (!normalizedValue) return
-
-    // 将整段验证码拆分到多个输入框，兼容系统粘贴和浏览器自动填充。
-    normalizedValue.split('').forEach((char, offset) => {
-        const targetIndex = startIndex + offset
-        if (targetIndex >= props.length) return
-        inputValues.value[targetIndex] = char
-    })
-
-    const code = emitValue()
-    const nextIndex = startIndex + normalizedValue.length
-
-    if (code.length === props.length) {
-        focusInput(props.length - 1)
-        return
-    }
-
-    focusInput(nextIndex)
+    inputValues.value = createEmptyValues(props.length).map(
+        (_, index) => normalizedValue[index] ?? '',
+    )
+    emitValue()
 }
 
-const handleKeyDown = (index: number, event: KeyboardEvent): void => {
+/**
+ * 使用可聚焦容器替代原生 input：
+ * - 视觉上仍然是 6 位分段输入
+ * - 彻底绕开浏览器扩展对 OTP input 的自动补全注入，避免聚焦报错
+ */
+const handleKeyDown = (event: KeyboardEvent): void => {
     if (props.disabled) return
 
     const isPasteShortcut = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'v'
     if (isPasteShortcut) return
 
-    if (event.key === 'Backspace' && !inputValues.value[index]) {
+    if (event.key === 'Backspace') {
         event.preventDefault()
-        const previousIndex = Math.max(index - 1, 0)
-        inputValues.value[previousIndex] = ''
-        emitValue()
-        focusInput(previousIndex)
-        return
-    }
-
-    if (event.key === 'ArrowLeft') {
-        event.preventDefault()
-        focusInput(index - 1)
-        return
-    }
-
-    if (event.key === 'ArrowRight') {
-        event.preventDefault()
-        focusInput(index + 1)
-    }
-}
-
-const handleInput = (index: number, event: Event): void => {
-    const target = event.target
-    const value = target instanceof HTMLInputElement ? target.value : ''
-
-    if (!value) {
         isError.value = false
-        inputValues.value[index] = ''
-        emitValue()
-        focusInput(index - 1)
+        writeFullCode(inputValues.value.join('').slice(0, -1))
         return
     }
 
-    writeValue(value, index)
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+        event.preventDefault()
+        return
+    }
+
+    if (/^\d$/.test(event.key)) {
+        event.preventDefault()
+        isError.value = false
+        writeFullCode(`${inputValues.value.join('')}${event.key}`)
+        return
+    }
+
+    if (event.key.length === 1) {
+        event.preventDefault()
+        isError.value = true
+    }
 }
 
-const handlePaste = (index: number, event: ClipboardEvent): void => {
+const handlePaste = (event: ClipboardEvent): void => {
     if (props.disabled) return
-    event.preventDefault()
-    writeValue(event.clipboardData?.getData('text') ?? '', index)
-}
 
-const handleFocus = (index: number): void => {
-    inputRefs.value[index]?.select()
+    event.preventDefault()
+    isError.value = false
+    writeFullCode(event.clipboardData?.getData('text') ?? '')
 }
 
 const focus = (): void => {
-    const firstEmptyIndex = inputValues.value.findIndex((value) => !value)
-    focusInput(firstEmptyIndex === -1 ? props.length - 1 : firstEmptyIndex)
+    if (props.disabled) return
+    nextTick(() => containerRef.value?.focus())
+}
+
+const onFocusContainer = (): void => {
+    isFocused.value = true
+}
+
+const onBlurContainer = (): void => {
+    isFocused.value = false
 }
 
 watch(
@@ -169,22 +163,26 @@ defineExpose({ focus })
 
 <template>
     <div class="flex w-full flex-col py-3.5">
-        <div class="flex items-center justify-between gap-2">
-            <input
+        <div
+            ref="containerRef"
+            class="flex items-center justify-between gap-2 rounded outline-none"
+            :class="props.disabled ? 'cursor-not-allowed' : 'cursor-text'"
+            :tabindex="props.disabled ? -1 : 0"
+            role="group"
+            @focus="onFocusContainer"
+            @blur="onBlurContainer"
+            @keydown="handleKeyDown"
+            @paste="handlePaste"
+            @click="focus"
+        >
+            <!-- 容器接管输入后，保留原有 6 位 OTP 视觉格子。 -->
+            <div
                 v-for="(_, index) in inputValues"
                 :key="index"
-                :ref="itemRef(index)"
-                :value="inputValues[index]"
-                :class="inputClass"
-                maxlength="1"
-                inputmode="numeric"
-                autocomplete="one-time-code"
-                :disabled="props.disabled"
-                @keydown="handleKeyDown(index, $event)"
-                @input="handleInput(index, $event)"
-                @focus="handleFocus(index)"
-                @paste="handlePaste(index, $event)"
-            />
+                :class="[boxClass, isFocused && index === activeIndex ? activeBoxClass : '']"
+            >
+                {{ inputValues[index] }}
+            </div>
         </div>
         <div class="h-5 pt-1.5 text-xs leading-5 text-red-500">
             <span v-if="isError">{{ t('非法输入') }}</span>

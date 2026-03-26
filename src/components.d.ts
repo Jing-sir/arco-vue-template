@@ -44,6 +44,7 @@ declare module 'vue' {
     ASwitch: typeof import('@arco-design/web-vue')['Switch']
     ATable: typeof import('@arco-design/web-vue')['Table']
     ATree: typeof import('@arco-design/web-vue')['Tree']
+    AVerificationCode: typeof import('@arco-design/web-vue')['VerificationCode']
     BindGoogle: typeof import('./components/Modal/BindGoogle.vue')['default']
     CodeInput: typeof import('./components/CodeInput.vue')['default']
     ColorPicker: typeof import('./components/ColorPicker.vue')['default']
