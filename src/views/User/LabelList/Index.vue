@@ -1,17 +1,16 @@
 <script setup lang="ts">
 import tagApi from '@/api/userApi/tag'
 import TableSearchWrap from '@/components/TableSearchWrap/Index.vue'
-import PermissionButton from '@/components/TableSearchWrap/components/PermissionButton.vue'
 import type {
     ColumnType,
     SearchOption,
     TableExportConfig,
     TableFetchResult,
+    TableToolbarButtonConfig,
     TableSearchWrapExpose,
 } from '@/interface/TableType'
 import { buildTableFetchResult } from '@/utils/table'
 import { Message } from '@arco-design/web-vue'
-import { IconPlus } from '@arco-design/web-vue/es/icon'
 import useConfirmAction from '@/use/useConfirmAction'
 import LabelFormModal from './modal/LabelFormModal.vue'
 import ImportTagsModal from './modal/ImportTagsModal.vue'
@@ -52,6 +51,25 @@ const searchConf = computed<SearchOption[]>(() => [
         placeholder: t('请输入'),
         type: 'input',
         value: '',
+    },
+])
+
+const toolbarButtons = computed<TableToolbarButtonConfig[]>(() => [
+    {
+        buttonKey: 'add',
+        text: '新增标签',
+        type: 'primary',
+        onClick: () => {
+            openCreateModal()
+        },
+    },
+    {
+        buttonKey: 'import-tags',
+        text: '导入标签',
+        type: 'primary',
+        onClick: () => {
+            importModalVisible.value = true
+        },
     },
 ])
 
@@ -160,22 +178,11 @@ const handleDelete = (record: LabelListRow): void => {
             :table-columns="tableColumns"
             :search-conf="searchConf"
             :export-config="exportConfig"
+            :toolbar-buttons="toolbarButtons"
             :enable-column-sort="false"
             :scroll="{ x: 1200, y: 700 }"
             row-key="id"
         >
-            <template #roleBtnWrap>
-                <PermissionButton button-key="add" type="primary" @click="openCreateModal">
-                    <template #icon>
-                        <icon-plus />
-                    </template>
-                    {{ t('新增标签') }}
-                </PermissionButton>
-                <PermissionButton button-key="import-tags" type="primary" @click="importModalVisible = true">
-                    {{ t('导入标签') }}
-                </PermissionButton>
-            </template>
-
             <template #name="{ record }">
                 <a-tag :color="record.color">{{ record.name }}</a-tag>
             </template>

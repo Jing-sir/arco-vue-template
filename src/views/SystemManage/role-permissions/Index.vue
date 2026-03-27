@@ -1,15 +1,24 @@
 <script setup lang="ts">
-import type { ColumnType, TableSearchWrapExpose } from '@/interface/TableType'
-import PermissionButton from '@/components/TableSearchWrap/components/PermissionButton.vue'
+import type { ColumnType, TableSearchWrapExpose, TableToolbarButtonConfig } from '@/interface/TableType'
 import TableSearchWrap from '@/components/TableSearchWrap/Index.vue'
 import type { SystemRoleItem } from '@/interface/SystemManageType'
-import { IconPlus } from '@arco-design/web-vue/es/icon'
 import api from '@/api/fetchTest/index'
 
 const { t } = useI18n()
 const router = useRouter()
 
 const tableWrapRef = ref<TableSearchWrapExpose | null>(null)
+
+const toolbarButtons = computed<TableToolbarButtonConfig[]>(() => [
+    {
+        buttonKey: 'add',
+        text: '新增角色',
+        type: 'primary',
+        onClick: async () => {
+            await router.push('/systemManage/addRolePermissions')
+        },
+    },
+])
 
 const tableColumns = computed<ColumnType[]>(() => [
     { title: t('序号'), slotName: 'index', width: 80 },
@@ -60,23 +69,11 @@ useOnActivated(() => {
         ref="tableWrapRef"
         :api-fetch="fetchRoleList"
         :table-columns="tableColumns"
+        :toolbar-buttons="toolbarButtons"
         :enable-column-sort="false"
         :table-props="{ pagination: false }"
         row-key="roleId"
     >
-        <template #roleBtnWrap>
-            <PermissionButton
-                button-key="add"
-                type="primary"
-                @click.stop="router.push('/systemManage/addRolePermissions')"
-            >
-                <template #icon>
-                    <icon-plus />
-                </template>
-                {{ t('新增角色') }}
-            </PermissionButton>
-        </template>
-
         <template #index="{ rowIndex }">
             {{ rowIndex + 1 }}
         </template>

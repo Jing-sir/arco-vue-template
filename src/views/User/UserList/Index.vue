@@ -46,7 +46,6 @@ const defaultParams = computed<SearchParams>(() => ({
 }))
 
 const stateOptions = computed(() => [
-    { label: t('全部'), value: '' },
     { label: t('正常'), value: 1 },
     { label: t('冻结'), value: 2 },
     { label: t('已注销'), value: 3 },
@@ -55,15 +54,10 @@ const stateOptions = computed(() => [
 /**
  * 标签与国家下拉来源于后端，保持和标签模块、认证模块同一数据口径。
  */
-const tagOptions = ref<Array<{ label: string; value: string | number }>>([
-    { label: t('全部'), value: '' },
-])
-const countryOptions = ref<Array<{ label: string; value: string | number }>>([
-    { label: t('全部'), value: '' },
-])
+const tagOptions = ref<Array<{ label: string; value: string | number }>>([])
+const countryOptions = ref<Array<{ label: string; value: string | number }>>([])
 
 const authStatusOptions = computed(() => [
-    { label: t('全部'), value: '' },
     ...Array.from(subSumStatusMap.entries())
         .filter(([value]) => typeof value === 'number')
         .map(([value, item]) => ({
@@ -73,7 +67,6 @@ const authStatusOptions = computed(() => [
 ])
 
 const documentTypeOptions = computed(() => [
-    { label: t('全部'), value: '' },
     ...Array.from(userIdTypeMap.entries()).map(([value, item]) => ({
         label: t(item.label),
         value,
@@ -412,21 +405,15 @@ const querySearchOptions = async (): Promise<void> => {
         accountAuthApi.getUapyCountryList(),
     ])
 
-    tagOptions.value = [
-        { label: t('全部'), value: '' },
-        ...tagList.map((item) => ({
-            label: item.name,
-            value: item.id,
-        })),
-    ]
+    tagOptions.value = tagList.map((item) => ({
+        label: item.name,
+        value: item.id,
+    }))
 
-    countryOptions.value = [
-        { label: t('全部'), value: '' },
-        ...countryList.map((item) => ({
-            label: String(item.nameZh ?? item.alpha3 ?? '--'),
-            value: String(item.alpha3 ?? ''),
-        })),
-    ]
+    countryOptions.value = countryList.map((item) => ({
+        label: String(item.nameZh ?? item.alpha3 ?? '--'),
+        value: String(item.alpha3 ?? ''),
+    }))
 }
 
 watch(

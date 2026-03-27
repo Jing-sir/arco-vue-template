@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import type { WhitelistRow } from '@/api/whiteList'
-import whiteListApi from '@/api/whiteList'
 import TableSearchWrap from '@/components/TableSearchWrap/Index.vue'
-import PermissionButton from '@/components/TableSearchWrap/components/PermissionButton.vue'
+import EditWhiteListModal from './modal/EditWhiteListModal.vue'
+import { transMapBySelectOptions } from '@/utils/component'
+import { buildTableFetchResult } from '@/utils/table'
+import useConfirmAction from '@/use/useConfirmAction'
+import type { WhitelistRow } from '@/api/whiteList'
+import { Message } from '@arco-design/web-vue'
+import whiteListApi from '@/api/whiteList'
 import {
     commonLevelEnumMap,
     whitelistStateEnum,
@@ -12,13 +16,9 @@ import type {
     ColumnType,
     SearchOption,
     TableFetchResult,
+    TableToolbarButtonConfig,
     TableSearchWrapExpose,
 } from '@/interface/TableType'
-import { transMapBySelectOptions } from '@/utils/component'
-import { buildTableFetchResult } from '@/utils/table'
-import { Message } from '@arco-design/web-vue'
-import useConfirmAction from '@/use/useConfirmAction'
-import EditWhiteListModal from './modal/EditWhiteListModal.vue'
 
 interface WhitelistTableRow extends WhitelistRow, Record<string, unknown> {
     stateLoading?: boolean
@@ -37,7 +37,6 @@ const tableWrapRef = ref<TableSearchWrapExpose | null>(null)
 const editModalRef = ref<EditWhiteListModalExpose | null>(null)
 
 const levelOptions = computed(() => [
-    { label: t('全部'), value: '' },
     ...transMapBySelectOptions(commonLevelEnumMap, (value, item) => ({
         label: t(item.label),
         value: value as number,
@@ -45,7 +44,6 @@ const levelOptions = computed(() => [
 ])
 
 const stateOptions = computed(() => [
-    { label: t('全部'), value: '' },
     ...transMapBySelectOptions(whitelistStateEnumMap, (value, item) => ({
         label: t(item.label),
         value: value as number,
@@ -80,6 +78,18 @@ const searchConf = computed<SearchOption[]>(() => [
         type: 'select',
         value: '',
         options: stateOptions.value,
+    },
+])
+
+const toolbarButtons = computed<TableToolbarButtonConfig[]>(() => [
+    {
+        buttonKey: 'userWhiteListAdd',
+        text: '新增',
+        type: 'primary',
+        size: 'mini',
+        onClick: () => {
+            editModalRef.value?.open()
+        },
     },
 ])
 
@@ -154,7 +164,7 @@ const tableColumns = computed<ColumnType[]>(() => [
                     size: 'mini',
                     text: '编辑',
                     onClick: (record) => {
-                        editModalRef.value?.open(record as WhitelistTableRow);
+                        editModalRef.value?.open(record as WhitelistTableRow)
                     },
                 },
             ],
@@ -212,7 +222,6 @@ const getBusinessTypeList = (businessType: unknown): string[] =>
         .split(',')
         .map((item) => item.trim())
         .filter(Boolean)
-
 </script>
 
 <template>
@@ -222,21 +231,11 @@ const getBusinessTypeList = (businessType: unknown): string[] =>
             :api-fetch="fetchWhitelistList"
             :table-columns="tableColumns"
             :search-conf="searchConf"
+            :toolbar-buttons="toolbarButtons"
             :enable-column-sort="false"
             :scroll="{ x: 1600, y: 700 }"
             row-key="id"
         >
-            <template #roleBtnWrap>
-                <PermissionButton
-                    button-key="userWhiteListAdd"
-                    type="primary"
-                    size="mini"
-                    @click="editModalRef?.open()"
-                >
-                    {{ t('新增') }}
-                </PermissionButton>
-            </template>
-
             <template #businessType="{ record }">
                 <ul class="space-y-1 pl-0">
                     <li
@@ -249,7 +248,6 @@ const getBusinessTypeList = (businessType: unknown): string[] =>
                     <li v-if="!record.businessType" class="list-none">--</li>
                 </ul>
             </template>
-
         </TableSearchWrap>
 
         <EditWhiteListModal ref="editModalRef" @success="handleEditSuccess" />

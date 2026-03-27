@@ -30,7 +30,6 @@ const countryOptions = ref<Array<{ label: string; value: string }>>([])
  * 认证证件类型使用历史枚举映射，避免页面维护重复常量。
  */
 const documentTypeOptions = computed(() => [
-    { label: t('全部'), value: '' },
     ...Array.from(userIdTypeMap.entries()).map(([value, item]) => ({
         label: t(item.label),
         value: String(value),
@@ -72,7 +71,6 @@ const searchConf = computed<SearchOption[]>(() => [
         type: 'select',
         value: '',
         options: [
-            { label: t('全部'), value: '' },
             { label: t('通过验证'), value: 'GREEN' },
             { label: t('拒绝'), value: 'RED' },
             { label: t('未认证'), value: 'WAIT' },
@@ -238,13 +236,10 @@ const bootLevelAndCountry = async (): Promise<void> => {
 
     currentLevel.value = String(levelValue ?? '0')
 
-    countryOptions.value = [
-        { label: t('全部'), value: '' },
-        ...countryList.map((item) => ({
-            label: String(item.nameZh ?? item.alpha3 ?? '--'),
-            value: String(item.alpha3 ?? ''),
-        })),
-    ]
+    countryOptions.value = countryList.map((item) => ({
+        label: String(item.nameZh ?? item.alpha3 ?? '--'),
+        value: String(item.alpha3 ?? ''),
+    }))
 }
 
 onMounted(() => {

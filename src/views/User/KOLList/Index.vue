@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import TableSearchWrap from '@/components/TableSearchWrap/Index.vue'
-import PermissionButton from '@/components/TableSearchWrap/components/PermissionButton.vue'
-import type { ColumnType, SearchOption, TableSearchWrapExpose } from '@/interface/TableType'
+import type {
+    ColumnType,
+    SearchOption,
+    TableToolbarButtonConfig,
+    TableSearchWrapExpose,
+} from '@/interface/TableType'
 import kolApi from '@/api/kolConfiguration/index'
 import { Message } from '@arco-design/web-vue'
-import { IconPlus } from '@arco-design/web-vue/es/icon'
 import useConfirmAction from '@/use/useConfirmAction'
 import AddKolModal from './modal/AddKolModal.vue'
 
@@ -13,8 +16,18 @@ const { confirmAndRun } = useConfirmAction()
 
 const tableWrapRef = ref<TableSearchWrapExpose | null>(null)
 
+const toolbarButtons = computed<TableToolbarButtonConfig[]>(() => [
+    {
+        buttonKey: 'add',
+        text: '添加',
+        type: 'primary',
+        onClick: () => {
+            openAddModal()
+        },
+    },
+])
+
 const stateOptions = computed(() => [
-    { label: t('全部'), value: null },
     { label: t('正常'), value: 1 },
     { label: t('已禁用'), value: 2 },
     { label: t('已取消身份'), value: 3 },
@@ -189,19 +202,11 @@ const handleAddSuccess = async (): Promise<void> => {
             :api-fetch="fetchKolList"
             :table-columns="tableColumns"
             :search-conf="searchConf"
+            :toolbar-buttons="toolbarButtons"
             :enable-column-sort="false"
             :scroll="{ x: 2200, y: 700 }"
             row-key="id"
-        >
-            <template #roleBtnWrap>
-                <PermissionButton button-key="add" type="primary" @click="openAddModal">
-                    <template #icon>
-                        <icon-plus />
-                    </template>
-                    {{ t('添加') }}
-                </PermissionButton>
-            </template>
-        </TableSearchWrap>
+        />
         <AddKolModal v-model:visible="addModalVisible" @success="handleAddSuccess" />
     </div>
 </template>

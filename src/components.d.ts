@@ -76,5 +76,6 @@ declare module 'vue' {
     SideNavigationBar: typeof import('./components/SideNavigationBar/index.vue')['default']
     StatusText: typeof import('./components/TableSearchWrap/components/StatusText.vue')['default']
     TagsView: typeof import('./components/TagsView.vue')['default']
+    UserAuthCell: typeof import('./components/UserAuthCell.vue')['default']
   }
 }

@@ -45,6 +45,20 @@ export interface TableActionButtonConfig<TRecord = Record<string, unknown>> {
     onClick: (record: TRecord) => void | Promise<void>;
 }
 
+export interface TableToolbarButtonConfig {
+    buttonKey?: string;
+    routeName?: string;
+    text: string;
+    type?: TableButtonType;
+    status?: TableButtonStatus;
+    size?: TableButtonSize;
+    disabled?: boolean;
+    loading?: boolean;
+    hideWhenNoPermission?: boolean;
+    show?: boolean;
+    onClick?: () => void | Promise<void>;
+}
+
 export interface TableCellPresetActionButtonsConfig<TRecord = Record<string, unknown>> {
     type: 'actionButtons';
     buttons: TableActionButtonConfig<TRecord>[];
@@ -283,6 +297,7 @@ export interface TableSearchWrapProps {
     apiFetch: (params?: Record<string, unknown>) => Promise<TableFetchResponse>;
     tableColumns: ColumnType[];
     exportConfig?: TableExportConfig | null;
+    toolbarButtons?: TableToolbarButtonConfig[];
     defaultParams?: SearchParams;
     immediate?: boolean;
     rowKey?: TableRowKey;

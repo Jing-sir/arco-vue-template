@@ -21,12 +21,9 @@ const tableWrapRef = ref<TableSearchWrapExpose | null>(null)
 /**
  * 标签筛选来自后端标签管理，保证登录日志和标签模块数据口径一致。
  */
-const tagOptions = ref<Array<{ label: string; value: string }>>([
-    { label: t('全部'), value: '' },
-])
+const tagOptions = ref<Array<{ label: string; value: string }>>([])
 
 const platformOptions = [
-    { label: t('全部'), value: '' },
     { label: t('安卓'), value: 1 },
     { label: t('iOS'), value: 2 },
     { label: t('Web'), value: 3 },
@@ -249,10 +246,7 @@ const exportConfig = computed<TableExportConfig>(() => ({
 
 const queryTags = async (): Promise<void> => {
     const tagList = await tagApi.getTagList()
-    tagOptions.value = [
-        { label: t('全部'), value: '' },
-        ...tagList.map((item) => ({ label: item.name, value: item.id })),
-    ]
+    tagOptions.value = tagList.map((item) => ({ label: item.name, value: item.id }))
 }
 
 onMounted(() => {

@@ -2,7 +2,12 @@
 import accountListApi from '@/api/userApi/account/list'
 import TableSearchWrap from '@/components/TableSearchWrap/Index.vue'
 import type { CancellationApplicationItem, CancellationApplicationType } from '@/interface/type'
-import type { ColumnType, SearchOption, TableFetchResult, TableSearchWrapExpose } from '@/interface/TableType'
+import type {
+    ColumnType,
+    SearchOption,
+    TableFetchResult,
+    TableSearchWrapExpose,
+} from '@/interface/TableType'
 import { buildTableFetchResult } from '@/utils/table'
 import { Message } from '@arco-design/web-vue'
 import useConfirmAction from '@/use/useConfirmAction'
@@ -16,7 +21,6 @@ const { confirmAndRun } = useConfirmAction()
 const tableWrapRef = ref<TableSearchWrapExpose | null>(null)
 
 const closeAccountCheckOptions = computed(() => [
-    { label: t('全部'), value: '' },
     { label: t('待审核'), value: 1 },
     { label: t('审核通过'), value: 2 },
     { label: t('审核拒绝'), value: 3 },
@@ -56,6 +60,19 @@ const normalizeCancellationParams = (
     endTime: String(params.endTime || ''),
 })
 
+const fetchCancellationList = async (
+    params: Record<string, unknown> = {},
+): Promise<TableFetchResult<CancellationApplicationItem>> => {
+    const normalizedParams = normalizeCancellationParams(params)
+    const response = await accountListApi.getCancellationApplicationList(normalizedParams)
+
+    return buildTableFetchResult<CancellationApplicationItem>({
+        response,
+        params: normalizedParams,
+        list: response.list,
+    })
+}
+
 const searchConf = computed<SearchOption[]>(() => [
     {
         label: t('用户UID'),
@@ -87,7 +104,13 @@ const searchConf = computed<SearchOption[]>(() => [
 ])
 
 const tableColumns = computed<ColumnType[]>(() => [
-    { title: t('用户UID'), dataIndex: 'accountId', slotName: 'accountId', width: 200, fixed: 'left' },
+    {
+        title: t('用户UID'),
+        dataIndex: 'accountId',
+        slotName: 'accountId',
+        width: 200,
+        fixed: 'left',
+    },
     { title: t('注册手机号'), dataIndex: 'phone', slotName: 'phone', width: 140 },
     { title: t('注册邮箱'), dataIndex: 'email', width: 220 },
     { title: t('注册时间'), dataIndex: 'createTime', width: 180 },
@@ -132,19 +155,6 @@ const tableColumns = computed<ColumnType[]>(() => [
     },
 ])
 
-const fetchCancellationList = async (
-    params: Record<string, unknown> = {},
-): Promise<TableFetchResult<CancellationApplicationItem>> => {
-    const normalizedParams = normalizeCancellationParams(params)
-    const response = await accountListApi.getCancellationApplicationList(normalizedParams)
-
-    return buildTableFetchResult<CancellationApplicationItem>({
-        response,
-        params: normalizedParams,
-        list: response.list,
-    })
-}
-
 /**
  * 解绑邮箱是不可逆操作，所以在执行前加确认流程。
  */
@@ -175,10 +185,11 @@ const handleUnbindEmail = (record: CancellationTableRow): void => {
         </template>
 
         <template #phone="{ record }">
-            <span v-if="record.globalCode && record.phone">{{ `${record.globalCode} ${record.phone}` }}</span>
+            <span v-if="record.globalCode && record.phone">{{
+                `${record.globalCode} ${record.phone}`
+            }}</span>
             <span v-else-if="record.globalCode">{{ record.globalCode }}</span>
             <span v-else>{{ record.phone || '--' }}</span>
         </template>
-
     </TableSearchWrap>
 </template>

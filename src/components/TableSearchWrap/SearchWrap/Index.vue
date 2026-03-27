@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { IconCaretDown, IconCaretUp, IconSearch } from '@arco-design/web-vue/es/icon'
-import dayjs from 'dayjs'
 import { debounce, map, reduce, toPairs } from 'lodash-es'
 import { timeStampToDate } from '@/filters/dateFormat'
 import type {
@@ -14,7 +13,7 @@ import type {
     TableSearchFormExpose,
 } from '@/interface/TableType'
 import type { PropType } from 'vue'
-import { unref, watch } from 'vue'
+import dayjs from 'dayjs'
 
 const DEBOUNCE_DELAY = 600
 const SEARCH_STATE_KEY = 'searchVal'
@@ -50,10 +49,30 @@ const getOptionList = (
 ): Array<{ value: string | null | number; label: string }> =>
     unref(item.optionsArr ?? item.options ?? [])
 
+const isEmptySelectValue = (value: unknown): boolean =>
+    value === '' || value === null || typeof value === 'undefined'
+
+/**
+ * Select 选项统一补齐“全部”：
+ * - 页面未提供空值选项时，自动注入一个默认“全部”
+ * - 页面已提供空值选项（'' / null）时，保持原配置，避免重复
+ */
+const getSelectOptionList = (
+    item: SearchOption,
+): Array<{ value: string | null | number; label: string }> => {
+    const optionList = getOptionList(item)
+
+    if (optionList.some((option) => isEmptySelectValue(option.value))) {
+        return optionList
+    }
+
+    return [{ label: '全部', value: null }, ...optionList]
+}
+
 const getTranslatedOptionList = (
     item: SearchOption,
 ): Array<{ value: string | null | number; label: string }> =>
-    getOptionList(item).map((option) => ({
+    getSelectOptionList(item).map((option) => ({
         ...option,
         label: t(option.label),
     }))
@@ -342,16 +361,7 @@ defineExpose<TableSearchFormExpose>({
                                     "
                                     v-bind="item.props"
                                     @change="emitSearch"
-                                >
-                                    <a-option :value="null">{{ t('全部') }}</a-option>
-                                    <a-option
-                                        v-for="child of getTranslatedOptionList(item)"
-                                        :key="child.value"
-                                        :value="child.value"
-                                    >
-                                        {{ child.label }}
-                                    </a-option>
-                                </a-select>
+                                />
                                 <a-date-picker
                                     v-if="item.type === 'date-single'"
                                     v-model="item.value"

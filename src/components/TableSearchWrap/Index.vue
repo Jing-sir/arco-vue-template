@@ -7,6 +7,7 @@ import StatusText from './components/StatusText.vue'
 import type {
     SearchParams,
     TableSearchFormExpose,
+    TableToolbarButtonConfig,
     TableSearchWrapExpose,
     TableSearchWrapProps,
     TableScrollConfig,
@@ -22,6 +23,7 @@ const props = withDefaults(defineProps<TableSearchWrapProps>(), {
     searchConf: () => [],
     isMore: true,
     exportConfig: null,
+    toolbarButtons: () => [],
     defaultParams: () => ({}),
     immediate: true,
     rowKey: 'id',
@@ -36,6 +38,19 @@ const props = withDefaults(defineProps<TableSearchWrapProps>(), {
 
 const { t } = useI18n()
 const slots = useSlots()
+
+/**
+ * 工具栏按钮配置统一过滤：
+ * - show=false 时不渲染
+ * - 其它场景默认展示
+ */
+const visibleToolbarButtons = computed<TableToolbarButtonConfig[]>(() =>
+    props.toolbarButtons.filter((button) => button.show !== false),
+)
+
+const handleToolbarButtonClick = (button: TableToolbarButtonConfig): void => {
+    button.onClick?.()
+}
 
 /**
  * 搜索表单实例。
@@ -160,6 +175,7 @@ const showToolbar = computed(
     () =>
         Boolean(props.exportConfig) ||
         props.showRefresh ||
+        visibleToolbarButtons.value.length > 0 ||
         Boolean(slots.roleBtnWrap) ||
         Boolean(slots.totalWrap) ||
         Boolean(slots.actionsWrap),
@@ -281,6 +297,21 @@ defineExpose<TableSearchWrapExpose>({
                     @searchCallback="searchTable"
                 >
                     <template #footerActions>
+                        <PermissionButton
+                            v-for="(button, buttonIndex) in visibleToolbarButtons"
+                            :key="`footer-toolbar-button-${button.buttonKey || button.text}-${buttonIndex}`"
+                            :button-key="button.buttonKey"
+                            :route-name="button.routeName"
+                            :type="button.type"
+                            :status="button.status"
+                            :size="button.size"
+                            :disabled="button.disabled"
+                            :loading="button.loading"
+                            :hide-when-no-permission="button.hideWhenNoPermission"
+                            @click="handleToolbarButtonClick(button)"
+                        >
+                            {{ t(button.text) }}
+                        </PermissionButton>
                         <ExportButton
                             v-if="props.exportConfig"
                             :config="props.exportConfig"
@@ -295,6 +326,21 @@ defineExpose<TableSearchWrapExpose>({
         <!-- 工具栏：按钮区、统计区、操作区统一放在这里 -->
         <div v-if="showToolbar" class="flex flex-wrap items-center justify-between gap-3 pb-[10px]">
             <div class="flex flex-wrap items-center gap-3">
+                <PermissionButton
+                    v-for="(button, buttonIndex) in visibleToolbarButtons"
+                    :key="`toolbar-button-${button.buttonKey || button.text}-${buttonIndex}`"
+                    :button-key="button.buttonKey"
+                    :route-name="button.routeName"
+                    :type="button.type"
+                    :status="button.status"
+                    :size="button.size"
+                    :disabled="button.disabled"
+                    :loading="button.loading"
+                    :hide-when-no-permission="button.hideWhenNoPermission"
+                    @click="handleToolbarButtonClick(button)"
+                >
+                    {{ t(button.text) }}
+                </PermissionButton>
                 <slot name="roleBtnWrap" />
                 <ExportButton
                     v-if="props.exportConfig"

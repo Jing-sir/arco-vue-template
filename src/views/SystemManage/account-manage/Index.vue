@@ -1,19 +1,18 @@
 <script setup lang="ts">
 import ResetPasswords from './modal/ResetPasswords.vue'
 import TableSearchWrap from '@/components/TableSearchWrap/Index.vue'
-import PermissionButton from '@/components/TableSearchWrap/components/PermissionButton.vue'
 import StatusText from '@/components/TableSearchWrap/components/StatusText.vue'
 import type {
     ColumnType,
     SearchOption,
     TableSearchSorterConfig,
+    TableToolbarButtonConfig,
     TableSearchWrapExpose,
 } from '@/interface/TableType'
 import type { SystemUserRow } from '@/interface/SystemManageType'
 import api from '@/api/fetchTest/index'
 import useConfirmAction from '@/use/useConfirmAction'
 import { Message } from '@arco-design/web-vue'
-import { IconPlus } from '@arco-design/web-vue/es/icon'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -24,6 +23,17 @@ const tableWrapRef = ref<TableSearchWrapExpose | null>(null)
 const resetVisible = ref(false)
 const resetType = ref<'loginPwd' | '2FA'>('loginPwd')
 const resetUserId = ref('')
+
+const toolbarButtons = computed<TableToolbarButtonConfig[]>(() => [
+    {
+        buttonKey: 'add',
+        text: '新增管理员',
+        type: 'primary',
+        onClick: async () => {
+            await router.push('/systemManage/addAccount')
+        },
+    },
+])
 
 const searchConf = ref<SearchOption[]>([
     {
@@ -141,23 +151,10 @@ useOnActivated(() => {
             :table-columns="tableColumns"
             :search-conf="searchConf"
             :search-sorter="searchSorter"
+            :toolbar-buttons="toolbarButtons"
             row-key="userId"
             :scroll="{ x: 1100, y: 800 }"
         >
-            <template #roleBtnWrap>
-                <!-- 统一使用权限按钮组件：默认按当前 route.name + buttonKey 判断权限 -->
-                <PermissionButton
-                    button-key="add"
-                    type="primary"
-                    @click.stop="router.push('/systemManage/addAccount')"
-                >
-                    <template #icon>
-                        <icon-plus />
-                    </template>
-                    {{ t('新增管理员') }}
-                </PermissionButton>
-            </template>
-
             <template #index="{ rowIndex, pagination }">
                 {{ ((pagination?.current ?? 1) - 1) * (pagination?.pageSize ?? 20) + rowIndex + 1 }}
             </template>
