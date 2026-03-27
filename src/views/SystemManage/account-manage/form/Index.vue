@@ -1,86 +1,96 @@
 <script setup lang="ts">
-import type { FieldRule, FormInstance } from '@arco-design/web-vue';
-import { Message } from '@arco-design/web-vue';
-import NProgress from 'nprogress';
-import type { SystemRoleItem } from '@/interface/SystemManageType';
-import api from '@/api/fetchTest/index';
+import type { FieldRule, FormInstance } from '@arco-design/web-vue'
+import { Message } from '@arco-design/web-vue'
+import type { SystemRoleItem } from '@/interface/SystemManageType'
+import api from '@/api/fetchTest/index'
+import NProgress from 'nprogress'
 
-const { t } = useI18n();
-const router = useRouter();
-const route = useRoute();
-const tagsViewStore = tagsView();
+const { t } = useI18n()
+const router = useRouter()
+const route = useRoute()
+const tagsViewStore = tagsView()
 
-const formRef = ref<FormInstance>();
-const isLoading = ref(false);
-const roleList = ref<SystemRoleItem[]>([]);
+const formRef = ref<FormInstance>()
+const isLoading = ref(false)
+const roleList = ref<SystemRoleItem[]>([])
 
+// 新增与编辑复用同一份表单状态：
+// - userId 为空时表示新增
+// - userId 有值时表示编辑，并在 mounted 后自动回填详情
 const currState = reactive({
     account: '',
     fullName: '',
     roleId: undefined as string | undefined,
     state: 1,
     userId: '',
-});
+})
 
 const rules: Record<string, FieldRule[]> = {
     account: [{ required: true, message: t('请输入'), trigger: 'blur' }],
     fullName: [{ required: true, message: t('请输入'), trigger: 'blur' }],
     roleId: [{ required: true, message: t('请选择'), trigger: 'change' }],
-};
+}
 
 const handleBack = (): void => {
-    router.back();
+    router.back()
     if (route.name) {
-        tagsViewStore.deleteVisitedViewByName(String(route.name), true);
+        tagsViewStore.deleteVisitedViewByName(String(route.name), true)
     }
-};
+}
 
+/**
+ * 保存逻辑统一走“先校验 -> 再提交 -> 成功后返回列表”。
+ * 通过 finally 统一收口 loading / 进度条，避免异常分支遗漏状态恢复。
+ */
 const handleSaveData = async (): Promise<void> => {
-    const errors = await formRef.value?.validate();
-    if (errors) return;
+    const errors = await formRef.value?.validate()
+    if (errors) return
 
-    NProgress.start();
-    isLoading.value = true;
+    NProgress.start()
+    isLoading.value = true
 
-    const { userId: id, ...params } = currState;
-    api.sysUserAddOrUpdate({ ...params, id })
-        .then(() => {
-            Message.success(t('操作成功'));
-            handleBack();
-        })
-        .finally(() => {
-            NProgress.done();
-            isLoading.value = false;
-        });
-};
+    try {
+        const { userId: id, ...params } = currState
+        await api.sysUserAddOrUpdate({ ...params, id })
+        Message.success(t('操作成功'))
+        handleBack()
+    } finally {
+        NProgress.done()
+        isLoading.value = false
+    }
+}
 
-const fetchRoleList = (): void => {
-    api.sysRoleList().then((data) => {
-        roleList.value = data;
-    });
-};
+/**
+ * 角色下拉选项统一在页面初始化时加载一次，
+ * 避免把角色枚举散落在页面内硬编码。
+ */
+const fetchRoleList = async (): Promise<void> => {
+    roleList.value = await api.sysRoleList()
+}
 
-const fetchRowDetail = (): void => {
-    if (!currState.userId) return;
+/**
+ * 编辑场景回填详情：仅当 userId 存在时请求。
+ */
+const fetchRowDetail = async (): Promise<void> => {
+    if (!currState.userId) return
 
-    NProgress.start();
-    api.sysUserInfo({ userId: currState.userId })
-        .then((data) => {
-            currState.account = data.account;
-            currState.fullName = data.fullName;
-            currState.roleId = data.roleId;
-            currState.state = data.state;
-        })
-        .finally(() => {
-            NProgress.done();
-        });
-};
+    NProgress.start()
+    try {
+        const data = await api.sysUserInfo({ userId: currState.userId })
+        currState.account = data.account
+        currState.fullName = data.fullName
+        currState.roleId = data.roleId
+        currState.state = data.state
+    } finally {
+        NProgress.done()
+    }
+}
 
-onMounted(() => {
-    fetchRoleList();
-    currState.userId = route.params.id ? String(route.params.id) : '';
-    fetchRowDetail();
-});
+onMounted(async () => {
+    currState.userId = route.params.id ? String(route.params.id) : ''
+    await fetchRoleList()
+    await fetchRowDetail()
+})
 </script>
 
 <template>

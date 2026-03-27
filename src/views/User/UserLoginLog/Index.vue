@@ -2,17 +2,21 @@
 import sysAccountLogApi from '@/api/userApi/sys/accountLog'
 import tagApi from '@/api/userApi/tag'
 import TableSearchWrap from '@/components/TableSearchWrap/Index.vue'
-import LabelTagList from '@/components/TableSearchWrap/components/LabelTagList.vue'
-import PermissionButton from '@/components/TableSearchWrap/components/PermissionButton.vue'
 import type { AccountLogParams } from '@/api/userApi/types.d'
-import type { ColumnType, SearchOption, TableFetchResult, TableSearchWrapExpose } from '@/interface/TableType'
+import type {
+    ColumnType,
+    SearchOption,
+    TableExportConfig,
+    TableFetchResult,
+    TableSearchWrapExpose,
+} from '@/interface/TableType'
+import { buildTableFetchResult } from '@/utils/table'
 import { Message } from '@arco-design/web-vue'
 import dayjs from 'dayjs'
 
 const { t } = useI18n()
 
 const tableWrapRef = ref<TableSearchWrapExpose | null>(null)
-const exportLoading = ref(false)
 
 /**
  * 标签筛选来自后端标签管理，保证登录日志和标签模块数据口径一致。
@@ -140,7 +144,16 @@ const searchConf = computed<SearchOption[]>(() => [
 
 const tableColumns = computed<ColumnType[]>(() => [
     { title: t('用户UID'), dataIndex: 'accountId', width: 200, fixed: 'left' },
-    { title: t('标签'), dataIndex: 'labelList', slotName: 'labelList', width: 220 },
+    {
+        title: t('标签'),
+        dataIndex: 'labelList',
+        width: 220,
+        cellPreset: {
+            type: 'labelTags',
+            labelListField: 'labelList',
+            labelNamesField: 'labelNames',
+        },
+    },
     { title: t('邮箱'), dataIndex: 'operated', width: 220 },
     { title: t('用户姓名(中文)'), dataIndex: 'usernameCn', width: 140 },
     { title: t('用户姓名(英文)'), dataIndex: 'usernameEn', width: 160 },
@@ -194,60 +207,45 @@ const fetchAccountLogList = async (
     const normalizedParams = normalizeLogParams(params)
     const response = await sysAccountLogApi.getAccountLogList(normalizedParams)
 
-    return {
-        list: response.list as unknown as Record<string, unknown>[],
-        pageNo: Number((response as unknown as Record<string, unknown>).pageNo ?? normalizedParams.pageNo),
-        pageSize: Number((response as unknown as Record<string, unknown>).pageSize ?? normalizedParams.pageSize),
-        totalSize: Number(response.totalSize ?? 0),
-    }
-}
-
-const downloadBlob = (blob: Blob, fileName: string): void => {
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = fileName
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
+    return buildTableFetchResult<Record<string, unknown>>({
+        response,
+        params: normalizedParams,
+    })
 }
 
 /**
  * 导出要求必须带登录时间范围，且跨度不超过 365 天，避免大数据量阻塞。
  */
-const handleExport = async (): Promise<void> => {
-    const searchParams = tableWrapRef.value?.getSearchParams() || {}
-
-    if (!searchParams.startTime || !searchParams.endTime) {
+const validateExportParams = (params: Record<string, unknown>): boolean => {
+    if (!params.startTime || !params.endTime) {
         Message.warning(t('登录开始时间不能为空'))
-        return
+        return false
     }
 
-    const start = dayjs(String(searchParams.startTime))
-    const end = dayjs(String(searchParams.endTime))
+    const start = dayjs(String(params.startTime))
+    const end = dayjs(String(params.endTime))
 
     if (end.diff(start, 'day') > 365) {
         Message.warning(t('请选择365天以内的时间'))
-        return
+        return false
     }
 
-    exportLoading.value = true
-    try {
-        const normalizedParams = normalizeLogParams(searchParams)
-        const blob = await sysAccountLogApi.exportAccountLog({
+    return true
+}
+
+const exportConfig = computed<TableExportConfig>(() => ({
+    exportApi: async (params: Record<string, unknown>) => {
+        const normalizedParams = normalizeLogParams(params)
+        return sysAccountLogApi.exportAccountLog({
             ...normalizedParams,
             platform: normalizedParams.platform ?? undefined,
             pageNo: 1,
             pageSize: 2000,
         })
-
-        downloadBlob(blob, `${t('用户登录日志')}-${dayjs().format('YYYYMMDDHHmmss')}.xlsx`)
-        Message.success(t('导出成功'))
-    } finally {
-        exportLoading.value = false
-    }
-}
+    },
+    fileName: `${t('用户登录日志')}.xlsx`,
+    beforeExport: (params: Record<string, unknown>) => validateExportParams(params),
+}))
 
 const queryTags = async (): Promise<void> => {
     const tagList = await tagApi.getTagList()
@@ -270,20 +268,11 @@ onMounted(() => {
         :api-fetch="fetchAccountLogList"
         :table-columns="tableColumns"
         :search-conf="searchConf"
+        :export-config="exportConfig"
         :enable-column-sort="false"
         :scroll="{ x: 3200, y: 700 }"
         row-key="id"
     >
-        <template #actionsWrap>
-            <PermissionButton button-key="export" :loading="exportLoading" @click="handleExport">
-                {{ t('导出') }}
-            </PermissionButton>
-        </template>
-
-        <template #labelList="{ record }">
-            <LabelTagList :label-list="record.labelList" :label-names="record.labelNames" />
-        </template>
-
         <template #platform="{ record }">
             {{ t(platformTextMap[String(record.platform)] || '未知') }}
         </template>

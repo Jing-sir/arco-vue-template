@@ -27,6 +27,9 @@
     --app-control-hover-bg: #eef2f6;
     --app-control-text: #5f6876;
     --app-control-text-muted: #98a2b3;
+    --app-status-success: #00b42a;
+    --app-status-warning: #ff7d00;
+    --app-status-danger: #f53f3f;
     --app-status-offline: #8f5f5a;
     --app-tags-track-bg: #e8edf3;
     --app-tags-hover-bg: rgb(255 255 255 / 58%);
@@ -81,6 +84,9 @@ html body[data-app-theme-resolved='dark'] {
     --app-control-hover-bg: #2d3440;
     --app-control-text: #dbe3ee;
     --app-control-text-muted: #9ca7b8;
+    --app-status-success: #3fd26f;
+    --app-status-warning: #ffb65c;
+    --app-status-danger: #ff7d7d;
     --app-status-offline: #efb0aa;
     --app-tags-track-bg: #161920;
     --app-tags-hover-bg: rgb(255 255 255 / 10%);

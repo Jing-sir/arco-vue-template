@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import TableSearchWrap from '@/components/TableSearchWrap/Index.vue'
-import LabelTagList from '@/components/TableSearchWrap/components/LabelTagList.vue'
-import PermissionButton from '@/components/TableSearchWrap/components/PermissionButton.vue'
 import accountAuthApi from '@/api/userApi/account/auth'
 import accountListApi from '@/api/userApi/account/list'
 import tagApi from '@/api/userApi/tag'
@@ -13,11 +11,12 @@ import type {
     TableExportConfig,
     TableSearchWrapExpose,
 } from '@/interface/TableType'
-import { Message, Modal } from '@arco-design/web-vue'
-import UserAuthCell from '../UserAuthCell.vue'
+import { Message } from '@arco-design/web-vue'
+import useConfirmAction from '@/use/useConfirmAction'
 
 const { t } = useI18n()
 const route = useRoute()
+const { confirmAndRun } = useConfirmAction()
 
 const tableWrapRef = ref<TableSearchWrapExpose | null>(null)
 
@@ -46,12 +45,12 @@ const defaultParams = computed<SearchParams>(() => ({
     accountId: routeUid.value || '',
 }))
 
-const stateOptions = [
+const stateOptions = computed(() => [
     { label: t('全部'), value: '' },
     { label: t('正常'), value: 1 },
     { label: t('冻结'), value: 2 },
     { label: t('已注销'), value: 3 },
-]
+])
 
 /**
  * 标签与国家下拉来源于后端，保持和标签模块、认证模块同一数据口径。
@@ -169,7 +168,7 @@ const searchConf = computed<SearchOption[]>(() => [
         modelKey: 'state',
         type: 'select',
         value: '',
-        options: stateOptions,
+        options: stateOptions.value,
     },
     {
         label: t('创建日期'),
@@ -193,13 +192,28 @@ const tableColumns = computed<ColumnType[]>(() => [
     { title: t('上级邀请码'), dataIndex: 'parentInvitationCode', width: 140, sorter: false },
     { title: t('姓'), dataIndex: 'surname', width: 100, sorter: false },
     { title: t('名'), dataIndex: 'name', width: 100, sorter: false },
-    { title: t('标签'), dataIndex: 'labelList', slotName: 'labelList', width: 220, sorter: false },
+    {
+        title: t('标签'),
+        dataIndex: 'labelList',
+        width: 220,
+        sorter: false,
+        cellPreset: {
+            type: 'labelTags',
+            labelListField: 'labelList',
+            labelNamesField: 'labelNames',
+        },
+    },
     { title: t('证件颁发国家'), dataIndex: 'country', width: 140, sorter: false },
     {
         title: t('初级认证状态'),
         dataIndex: 'authState',
-        slotName: 'authState',
         width: 140,
+        cellPreset: {
+            type: 'statusText',
+            preset: 'authState',
+            valueFields: ['authStateName', 'authState'],
+            showRawWhenUnknown: true,
+        },
         sorter: {
             type: 'enum',
             enumOrder: [0, 1, 2, 3],
@@ -208,8 +222,13 @@ const tableColumns = computed<ColumnType[]>(() => [
     {
         title: t('高级认证状态'),
         dataIndex: 'advancedAuthState',
-        slotName: 'advancedAuthState',
         width: 140,
+        cellPreset: {
+            type: 'statusText',
+            preset: 'authState',
+            valueFields: ['advancedAuthStateName', 'advancedAuthState'],
+            showRawWhenUnknown: true,
+        },
         sorter: {
             type: 'enum',
             enumOrder: [0, 1, 2, 3],
@@ -230,37 +249,57 @@ const tableColumns = computed<ColumnType[]>(() => [
     {
         title: t('状态'),
         dataIndex: 'state',
-        slotName: 'state',
         width: 120,
         fixed: 'right',
+        cellPreset: {
+            type: 'statusText',
+            preset: 'userState',
+        },
         sorter: {
             type: 'enum',
             enumOrder: [1, 2, 3],
         },
     },
-    { title: t('操作'), dataIndex: 'action', slotName: 'action', fixed: 'right', width: 240, sorter: false },
+    {
+        title: t('操作'),
+        dataIndex: 'action',
+        fixed: 'right',
+        width: 240,
+        sorter: false,
+        cellPreset: {
+            type: 'actionButtons',
+            buttons: [
+                {
+                    buttonKey: 'disable',
+                    status: (record) =>
+                        Number(record.state) === 1 ? 'danger' : 'normal',
+                    text: (record) =>
+                        Number(record.state) === 1 ? '禁用' : '启用',
+                    onClick: (record) => handleToggleState(record as UserListRow),
+                },
+                {
+                    buttonKey: 'reset',
+                    text: '重置登录密码',
+                    onClick: (record) => handleResetPassword(record as UserListRow),
+                },
+                {
+                    buttonKey: 'resetFund',
+                    text: '重置资金密码',
+                    onClick: (record) => handleResetPayPassword(record as UserListRow),
+                },
+            ],
+        },
+    },
 ])
 
 const fetchUserList = (params: Record<string, unknown> = {}) =>
     accountListApi.getAccountList(params as Parameters<typeof accountListApi.getAccountList>[0])
 
-/**
- * 用户列表导出配置统一交给 TableSearchWrap 内置导出组件处理。
- * 导出参数默认沿用当前搜索条件和分页参数。
- */
-const userListExportConfig = computed<TableExportConfig>(() => ({
-    buttonKey: 'export',
-    buttonText: t('导出'),
-    fileName: `${t('用户列表')}.xlsx`,
+const exportConfig = computed<TableExportConfig>(() => ({
     exportApi: (params: Record<string, unknown>) =>
         accountListApi.exportAccountList(params as Parameters<typeof accountListApi.exportAccountList>[0]),
+    fileName: `${t('用户列表')}.xlsx`,
 }))
-
-const stateTextMap: Record<number, string> = {
-    1: '正常',
-    2: '冻结',
-    3: '已注销',
-}
 
 /**
  * 证件类型字段在不同接口版本里可能是：
@@ -326,58 +365,39 @@ const formatDocumentType = (record: UserListRow): string => {
     return '--'
 }
 
-const stateColorClass = (state: number): string => {
-    if (state === 1) return 'text-green-500'
-    if (state === 2) return 'text-red-500'
-    return 'text-gray-500'
-}
-
-/**
- * 统一封装敏感操作确认，避免同类弹窗分散在模板里难维护。
- */
-const withConfirm = (
-    content: string,
-    onOk: () => Promise<unknown>,
-): void => {
-    Modal.confirm({
-        title: t('确认'),
-        content,
-        okText: t('确认'),
-        cancelText: t('取消'),
-        hideCancel: false,
-        draggable: false,
-        simple: false,
-        onOk,
-    })
-}
-
 const handleToggleState = (record: UserListRow): void => {
     const nextState = record.state === 1 ? 2 : 1
     const actionText = nextState === 1 ? t('启用') : t('禁用')
 
-    withConfirm(
-        t('是否确认执行该操作？') + `（${actionText}）`,
-        async () => {
+    confirmAndRun({
+        content: t('是否确认执行该操作？') + `（${actionText}）`,
+        onOk: async () => {
             await accountListApi.updateAccountState({ id: String(record.id), state: nextState as 1 | 2 })
             Message.success(t('操作成功'))
             await tableWrapRef.value?.refresh()
         },
-    )
+    })
 }
 
 const handleResetPassword = (record: UserListRow): void => {
-    withConfirm(t('是否确认执行该操作？') + `（${t('重置登录密码')}）`, async () => {
-        await accountListApi.resetAccountPassword({ id: String(record.id) })
-        Message.success(t('操作成功'))
-        await tableWrapRef.value?.refresh()
+    confirmAndRun({
+        content: t('是否确认执行该操作？') + `（${t('重置登录密码')}）`,
+        onOk: async () => {
+            await accountListApi.resetAccountPassword({ id: String(record.id) })
+            Message.success(t('操作成功'))
+            await tableWrapRef.value?.refresh()
+        },
     })
 }
 
 const handleResetPayPassword = (record: UserListRow): void => {
-    withConfirm(t('是否确认执行该操作？') + `（${t('重置资金密码')}）`, async () => {
-        await accountListApi.resetAccountPayPassword({ id: String(record.id) })
-        Message.success(t('操作成功'))
-        await tableWrapRef.value?.refresh()
+    confirmAndRun({
+        content: t('是否确认执行该操作？') + `（${t('重置资金密码')}）`,
+        onOk: async () => {
+            await accountListApi.resetAccountPayPassword({ id: String(record.id) })
+            Message.success(t('操作成功'))
+            await tableWrapRef.value?.refresh()
+        },
     })
 }
 
@@ -439,48 +459,12 @@ onMounted(() => {
         :table-columns="tableColumns"
         :search-conf="searchConf"
         :default-params="defaultParams"
-        :export-config="userListExportConfig"
+        :export-config="exportConfig"
         :scroll="{ x: 3300, y: 700 }"
         row-key="id"
     >
-        <template #labelList="{ record }">
-            <LabelTagList :label-list="record.labelList" :label-names="record.labelNames" />
-        </template>
-
-        <template #authState="{ record }">
-            <UserAuthCell :status="record.authStateName || record.authState || ''" />
-        </template>
-
-        <template #advancedAuthState="{ record }">
-            <UserAuthCell :status="record.advancedAuthStateName || record.advancedAuthState || ''" />
-        </template>
-
         <template #documentType="{ record }">
             {{ formatDocumentType(record as UserListRow) }}
-        </template>
-
-        <template #state="{ record }">
-            <span :class="stateColorClass(Number(record.state))">
-                {{ t(stateTextMap[Number(record.state)] || '--') }}
-            </span>
-        </template>
-
-        <template #action="{ record }">
-            <div class="flex flex-wrap items-center gap-3">
-                <PermissionButton
-                    button-key="disable"
-                    :status="record.state === 1 ? 'danger' : 'normal'"
-                    @click="handleToggleState(record)"
-                >
-                    {{ record.state === 1 ? t('禁用') : t('启用') }}
-                </PermissionButton>
-                <PermissionButton button-key="reset" @click="handleResetPassword(record)">
-                    {{ t('重置登录密码') }}
-                </PermissionButton>
-                <PermissionButton button-key="resetFund" @click="handleResetPayPassword(record)">
-                    {{ t('重置资金密码') }}
-                </PermissionButton>
-            </div>
         </template>
     </TableSearchWrap>
 </template>

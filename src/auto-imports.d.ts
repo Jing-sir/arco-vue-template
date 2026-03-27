@@ -25,6 +25,7 @@ declare global {
   const addEventListener: typeof import('./utils/common').addEventListener
   const allToRaw: typeof import('./utils/allToRaw').default
   const buildFlat: typeof import('./utils/common').buildFlat
+  const buildTableFetchResult: typeof import('./utils/table').buildTableFetchResult
   const buildTree: typeof import('./utils/common').buildTree
   const colorArr: typeof import('./utils/constant').colorArr
   const computed: typeof import('vue').computed
@@ -71,6 +72,7 @@ declare global {
   const mapWritableState: typeof import('pinia').mapWritableState
   const markRaw: typeof import('vue').markRaw
   const nextTick: typeof import('vue').nextTick
+  const normalizeTableFetchResult: typeof import('./utils/table').normalizeTableFetchResult
   const numberSeparation: typeof import('./utils/common').numberSeparation
   const numberToChinese: typeof import('./utils/common').numberToChinese
   const onActivated: typeof import('vue').onActivated
@@ -119,11 +121,13 @@ declare global {
   const transMapBySelectOptions: typeof import('./utils/component').transMapBySelectOptions
   const triggerRef: typeof import('vue').triggerRef
   const typeOf: typeof import('./utils/common').typeOf
+  const unknown: typeof import('./utils/table').unknown
   const unref: typeof import('vue').unref
   const unshiftSelectOptionAll: typeof import('./utils/component').unshiftSelectOptionAll
   const urlEncode: typeof import('./utils/common').urlEncode
   const useAttrs: typeof import('vue').useAttrs
   const useButtonRole: typeof import('./use/useButtonRole').default
+  const useConfirmAction: typeof import('./use/useConfirmAction').default
   const useCssModule: typeof import('vue').useCssModule
   const useCssVars: typeof import('vue').useCssVars
   const useDateLimit: typeof import('./use/useDateLimit').default

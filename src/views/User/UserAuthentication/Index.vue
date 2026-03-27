@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import accountAuthApi from '@/api/userApi/account/auth'
-import PermissionButton from '@/components/TableSearchWrap/components/PermissionButton.vue'
 import TableSearchWrap from '@/components/TableSearchWrap/Index.vue'
 import type { ColumnType, SearchOption, TableFetchResult, TableSearchWrapExpose } from '@/interface/TableType'
-import { Message, Modal } from '@arco-design/web-vue'
+import { buildTableFetchResult } from '@/utils/table'
+import { Message } from '@arco-design/web-vue'
 import { userIdTypeMap } from '@/api/userApi/userEnum'
-import UserAuthCell from '../UserAuthCell.vue'
+import useConfirmAction from '@/use/useConfirmAction'
 
 const { t } = useI18n()
 const router = useRouter()
+const { confirmAndRun } = useConfirmAction()
 
 const tableWrapRef = ref<TableSearchWrapExpose | null>(null)
 
@@ -104,13 +105,74 @@ const tableColumns = computed<ColumnType[]>(() => [
     { title: t('居住证姓'), dataIndex: 'residenceXing', width: 120 },
     { title: t('居住中间名'), dataIndex: 'residenceMiddle', width: 140 },
     { title: t('居住证名'), dataIndex: 'residenceMing', width: 120 },
-    { title: t('身份证认证'), dataIndex: 'idCardAuthStatus', slotName: 'idCardAuthStatus', width: 120 },
-    { title: t('护照认证'), dataIndex: 'passportAuthStatus', slotName: 'passportAuthStatus', width: 120 },
-    { title: t('驾照认证'), dataIndex: 'driversAuthStatus', slotName: 'driversAuthStatus', width: 120 },
-    { title: t('居留证认证'), dataIndex: 'residenceAuthStatus', slotName: 'residenceAuthStatus', width: 120 },
-    { title: t('人脸认证'), dataIndex: 'faceAuthStatus', slotName: 'faceAuthStatus', width: 120 },
+    {
+        title: t('身份证认证'),
+        dataIndex: 'idCardAuthStatus',
+        width: 120,
+        cellPreset: {
+            type: 'statusText',
+            preset: 'authState',
+            showRawWhenUnknown: true,
+        },
+    },
+    {
+        title: t('护照认证'),
+        dataIndex: 'passportAuthStatus',
+        width: 120,
+        cellPreset: {
+            type: 'statusText',
+            preset: 'authState',
+            showRawWhenUnknown: true,
+        },
+    },
+    {
+        title: t('驾照认证'),
+        dataIndex: 'driversAuthStatus',
+        width: 120,
+        cellPreset: {
+            type: 'statusText',
+            preset: 'authState',
+            showRawWhenUnknown: true,
+        },
+    },
+    {
+        title: t('居留证认证'),
+        dataIndex: 'residenceAuthStatus',
+        width: 120,
+        cellPreset: {
+            type: 'statusText',
+            preset: 'authState',
+            showRawWhenUnknown: true,
+        },
+    },
+    {
+        title: t('人脸认证'),
+        dataIndex: 'faceAuthStatus',
+        width: 120,
+        cellPreset: {
+            type: 'statusText',
+            preset: 'authState',
+            showRawWhenUnknown: true,
+        },
+    },
     { title: t('创建日期'), dataIndex: 'createTime', width: 180 },
-    { title: t('操作'), dataIndex: 'action', slotName: 'action', width: 160, fixed: 'right', sorter: false },
+    {
+        title: t('操作'),
+        dataIndex: 'action',
+        width: 160,
+        fixed: 'right',
+        sorter: false,
+        cellPreset: {
+            type: 'actionButtons',
+            buttons: [
+                {
+                    buttonKey: 'userAuthenticationDetail',
+                    text: '审核详情',
+                    onClick: (record) => openAuthDetail(record),
+                },
+            ],
+        },
+    },
 ])
 
 /**
@@ -126,12 +188,11 @@ const fetchUserAuthList = async (
         pageNum: pageNo,
     })
 
-    return {
-        list: response.list as unknown as Record<string, unknown>[],
-        pageNo: Number((response as unknown as Record<string, unknown>).pageNo ?? pageNo ?? 1),
-        pageSize: Number((response as unknown as Record<string, unknown>).pageSize ?? params.pageSize ?? 20),
-        totalSize: Number(response.totalSize ?? 0),
-    }
+    return buildTableFetchResult<Record<string, unknown>>({
+        response,
+        params,
+        pageNoKeys: ['pageNo', 'pageNum'],
+    })
 }
 
 /**
@@ -141,12 +202,10 @@ const handleLevelChange = (value: string | number | boolean): void => {
     const nextValue = String(value)
     const nextText = nextValue === '0' ? t('初级认证') : t('高级认证')
 
-    Modal.confirm({
+    confirmAndRun({
         title: t('修改平台认证等级'),
         content: t('请确认是否修改平台所有用户的认证等级为“{level}”，修改后所有用户将只做“{level}”。')
             .replace('{level}', nextText),
-        okText: t('确认'),
-        cancelText: t('取消'),
         onOk: async () => {
             levelSaving.value = true
             try {
@@ -221,30 +280,5 @@ onMounted(() => {
             </div>
         </template>
 
-        <template #idCardAuthStatus="{ record }">
-            <UserAuthCell :status="record.idCardAuthStatus" />
-        </template>
-
-        <template #passportAuthStatus="{ record }">
-            <UserAuthCell :status="record.passportAuthStatus" />
-        </template>
-
-        <template #driversAuthStatus="{ record }">
-            <UserAuthCell :status="record.driversAuthStatus" />
-        </template>
-
-        <template #residenceAuthStatus="{ record }">
-            <UserAuthCell :status="record.residenceAuthStatus" />
-        </template>
-
-        <template #faceAuthStatus="{ record }">
-            <UserAuthCell :status="record.faceAuthStatus" />
-        </template>
-
-        <template #action="{ record }">
-            <PermissionButton button-key="userAuthenticationDetail" @click="openAuthDetail(record)">
-                {{ t('审核详情') }}
-            </PermissionButton>
-        </template>
     </TableSearchWrap>
 </template>

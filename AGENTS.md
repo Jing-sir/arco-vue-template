@@ -90,6 +90,18 @@ Current component responsibilities / 当前组件职责:
 - `TableSearchWrap/components/LabelTagList.vue`: reusable tag-list cell renderer for list pages. 统一渲染列表页“用户标签/标签”列的通用标签组件。
 - `TableSearchWrap/components/PermissionButton.vue`: internal helper for route-aware permission buttons in list pages. TableSearchWrap 目录下的内部权限按钮组件，供列表页统一复用。
 - `TableSearchWrap/components/StatusText.vue`: internal helper for common status text and color mapping in list pages. TableSearchWrap 目录下的内部状态文案与颜色映射组件。
+- `TableSearchWrap/Index.vue` cell preset:
+  - supports `column.cellPreset.type = 'labelTags'` to render `LabelTagList`
+  - supports `column.cellPreset.type = 'statusText'` to render `StatusText`
+  - supports `column.cellPreset.type = 'actionButtons'` to render row operation buttons via `PermissionButton`
+  - accepts a single `exportConfig` object and keeps export behavior unified in the internal export component
+  - when `cellPreset` can satisfy rendering needs, prefer config over per-page slots
+  - `TableSearchWrap/Index.vue` 的 `cellPreset` 已内建：
+    - `labelTags`：统一标签列渲染
+    - `statusText`：统一状态列渲染
+    - `actionButtons`：统一操作列按钮渲染
+    - 导出统一由单个 `exportConfig` 对象驱动并在组件内部处理
+    - 能用 `cellPreset` 表达时，优先配置，不再在页面层重复写 slot
 - `TagsView.vue`: visited-page tabs cache UI. 访问页签与缓存视图组件。
 
 Component rules / 组件规则:
@@ -97,9 +109,15 @@ Component rules / 组件规则:
 - All new search/list pages must use `TableSearchWrap/Index.vue` by default, and when an existing search/list page is being refactored or substantially edited, migrate it to `TableSearchWrap/Index.vue` unless a concrete requirement cannot be expressed through `searchConf`, slots, or exposed methods. 所有新建搜索/列表页默认必须使用 `TableSearchWrap/Index.vue`；已有搜索/列表页只要进入重构或较大改动，也应迁移到 `TableSearchWrap/Index.vue`，除非存在明确需求无法通过 `searchConf`、插槽或暴露方法表达。
 - Do not hand-write a separate search form + table + pagination scaffold in views when `TableSearchWrap/Index.vue` can cover the page. 只要 `TableSearchWrap/Index.vue` 能覆盖页面需求，就不要在视图层重新手写一套搜索表单 + 表格 + 分页骨架。
 - For list pages that support export, use the built-in `exportConfig` capability of `TableSearchWrap/Index.vue` and the internal reusable export component; do not hand-write page-local export buttons inside views. 支持导出的列表页必须使用 `TableSearchWrap/Index.vue` 的内建 `exportConfig` 能力与内部通用导出组件，不要在 views 里再手写页面私有导出按钮。
+- Keep export wiring as one `exportConfig` object from page to `TableSearchWrap`; inside that object, provide only required fields and rely on component defaults for optional fields such as export button text/key. 页面到 `TableSearchWrap` 的导出接线统一使用单个 `exportConfig` 对象；对象内只传必要字段，像导出按钮文案/权限键等可选项优先复用组件默认值。
+- For common row-level operations (enable/disable, delete, reset, detail, etc.), prefer `column.cellPreset.type='actionButtons'` in `TableSearchWrap`; only keep page-level `#action` slots when content cannot be expressed by config (for example custom icon-only controls or complex embedded layouts). 对于常见行级操作（启用/禁用、删除、重置、详情等），优先使用 `TableSearchWrap` 的 `column.cellPreset.type='actionButtons'`；仅当配置无法表达时（如纯图标控制或复杂嵌入布局）才保留页面级 `#action` slot。
 - Keep export/add actions in the shared action area between search and table, and when advanced search is expanded, mirror those actions next to the search/reset buttons in the expanded footer. 导出/新增等动作统一放在搜索区与表格区之间的共享操作区；当高级搜索展开时，需要在展开区底部搜索/重置按钮旁再镜像一份这些动作。
 - For long text cells in `TableSearchWrap/Index.vue`, default to ellipsis display. When users click truncated text, show a popover with full content and copy support; the truncated text color should default to a lighter primary theme tone. Allow opting out per column only when the page has explicit custom rendering requirements. 在 `TableSearchWrap/Index.vue` 中，长文本单元格默认使用省略号展示；点击省略文本时需弹出可查看完整内容且支持复制的提示层；省略态文本颜色默认使用“主色浅色阶”。只有在页面存在明确自定义渲染需求时，才允许按列关闭该默认行为。
+- For time/date columns in `TableSearchWrap/Index.vue`, keep plain text rendering only: do not use primary highlight color, do not open popovers, and do not show copy actions. `TableSearchWrap/Index.vue` 中所有时间/日期类型列统一只做普通文本展示：不使用主色高亮、不弹出 popover、不显示复制按钮。
 - For all list-page columns named `用户标签` or `标签` (including fields like `labelList`, `labelNames`, `labelName`), render them through `TableSearchWrap/components/LabelTagList.vue`; do not duplicate inline `a-tag`/tooltip rendering in view files. 所有列表页中名为 `用户标签` 或 `标签` 的列（包括 `labelList`、`labelNames`、`labelName` 等字段）统一使用 `TableSearchWrap/components/LabelTagList.vue` 渲染；不要在 views 里重复手写 `a-tag`/tooltip 标签展示逻辑。
+- For status-like columns in list pages, prefer `TableSearchWrap/components/StatusText.vue` with a shared preset in `src/enums/statusText.ts`; avoid re-implementing per-page status maps and color classes. 列表页中的状态类列优先使用 `TableSearchWrap/components/StatusText.vue` 并在 `src/enums/statusText.ts` 维护共享 preset；不要在页面里重复写状态映射和颜色 class。
+- For `TableSearchWrap` pages, prefer declaring `column.cellPreset` for common cell rendering (`labelTags` / `statusText` / `actionButtons`) before adding page-level slots; keep slots only for genuinely custom content. 对于 `TableSearchWrap` 页面，优先用 `column.cellPreset` 声明通用单元格渲染（`labelTags` / `statusText` / `actionButtons`），只有在确实自定义内容时才新增页面 slot。
+- `src/views/User/UserAuthCell.vue` is legacy-compatible but no longer the default pattern for list columns; new/refactored list columns should prefer `column.cellPreset.type='statusText'`. `src/views/User/UserAuthCell.vue` 保留兼容用途，但不再是列表列默认方案；新建/重构列表列默认改为 `column.cellPreset.type='statusText'`。
 - Reuse `Header.vue`, `SideNavigationBar/index.vue`, and `TagsView.vue` when working on layout-level changes. 处理后台骨架布局时，优先沿用这三个组件。
 - Reuse `GoogleCode.vue` and `Modal/BindGoogle.vue` for 2FA flows instead of creating parallel modal logic. 2FA 流程优先复用这两个组件。
 - If adding a new reusable component, name it by responsibility, not by page position. 新公用组件按职责命名，不按页面位置命名。
@@ -117,6 +135,8 @@ Current files / 当前文件职责:
   - table paging result type
   - search form config types
   - generic table column shape
+  - table cell preset config types (for `labelTags`, `statusText`, and `actionButtons`)
+  - action button config types used by operation columns
   - upload file item shape
   - tabs-related types
   - this is the main shared business UI type file
@@ -131,6 +151,7 @@ Type rules / 类型规则:
 
 - If a type is used by more than one module, move it here. 被多个模块共用的类型再放到这里。
 - Prefer extending `TableType.ts` for search/table concerns instead of inventing a second table typing file. 表格与搜索相关类型优先扩展 `TableType.ts`。
+- For reusable list-cell rendering, extend `ColumnType.cellPreset` first instead of introducing ad-hoc per-page slot contracts. 可复用列表单元格渲染能力优先扩展 `ColumnType.cellPreset`，不要先引入页面私有 slot 协议。
 
 ### 5.3 `src/routes` / 路由目录
 
@@ -206,6 +227,7 @@ Other utility files / 其它工具文件职责:
 - `allToRaw.ts`: unwrap refs/reactive values into raw values for generic form/table helpers. 给通用 hooks 做 reactive/ref 解包。
 - `copyToClipboard.ts`: low-level copy implementation; prefer calling higher-level helpers from `common.ts` when possible. 底层复制实现，业务侧优先走 `common.ts` 中更高层的能力。
 - `protocol.ts`: internal protocol experiment/utility; do not casually reuse for normal web features. 内部协议试验类能力，普通页面功能不要滥用。
+- `table.ts`: shared table-response normalization helpers (for example `buildTableFetchResult`) that bridge pageNum/pageNo/total* differences for `TableSearchWrap`. 列表返回适配工具（如 `buildTableFetchResult`），用于统一 pageNum/pageNo/total* 差异并对接 `TableSearchWrap`。
 - `global.d.ts` and `globals.d.ts`: global utility type declarations. 全局类型工具声明，除非做类型层建设，否则不要轻易改。
 
 ### 5.6 `src/api` / 接口目录
@@ -329,6 +351,7 @@ Current files / 当前文件职责:
 
 - `useButtonRole.ts`: checks button permission based on route name + button role suffix. 按钮权限判断。
 - `useDateLimit.ts`: date-range defaults and disabled-date rules. 日期范围限制。
+- `useConfirmAction.ts`: shared confirm-dialog action wrapper for destructive/sensitive operations. 统一二次确认操作封装，供敏感/破坏性动作复用。
 - `useFetchTableData.ts`: generic list-fetch hook with pagination and loading state. 通用表格拉取 hook。
 - `useFormHandler.ts`: form state/reset/validate helper wrapper. 表单状态与校验封装。
 - `useGoogleTitle.ts`: enable/disable title helper for 2FA-related UI. 启用/禁用标题辅助。
@@ -344,6 +367,7 @@ Hook rules / hook 规则:
 - If logic is reused or strongly reusable, move it here. 逻辑可复用时就抽到这里。
 - If logic is tied to forms, tables, permissions, uploads, modal lifecycle, or activated behavior, check this folder before writing new code. 表单、表格、权限、上传、弹窗生命周期、activated 行为都要先看这里。
 - Prefer extending an existing hook before creating a near-duplicate one. 优先扩展已有 hook，不要轻易新建近似重复的 hook。
+- For confirm-before-action flows (`启用/禁用/删除/解绑/重置密码` etc.), prefer `useConfirmAction.ts` to keep modal copy and behavior consistent across pages. 涉及“确认后执行”的动作（如 启用/禁用/删除/解绑/重置密码）优先复用 `useConfirmAction.ts`，确保弹窗文案和交互一致。
 
 ### 5.11 `src/views` / 页面目录
 
@@ -373,6 +397,10 @@ Hook rules / hook 规则:
 - `api` should never import UI components. `api` 绝不能反向依赖 UI 组件。
 - `utils/common.ts` is the first place to look for generic functions. 公用函数优先看 `utils/common.ts`。
 - `utils/constant.ts` is the first place to look for shared constants or regexes. 公用常量和正则优先看 `utils/constant.ts`。
+- For list response adaptation (`list/pageNo/pageSize/totalSize`), reuse `utils/table.ts` instead of re-writing page-local converters. 列表返回适配（`list/pageNo/pageSize/totalSize`）统一复用 `utils/table.ts`，不要在页面内重复手写转换逻辑。
+- For search/list pages based on `TableSearchWrap`, keep `searchConf` as a `computed<SearchOption[]>` by default so i18n labels/options stay reactive. 基于 `TableSearchWrap` 的搜索/列表页中，`searchConf` 默认使用 `computed<SearchOption[]>`，确保 i18n 文案与下拉选项在语言切换时可响应。
+- Avoid long inline expressions in table slots; move parsing/formatting into named script helpers and keep templates declarative. 表格 slot 中避免长表达式链，优先下沉到 script 里的具名 helper，保持模板声明式可读性。
+- For pages based on `TableSearchWrap`, `apiFetch` may return either the standard paging object or the backend raw array/object; pagination-shape normalization is handled inside `TableSearchWrap` via `utils/table.ts`, so page files should not manually assemble `pageNo/pageSize/totalSize` inline. 基于 `TableSearchWrap` 的页面，`apiFetch` 允许返回标准分页对象或后端原始数组/对象；分页结构归一化由 `TableSearchWrap` 内部通过 `utils/table.ts` 统一处理，页面层不要再内联拼装 `pageNo/pageSize/totalSize`。
 
 ## 7. i18n Rules / 国际化规则
 

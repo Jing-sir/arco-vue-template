@@ -156,6 +156,21 @@ const constantRoutes: RouteRecordRaw[] = [
             },
         ],
     },
+    {
+        path: '/userAddress',
+        name: 'userAddress',
+        redirect: 'noRedirect',
+        component: () => import(/* webpackChunkName: "userAddress" */ '@/Main.vue'),
+        meta: { title: '地址管理', icon: 'accountManage', role: 'user', requiresAuth: true },
+        children: [
+            {
+                path: 'addressList',
+                name: 'addressList',
+                component: () => import(/* webpackChunkName: "addressList" */ '@/views/AddressList/Index.vue'),
+                meta: { title: '地址列表', role: 'addressList', requiresAuth: true },
+            },
+        ],
+    },
 ]
 
 export default constantRoutes;

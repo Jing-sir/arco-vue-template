@@ -1,17 +1,16 @@
 <script setup lang="ts">
-import TableSearchWrap from '@/components/TableSearchWrap/Index.vue';
-import StatusText from '@/components/TableSearchWrap/components/StatusText.vue';
+import TableSearchWrap from '@/components/TableSearchWrap/Index.vue'
 import type {
     ColumnType,
     SearchOption,
     TableSearchSorterConfig,
     TableSearchWrapExpose,
-} from '@/interface/TableType';
-import api from '@/api/fetchTest/index';
+} from '@/interface/TableType'
+import api from '@/api/fetchTest/index'
 
-const { t } = useI18n();
+const { t } = useI18n()
 
-const tableWrapRef = ref<TableSearchWrapExpose | null>(null);
+const tableWrapRef = ref<TableSearchWrapExpose | null>(null)
 
 const searchConf = ref<SearchOption[]>([
     {
@@ -36,15 +35,15 @@ const searchConf = ref<SearchOption[]>([
         type: 'date',
         value: [],
     },
-]);
+])
 
 const searchSorter: TableSearchSorterConfig = {
     enabled: true,
-};
+}
 
 const tableColumns = computed<ColumnType[]>(() => [
     {
-        title: 'ID',
+        title: t('ID'),
         dataIndex: 'id',
         width: 180,
         fixed: 'left',
@@ -61,7 +60,7 @@ const tableColumns = computed<ColumnType[]>(() => [
             type: 'date',
         },
     },
-    { title: 'IP', dataIndex: 'ip', width: 140, sorter: false },
+    { title: t('IP'), dataIndex: 'ip', width: 140, sorter: false },
     { title: t('请求功能'), dataIndex: 'reqFunc', width: 180, sorter: false },
     { title: t('请求URL'), dataIndex: 'reqUrl', width: 220, sorter: false },
     { title: t('请求报文'), dataIndex: 'reqData', slotName: 'reqData', width: 100, sorter: false },
@@ -78,8 +77,11 @@ const tableColumns = computed<ColumnType[]>(() => [
     {
         title: t('是否发生错误的表示'),
         dataIndex: 'occurErr',
-        slotName: 'occurErr',
         width: 160,
+        cellPreset: {
+            type: 'statusText',
+            preset: 'boolean',
+        },
         sorter: {
             type: 'enum',
             enumOrder: [true, 1, false, 0],
@@ -89,32 +91,40 @@ const tableColumns = computed<ColumnType[]>(() => [
     {
         title: t('响应状态'),
         dataIndex: 'success',
-        slotName: 'success',
         width: 120,
         fixed: 'right',
+        cellPreset: {
+            type: 'statusText',
+            preset: 'success',
+        },
         sorter: {
             type: 'enum',
             enumOrder: [true, 1, false, 0],
         },
     },
-]);
+])
 
 const fetchOperationLogList = (params: Record<string, unknown> = {}) =>
-    api.fetchOperationLogList(params as Parameters<typeof api.fetchOperationLogList>[0]);
+    api.fetchOperationLogList(params as Parameters<typeof api.fetchOperationLogList>[0])
 
-const getJsonText = (value: string): string => {
-    if (!value) return '--';
+/**
+ * 请求/响应报文优先按 JSON 格式化，方便排查接口问题。
+ * 如果后端返回的不是合法 JSON，则保留原始文本，避免渲染报错。
+ */
+const getJsonText = (value: unknown): string => {
+    if (value === null || value === '' || typeof value === 'undefined') return '--'
+    const rawText = String(value)
 
     try {
-        return JSON.stringify(JSON.parse(value), null, 2);
+        return JSON.stringify(JSON.parse(rawText), null, 2)
     } catch {
-        return value;
+        return rawText
     }
-};
+}
 
 useOnActivated(() => {
-    tableWrapRef.value?.refresh();
-});
+    tableWrapRef.value?.refresh()
+})
 </script>
 
 <template>
@@ -129,9 +139,7 @@ useOnActivated(() => {
         <template #reqData="{ record }">
             <a-popover position="top" trigger="click">
                 <template #content>
-                    <pre class="max-h-[400px] min-h-[300px] overflow-auto whitespace-pre-wrap break-all">
-{{ getJsonText(record.reqData) }}</pre
-                    >
+                    <pre class="max-h-[400px] min-h-[300px] overflow-auto whitespace-pre-wrap break-all">{{ getJsonText(record.reqData) }}</pre>
                 </template>
                 <a-button type="text" size="small" class="!px-0">{{ t('详细') }}</a-button>
             </a-popover>
@@ -140,8 +148,7 @@ useOnActivated(() => {
         <template #respData="{ record }">
             <a-popover position="top" trigger="click">
                 <template #content>
-                    <pre class="max-h-[400px] min-h-[300px] overflow-auto whitespace-pre-wrap break-all">
-{{ getJsonText(record.respData) }}</pre>
+                    <pre class="max-h-[400px] min-h-[300px] overflow-auto whitespace-pre-wrap break-all">{{ getJsonText(record.respData) }}</pre>
                 </template>
                 <a-button type="text" size="small" class="!px-0">{{ t('详细') }}</a-button>
             </a-popover>
@@ -157,14 +164,6 @@ useOnActivated(() => {
                 <a-button type="text" size="small" class="!px-0">{{ t('详细') }}</a-button>
             </a-popover>
             <span v-else>--</span>
-        </template>
-
-        <template #occurErr="{ record }">
-            <StatusText :value="record.occurErr" preset="boolean" />
-        </template>
-
-        <template #success="{ record }">
-            <StatusText :value="record.success" preset="success" />
         </template>
     </TableSearchWrap>
 </template>

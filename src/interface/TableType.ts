@@ -1,4 +1,61 @@
 import type { ComputedRef } from 'vue';
+import type { StatusPreset } from '@/enums/statusText';
+
+export interface TableCellPresetLabelTagsConfig {
+    type: 'labelTags';
+    labelListField?: string;
+    labelNamesField?: string;
+    maxVisible?: number;
+    emptyText?: string;
+}
+
+export interface TableCellPresetStatusTextConfig {
+    type: 'statusText';
+    preset: StatusPreset;
+    valueField?: string;
+    valueFields?: string[];
+    fallback?: string;
+    showRawWhenUnknown?: boolean;
+}
+
+export type TableButtonType = 'primary' | 'secondary' | 'outline' | 'dashed' | 'text';
+
+export type TableButtonStatus = 'normal' | 'success' | 'warning' | 'danger';
+
+export type TableButtonSize = 'mini' | 'small' | 'medium' | 'large';
+
+export interface TableActionConfirmConfig<TRecord = Record<string, unknown>> {
+    title?: string;
+    content: string | ((record: TRecord) => string);
+    okText?: string;
+    cancelText?: string;
+}
+
+export interface TableActionButtonConfig<TRecord = Record<string, unknown>> {
+    buttonKey?: string;
+    text: string | ((record: TRecord) => string);
+    type?: TableButtonType;
+    status?: TableButtonStatus | ((record: TRecord) => TableButtonStatus);
+    size?: TableButtonSize;
+    hideWhenNoPermission?: boolean;
+    show?: boolean | ((record: TRecord) => boolean);
+    disabled?: boolean | ((record: TRecord) => boolean);
+    loadingField?: string;
+    confirm?: TableActionConfirmConfig<TRecord>;
+    onClick: (record: TRecord) => void | Promise<void>;
+}
+
+export interface TableCellPresetActionButtonsConfig<TRecord = Record<string, unknown>> {
+    type: 'actionButtons';
+    buttons: TableActionButtonConfig<TRecord>[];
+    wrapClass?: string;
+    gapClass?: string;
+}
+
+export type TableCellPresetConfig =
+    | TableCellPresetLabelTagsConfig
+    | TableCellPresetStatusTextConfig
+    | TableCellPresetActionButtonsConfig;
 
 export interface TableResultType {
     pageNo: number;
@@ -78,6 +135,7 @@ export interface ColumnType<T = Record<string, unknown>> { // column type
     fixed?: string;
     ellipsis?: boolean;
     autoEllipsis?: boolean;
+    cellPreset?: TableCellPresetConfig;
     sorter?: boolean | TableColumnSortConfig<T>;
     sortable?: {
         sorter?: boolean;
@@ -168,6 +226,17 @@ export interface TableFetchResult<TRecord = Record<string, unknown>> {
     totalSize: number;
 }
 
+/**
+ * TableSearchWrap 请求函数允许的原始返回类型：
+ * - 标准分页结构：list/pageNo/pageSize/totalSize
+ * - 纯数组：用于后端返回全量列表、不分页的场景
+ * - 任意对象：由底层统一做字段兼容折叠（pageNo/pageNum、total/totalSize 等）
+ */
+export type TableFetchResponse<TRecord = Record<string, unknown>> =
+    | TableFetchResult<TRecord>
+    | TRecord[]
+    | Record<string, unknown>;
+
 export interface TableExportConfig {
     exportApi: (params: Record<string, unknown>) => Promise<Blob>;
     buttonKey?: string;
@@ -193,4 +262,36 @@ export interface TableSearchWrapExpose {
     search: (params?: SearchParams) => Promise<unknown[]>;
     reset: () => void;
     getSearchParams: () => SearchParams;
+}
+
+/**
+ * 表格滚动配置。
+ * x 主要用于横向滚动，y 用于启用并约束纵向滚动。
+ */
+export interface TableScrollConfig {
+    x?: number | string | true;
+    y?: number | string;
+}
+
+/**
+ * 通用表格包装组件 Props。
+ * 这里继续保持你当前页面层的调用方式，避免迁移分页实现时影响业务页面。
+ */
+export interface TableSearchWrapProps {
+    searchConf?: SearchOption[];
+    isMore?: boolean;
+    apiFetch: (params?: Record<string, unknown>) => Promise<TableFetchResponse>;
+    tableColumns: ColumnType[];
+    exportConfig?: TableExportConfig | null;
+    defaultParams?: SearchParams;
+    immediate?: boolean;
+    rowKey?: TableRowKey;
+    emptyText?: string;
+    scroll?: TableScrollConfig;
+    tableProps?: Record<string, unknown>;
+    showRefresh?: boolean;
+    showSkeleton?: boolean;
+    skeletonRows?: number;
+    searchSorter?: TableSearchSorterConfig;
+    enableColumnSort?: boolean;
 }

@@ -9,8 +9,10 @@ import type {
     TableFetchResult,
     TableSearchWrapExpose,
 } from '@/interface/TableType'
-import { Message, Modal } from '@arco-design/web-vue'
+import { buildTableFetchResult } from '@/utils/table'
+import { Message } from '@arco-design/web-vue'
 import { IconPlus } from '@arco-design/web-vue/es/icon'
+import useConfirmAction from '@/use/useConfirmAction'
 import LabelFormModal from './modal/LabelFormModal.vue'
 import ImportTagsModal from './modal/ImportTagsModal.vue'
 
@@ -30,12 +32,13 @@ interface LabelFormModalExpose {
 }
 
 const { t } = useI18n()
+const { confirmAndRun } = useConfirmAction()
 
 const tableWrapRef = ref<TableSearchWrapExpose | null>(null)
 const labelFormModalRef = ref<LabelFormModalExpose | null>(null)
 const importModalVisible = ref(false)
 
-const searchConf = ref<SearchOption[]>([
+const searchConf = computed<SearchOption[]>(() => [
     {
         label: t('标签名称'),
         modelKey: 'name',
@@ -61,10 +64,30 @@ const tableColumns = computed<ColumnType[]>(() => [
     {
         title: t('操作'),
         dataIndex: 'action',
-        slotName: 'action',
         fixed: 'right',
         width: 260,
         sorter: false,
+        cellPreset: {
+            type: 'actionButtons',
+            buttons: [
+                {
+                    buttonKey: 'edit',
+                    text: '编辑',
+                    onClick: (record) => openEditModal(record as LabelListRow),
+                },
+                {
+                    buttonKey: 'view',
+                    text: '查看',
+                    onClick: (record) => openViewModal(record as LabelListRow),
+                },
+                {
+                    buttonKey: 'del',
+                    status: 'danger',
+                    text: '删除',
+                    onClick: (record) => handleDelete(record as LabelListRow),
+                },
+            ],
+        },
     },
 ])
 
@@ -84,30 +107,21 @@ const fetchLabelList = async (
 ): Promise<TableFetchResult<Record<string, unknown>>> => {
     const response = await tagApi.getTagPageList(normalizeTagPageParams(params))
 
-    return {
-        list: response.list as unknown as Record<string, unknown>[],
-        pageNo: Number(response.pageNo ?? params.pageNo ?? 1),
-        pageSize: Number(response.pageSize ?? params.pageSize ?? 20),
-        totalSize: Number(response.totalSize ?? 0),
-    }
+    return buildTableFetchResult<Record<string, unknown>>({
+        response,
+        params,
+    })
 }
 
-/**
- * 标签导出继续复用 TableSearchWrap 内建能力：
- * - 参数默认沿用当前搜索条件
- * - 去掉分页字段，保持与老项目导出口径一致
- */
-const labelListExportConfig = computed<TableExportConfig>(() => ({
-    buttonKey: 'export',
-    buttonText: t('导出'),
+const exportConfig = computed<TableExportConfig>(() => ({
+    exportApi: (params: Record<string, unknown>) =>
+        tagApi.exportTagList(params as Parameters<typeof tagApi.exportTagList>[0]),
     fileName: `${t('标签列表')}.xlsx`,
     buildParams: (params: Record<string, unknown>) => ({
         id: String(params.id || ''),
         name: String(params.name || ''),
         operatorName: String(params.operatorName || ''),
     }),
-    exportApi: (params: Record<string, unknown>) =>
-        tagApi.exportTagList(params as Parameters<typeof tagApi.exportTagList>[0]),
 }))
 
 const handleRefresh = async (): Promise<void> => {
@@ -127,11 +141,8 @@ const openViewModal = (record: LabelListRow): void => {
 }
 
 const handleDelete = (record: LabelListRow): void => {
-    Modal.confirm({
-        title: t('确认'),
+    confirmAndRun({
         content: `${t('是否确认执行该操作？')}（${t('删除')}：${record.name || '--'}）`,
-        okText: t('确认'),
-        cancelText: t('取消'),
         onOk: async () => {
             await tagApi.deleteTag({ id: String(record.id) })
             Message.success(t('操作成功'))
@@ -148,7 +159,7 @@ const handleDelete = (record: LabelListRow): void => {
             :api-fetch="fetchLabelList"
             :table-columns="tableColumns"
             :search-conf="searchConf"
-            :export-config="labelListExportConfig"
+            :export-config="exportConfig"
             :enable-column-sort="false"
             :scroll="{ x: 1200, y: 700 }"
             row-key="id"
@@ -167,24 +178,6 @@ const handleDelete = (record: LabelListRow): void => {
 
             <template #name="{ record }">
                 <a-tag :color="record.color">{{ record.name }}</a-tag>
-            </template>
-
-            <template #action="{ record }">
-                <div class="flex flex-wrap items-center gap-3">
-                    <PermissionButton button-key="edit" @click="openEditModal(record as LabelListRow)">
-                        {{ t('编辑') }}
-                    </PermissionButton>
-                    <PermissionButton button-key="view" @click="openViewModal(record as LabelListRow)">
-                        {{ t('查看') }}
-                    </PermissionButton>
-                    <PermissionButton
-                        button-key="del"
-                        status="danger"
-                        @click="handleDelete(record as LabelListRow)"
-                    >
-                        {{ t('删除') }}
-                    </PermissionButton>
-                </div>
             </template>
         </TableSearchWrap>
 

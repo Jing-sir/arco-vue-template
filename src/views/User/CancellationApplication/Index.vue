@@ -1,46 +1,62 @@
 <script setup lang="ts">
 import accountListApi from '@/api/userApi/account/list'
 import TableSearchWrap from '@/components/TableSearchWrap/Index.vue'
-import PermissionButton from '@/components/TableSearchWrap/components/PermissionButton.vue'
-import type { CancellationApplicationType } from '@/interface/type'
+import type { CancellationApplicationItem, CancellationApplicationType } from '@/interface/type'
 import type { ColumnType, SearchOption, TableFetchResult, TableSearchWrapExpose } from '@/interface/TableType'
-import { Message, Modal } from '@arco-design/web-vue'
+import { buildTableFetchResult } from '@/utils/table'
+import { Message } from '@arco-design/web-vue'
+import useConfirmAction from '@/use/useConfirmAction'
 
-interface CancellationTableRow extends Record<string, unknown> {
-    id: string
-    accountId?: string
-    email?: string
-    phone?: string
-    globalCode?: string
-    cancelTime?: string
-    closeAccountCheck?: 1 | 2 | 3 | ''
-    userEmail?: string
-}
+type CancellationTableRow = CancellationApplicationItem
+type CancellationStatus = 1 | 2 | 3 | ''
 
 const { t } = useI18n()
+const { confirmAndRun } = useConfirmAction()
 
 const tableWrapRef = ref<TableSearchWrapExpose | null>(null)
 
-const closeAccountCheckOptions = [
+const closeAccountCheckOptions = computed(() => [
     { label: t('全部'), value: '' },
     { label: t('待审核'), value: 1 },
     { label: t('审核通过'), value: 2 },
     { label: t('审核拒绝'), value: 3 },
-]
+])
 
-const closeAccountCheckTextMap: Record<string, string> = {
-    '1': '待审核',
-    '2': '审核通过',
-    '3': '审核拒绝',
+/**
+ * 统一把状态筛选值收敛到后端可识别的取值：
+ * - 空条件：''
+ * - 有效状态：1 / 2 / 3
+ * - 其它异常输入：兜底回空条件
+ */
+const normalizeStatusValue = (value: unknown): CancellationStatus => {
+    if (value === '' || value === null || typeof value === 'undefined') return ''
+    const normalized = Number(value)
+    if (normalized === 1 || normalized === 2 || normalized === 3) {
+        return normalized
+    }
+    return ''
 }
 
-const stateTextMap: Record<string, string> = {
-    '1': '正常',
-    '2': '冻结',
-    '3': '注销',
-}
+/**
+ * 兼容老项目查询契约：
+ * 1. 所有筛选字段都显式传给后端
+ * 2. 空值统一用空字符串，而不是 null / undefined
+ * 3. 保留 `state` 字段默认空值，避免后端分支与老项目不一致
+ */
+const normalizeCancellationParams = (
+    params: Record<string, unknown> = {},
+): CancellationApplicationType => ({
+    pageNo: Number(params.pageNo || 1),
+    pageSize: Number(params.pageSize || 20),
+    accountId: String(params.accountId || ''),
+    userEmail: String(params.userEmail || ''),
+    checkCloseState: normalizeStatusValue(params.checkCloseState),
+    state: normalizeStatusValue(params.state),
+    startTime: String(params.startTime || ''),
+    endTime: String(params.endTime || ''),
+})
 
-const searchConf = ref<SearchOption[]>([
+const searchConf = computed<SearchOption[]>(() => [
     {
         label: t('用户UID'),
         modelKey: 'accountId',
@@ -60,7 +76,7 @@ const searchConf = ref<SearchOption[]>([
         modelKey: 'checkCloseState',
         type: 'select',
         value: '',
-        options: closeAccountCheckOptions,
+        options: closeAccountCheckOptions.value,
     },
     {
         label: t('操作时间'),
@@ -77,35 +93,64 @@ const tableColumns = computed<ColumnType[]>(() => [
     { title: t('注册时间'), dataIndex: 'createTime', width: 180 },
     { title: t('申请时间'), dataIndex: 'cancelTime', width: 180 },
     { title: t('操作时间'), dataIndex: 'updateTime', width: 180 },
-    { title: t('注销审核状态'), dataIndex: 'closeAccountCheck', slotName: 'closeAccountCheck', width: 140 },
-    { title: t('状态'), dataIndex: 'state', slotName: 'state', width: 100 },
-    { title: t('操作'), dataIndex: 'action', slotName: 'action', width: 120, fixed: 'right', sorter: false },
+    {
+        title: t('注销审核状态'),
+        dataIndex: 'closeAccountCheck',
+        width: 140,
+        cellPreset: {
+            type: 'statusText',
+            preset: 'cancellationCheckState',
+        },
+    },
+    {
+        title: t('状态'),
+        dataIndex: 'state',
+        width: 100,
+        cellPreset: {
+            type: 'statusText',
+            preset: 'cancellationUserState',
+        },
+    },
+    {
+        title: t('操作'),
+        dataIndex: 'action',
+        width: 120,
+        fixed: 'right',
+        sorter: false,
+        cellPreset: {
+            type: 'actionButtons',
+            buttons: [
+                {
+                    buttonKey: 'unbinging',
+                    status: 'danger',
+                    text: '解绑',
+                    show: (record) => String(record.closeAccountCheck) === '1',
+                    onClick: (record) => handleUnbindEmail(record as CancellationTableRow),
+                },
+            ],
+        },
+    },
 ])
 
 const fetchCancellationList = async (
     params: Record<string, unknown> = {},
-): Promise<TableFetchResult<Record<string, unknown>>> => {
-    const response = await accountListApi.getCancellationApplicationList(
-        params as CancellationApplicationType,
-    )
+): Promise<TableFetchResult<CancellationApplicationItem>> => {
+    const normalizedParams = normalizeCancellationParams(params)
+    const response = await accountListApi.getCancellationApplicationList(normalizedParams)
 
-    return {
-        list: response.list as unknown as Record<string, unknown>[],
-        pageNo: Number((response as unknown as Record<string, unknown>).pageNo ?? params.pageNo ?? 1),
-        pageSize: Number((response as unknown as Record<string, unknown>).pageSize ?? params.pageSize ?? 20),
-        totalSize: Number(response.totalSize ?? 0),
-    }
+    return buildTableFetchResult<CancellationApplicationItem>({
+        response,
+        params: normalizedParams,
+        list: response.list,
+    })
 }
 
 /**
  * 解绑邮箱是不可逆操作，所以在执行前加确认流程。
  */
 const handleUnbindEmail = (record: CancellationTableRow): void => {
-    Modal.confirm({
-        title: t('确认'),
+    confirmAndRun({
         content: t('解绑后不可恢复，确定继续？'),
-        okText: t('确认'),
-        cancelText: t('取消'),
         onOk: async () => {
             await accountListApi.updateCloseAccount({ id: String(record.id) })
             Message.success(t('解绑成功'))
@@ -135,23 +180,5 @@ const handleUnbindEmail = (record: CancellationTableRow): void => {
             <span v-else>{{ record.phone || '--' }}</span>
         </template>
 
-        <template #closeAccountCheck="{ record }">
-            {{ t(closeAccountCheckTextMap[String(record.closeAccountCheck)] || '--') }}
-        </template>
-
-        <template #state="{ record }">
-            {{ t(stateTextMap[String(record.state)] || '--') }}
-        </template>
-
-        <template #action="{ record }">
-            <PermissionButton
-                v-if="String(record.closeAccountCheck) === '1'"
-                button-key="unbinging"
-                status="danger"
-                @click="handleUnbindEmail(record as CancellationTableRow)"
-            >
-                {{ t('解绑') }}
-            </PermissionButton>
-        </template>
     </TableSearchWrap>
 </template>

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { FieldRule, FormInstance } from '@arco-design/web-vue';
-import { Message } from '@arco-design/web-vue';
-import api from '@/api/fetchTest/index';
+import type { FieldRule, FormInstance } from '@arco-design/web-vue'
+import { Message } from '@arco-design/web-vue'
+import api from '@/api/fetchTest/index'
 
-const { t } = useI18n();
-const userStore = user();
+const { t } = useI18n()
+const userStore = user()
 
 const props = withDefaults(
     defineProps<{
@@ -16,28 +16,28 @@ const props = withDefaults(
     {
         width: 450,
     },
-);
+)
 
 const emit = defineEmits<{
     'update:visible': [value: boolean];
     onSuccess: [];
-}>();
+}>()
 
-const formRef = ref<FormInstance>();
-const isSubmitLoading = ref(false);
+const formRef = ref<FormInstance>()
+const isSubmitLoading = ref(false)
 const formState = reactive({
     facode: '',
     password: '',
-});
+})
 
 const title = computed(() =>
     props.type === 'loginPwd' ? t('重置登录密码') : t('重置2FA'),
-);
+)
 
 const visibleProxy = computed({
     get: () => props.visible,
     set: (value: boolean) => emit('update:visible', value),
-});
+})
 
 const formRules: Record<string, FieldRule[]> = {
     facode: [
@@ -45,49 +45,58 @@ const formRules: Record<string, FieldRule[]> = {
         { match: /^\d{6}$/, message: t('请输入6位数字验证码') },
     ],
     password: [{ required: true, message: t('请输入'), trigger: 'blur' }],
-};
+}
 
 const resetForm = (): void => {
-    formState.facode = '';
-    formState.password = '';
-    formRef.value?.resetFields();
-};
+    formState.facode = ''
+    formState.password = ''
+    formRef.value?.resetFields()
+}
 
 const handCancel = (): void => {
-    userStore.getUserInfo();
-    resetForm();
-    visibleProxy.value = false;
-};
+    userStore.getUserInfo()
+    resetForm()
+    visibleProxy.value = false
+}
 
+/**
+ * 重置密码/重置 2FA 都复用这一个提交入口：
+ * - 通过 props.type 显式分支具体接口，避免动态下标调用带来的类型丢失
+ * - 提交 loading 统一在 finally 里收口，确保异常分支也能恢复按钮状态
+ */
 const handleAddOrUpdate = async (): Promise<void> => {
-    if (isSubmitLoading.value) return;
+    if (isSubmitLoading.value) return
 
-    isSubmitLoading.value = true;
+    isSubmitLoading.value = true
 
-    const requestName = props.type === 'loginPwd' ? 'sysUserResetPassword' : 'setSysUserResetSecret';
-    const requestParams =
-        props.type === 'loginPwd'
-            ? { ...formState, userId: props.userId, type: 1 as const }
-            : { ...formState, userId: props.userId };
+    try {
+        if (props.type === 'loginPwd') {
+            await api.sysUserResetPassword({
+                ...formState,
+                userId: props.userId,
+                type: 1,
+            })
+        } else {
+            await api.setSysUserResetSecret({
+                ...formState,
+                userId: props.userId,
+            })
+        }
 
-    // 这里沿用现有接口命名分支，避免在弹窗层拆成两套重复请求逻辑。
-    await api[requestName](requestParams as never)
-        .then(() => {
-            Message.success(t('操作成功'));
-        })
-        .finally(() => {
-            isSubmitLoading.value = false;
-        });
-};
+        Message.success(t('操作成功'))
+    } finally {
+        isSubmitLoading.value = false
+    }
+}
 
 const handleSubmit = async (): Promise<void> => {
-    const errors = await formRef.value?.validate();
-    if (errors) return;
+    const errors = await formRef.value?.validate()
+    if (errors) return
 
-    await handleAddOrUpdate();
-    handCancel();
-    emit('onSuccess');
-};
+    await handleAddOrUpdate()
+    handCancel()
+    emit('onSuccess')
+}
 </script>
 
 <template>

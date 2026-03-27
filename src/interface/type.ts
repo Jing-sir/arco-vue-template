@@ -11,29 +11,34 @@ export interface Pagination {
 
 /**
  * 注销申请列表查询参数。
- * 由于历史页面传参较分散，这里保留可扩展字段避免影响旧调用方。
+ * 与老项目 `/account/closeAccountList` 入参保持一致，避免迁移后筛选行为偏差。
  */
 export interface CancellationApplicationType {
     pageNo: number
     pageSize: number
     accountId?: string
+    userEmail?: string
+    checkCloseState?: 1 | 2 | 3 | ''
     state?: 1 | 2 | 3 | ''
     startTime?: string
     endTime?: string
-    [key: string]: unknown
 }
 
 /**
  * 注销申请列表项。
- * 当前项目对该结构使用较少，先提供核心字段并保留扩展能力。
+ * 兼容老项目返回结构：核心展示字段显式声明，其它扩展字段继续允许透传。
  */
-export interface CancellationApplicationItem {
+export interface CancellationApplicationItem extends Record<string, unknown> {
     id: string
-    accountId: string
-    state: 1 | 2 | 3
-    createTime: string
+    accountId?: string
+    phone?: string
+    globalCode?: string
+    email?: string
+    createTime?: string
+    cancelTime?: string
     updateTime?: string
-    [key: string]: unknown
+    closeAccountCheck?: 1 | 2 | 3 | ''
+    state?: 1 | 2 | 3
 }
 
 export type List = CancellationApplicationItem[]
