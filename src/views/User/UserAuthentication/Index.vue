@@ -31,7 +31,7 @@ const countryOptions = ref<Array<{ label: string; value: string }>>([])
  */
 const documentTypeOptions = computed(() => [
     ...Array.from(userIdTypeMap.entries()).map(([value, item]) => ({
-        label: t(item.label),
+        label: item.label,
         value: String(value),
     })),
 ])

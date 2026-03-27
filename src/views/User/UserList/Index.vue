@@ -61,14 +61,14 @@ const authStatusOptions = computed(() => [
     ...Array.from(subSumStatusMap.entries())
         .filter(([value]) => typeof value === 'number')
         .map(([value, item]) => ({
-            label: t(item.label),
+            label: item.label,
             value,
         })),
 ])
 
 const documentTypeOptions = computed(() => [
     ...Array.from(userIdTypeMap.entries()).map(([value, item]) => ({
-        label: t(item.label),
+        label: item.label,
         value,
     })),
 ])
@@ -328,7 +328,7 @@ const formatDocumentTypeText = (value: unknown): string | null => {
 
         if (!Number.isNaN(Number(trimmed))) {
             const mappedLabel = userIdTypeMap.get(Number(trimmed))?.label
-            return mappedLabel ? t(mappedLabel) : trimmed
+            return mappedLabel || trimmed
         }
 
         return trimmed
@@ -336,7 +336,7 @@ const formatDocumentTypeText = (value: unknown): string | null => {
 
     if (typeof value === 'number') {
         const mappedLabel = userIdTypeMap.get(value)?.label
-        return mappedLabel ? t(mappedLabel) : String(value)
+        return mappedLabel || String(value)
     }
 
     return String(value)

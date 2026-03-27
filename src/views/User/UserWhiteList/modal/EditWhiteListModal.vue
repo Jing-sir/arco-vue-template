@@ -44,7 +44,7 @@ const businessOptions = ref<Array<{ label: string; value: string }>>([])
 const levelOptions = computed(() =>
     transMapBySelectOptions(
         commonLevelEnumMap,
-        (value, item) => ({ label: t(item.label), value: value as number }),
+        (value, item) => ({ label: item.label, value: value as number }),
     ),
 )
 

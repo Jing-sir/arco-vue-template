@@ -38,14 +38,14 @@ const editModalRef = ref<EditWhiteListModalExpose | null>(null)
 
 const levelOptions = computed(() => [
     ...transMapBySelectOptions(commonLevelEnumMap, (value, item) => ({
-        label: t(item.label),
+        label: item.label,
         value: value as number,
     })),
 ])
 
 const stateOptions = computed(() => [
     ...transMapBySelectOptions(whitelistStateEnumMap, (value, item) => ({
-        label: t(item.label),
+        label: item.label,
         value: value as number,
     })),
 ])

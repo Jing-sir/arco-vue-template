@@ -201,6 +201,9 @@ Hard i18n rule / 强制国际化规则:
 - In Vue components, user-facing text must be wrapped with `t('中文文案')`. 组件中的用户文案必须使用 `t('中文文案')`。
 - In non-component modules, use `i18n.global.t(...)` or `formatText(...)`. 非组件模块中使用 `i18n.global.t(...)` 或 `formatText(...)`。
 - Route titles must store Chinese keys and be rendered through `t(...)`. 路由标题存中文 key，展示时再翻译。
+- Backend-returned copy is display-ready and must not be wrapped again with `t(...)` or `formatText(...)`. 后端返回文案视为可直接展示，不要再用 `t(...)` 或 `formatText(...)` 二次包裹。
+- This includes API-driven option labels, table cell text, status names, and backend-provided messages. 包括接口下发的下拉选项文案、表格文本、状态名称、后端提示文案等。
+- Only frontend-authored static copy should go through frontend i18n translation calls. 只有前端自行维护的静态文案才走前端 i18n 翻译调用。
 
 ### 5.5 `src/utils` / 工具目录
 

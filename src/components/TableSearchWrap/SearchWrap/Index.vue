@@ -69,13 +69,15 @@ const getSelectOptionList = (
     return [{ label: '全部', value: null }, ...optionList]
 }
 
-const getTranslatedOptionList = (
+/**
+ * Select 选项文案默认按“已就绪文案”直接展示：
+ * - 后端返回的 option.label 可能已经完成国际化，不再做二次 t() 包裹
+ * - 前端静态文案如需翻译，建议在构造 searchConf 时先完成翻译
+ */
+const getDisplayOptionList = (
     item: SearchOption,
 ): Array<{ value: string | null | number; label: string }> =>
-    getSelectOptionList(item).map((option) => ({
-        ...option,
-        label: t(option.label),
-    }))
+    getSelectOptionList(item)
 
 const getFirstModelKey = (): string => {
     const firstInputOption = props.searchConf.find((item) => item.type === 'input')
@@ -278,7 +280,7 @@ defineExpose<TableSearchFormExpose>({
                             :key="item.modelKey"
                             :value="item.modelKey"
                         >
-                            {{ t(item.label) }}
+                            {{ item.label }}
                         </a-option>
                     </a-select>
                     <a-input
@@ -286,7 +288,7 @@ defineExpose<TableSearchFormExpose>({
                         allow-clear
                         size="small"
                         class="w-2/5"
-                        :placeholder="t('搜索{label}', { label: t(fetchTipsText) })"
+                        :placeholder="t('搜索{label}', { label: fetchTipsText })"
                         @pressEnter="emitSearch"
                         @input="onSearch"
                         @clear="onInputClear"
@@ -335,14 +337,14 @@ defineExpose<TableSearchFormExpose>({
                             :key="i"
                             :span="['input', 'select', 'date-single'].includes(item.type) ? 4 : 8"
                         >
-                            <a-form-item :label="t(item.label)" :name="item.modelKey">
+                            <a-form-item :label="item.label" :name="item.modelKey">
                                 <a-input
                                     v-if="item.type === 'input'"
                                     v-model="item.value"
                                     class="w-full"
                                     :placeholder="
                                         t(item.placeholder || '请输入{label}', {
-                                            label: t(item.label),
+                                            label: item.label,
                                         })
                                     "
                                     v-bind="item.props"
@@ -353,10 +355,10 @@ defineExpose<TableSearchFormExpose>({
                                 <a-select
                                     v-if="item.type === 'select'"
                                     v-model="item.value"
-                                    :options="getTranslatedOptionList(item)"
+                                    :options="getDisplayOptionList(item)"
                                     :placeholder="
                                         t(item.placeholder || '请选择{label}', {
-                                            label: t(item.label),
+                                            label: item.label,
                                         })
                                     "
                                     v-bind="item.props"
