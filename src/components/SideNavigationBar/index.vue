@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { IconSearch } from '@arco-design/web-vue/es/icon'
+import { computed, ref, watch } from 'vue'
 import type { RouteMeta, RouteRecordRaw } from 'vue-router'
 import Item from '@/components/SideNavigationBar/Item.vue'
 import type { SidebarMenuNode } from '@/interface/SideNavigationType'
@@ -39,6 +40,9 @@ const store = sideBar()
 
 // 从 store 中取出是否折叠、路由列表
 const { isSidebar, routes } = storeToRefs(store)
+
+// 侧栏菜单搜索关键字（仅用于当前会话交互，不需要进入全局状态）。
+const menuSearchKeyword = ref('')
 
 /**
  * 统一格式化菜单标题
@@ -182,13 +186,62 @@ const sidebarMenuItems = computed<SidebarMenuNode[]>(() => {
 })
 
 /**
+ * 对菜单树做关键词过滤，并保留父链结构。
+ *
+ * 约束：
+ * 1. 命中父节点时保留整个分支，避免用户看不到子菜单入口
+ * 2. 仅子节点命中时，也要把父链带出来，保证树结构完整
+ */
+const filterMenuNodes = (items: SidebarMenuNode[], keyword: string): SidebarMenuNode[] => {
+    if (!keyword) return items
+
+    const walk = (item: SidebarMenuNode): SidebarMenuNode | null => {
+        const children = (item.children ?? [])
+            .map((child) => walk(child))
+            .filter((child): child is SidebarMenuNode => child !== null)
+        const title = item.title.toLowerCase()
+        const matchCurrent = title.includes(keyword)
+
+        if (!matchCurrent && !children.length) return null
+
+        return {
+            ...item,
+            children: matchCurrent ? item.children : children,
+        }
+    }
+
+    return items
+        .map((item) => walk(item))
+        .filter((item): item is SidebarMenuNode => item !== null)
+}
+
+const normalizedMenuKeyword = computed(() => menuSearchKeyword.value.trim().toLowerCase())
+const isSearchingMenu = computed(() => Boolean(normalizedMenuKeyword.value))
+
+const visibleSidebarMenuItems = computed<SidebarMenuNode[]>(() => {
+    return filterMenuNodes(sidebarMenuItems.value, normalizedMenuKeyword.value)
+})
+
+const getExpandableNodeKeys = (items: SidebarMenuNode[]): string[] =>
+    items.flatMap((item) => {
+        if (!item.children?.length) return []
+        return [item.key, ...getExpandableNodeKeys(item.children)]
+    })
+
+// 搜索态下统一展开命中树；非搜索态交给 Arco 的 auto-open-selected 管理。
+const searchOpenKeys = computed<string[] | undefined>(() => {
+    if (!isSearchingMenu.value) return undefined
+    return getExpandableNodeKeys(visibleSidebarMenuItems.value)
+})
+
+/**
  * 当前菜单选中的 key
  *
  * Arco Menu 的 selected-keys 需要数组格式
  */
 const selectedKeys = computed<string[]>(() => {
     const selectedNode = findSelectedNode(
-        sidebarMenuItems.value,
+        visibleSidebarMenuItems.value,
         currentRoute.path,
         String(currentRoute.meta?.role ?? ''),
     )
@@ -202,6 +255,17 @@ const selectedKeys = computed<string[]>(() => {
 const handleMenuItemClick = (path: string): void => {
     push(path)
 }
+
+watch(
+    isSidebar,
+    (collapsed) => {
+        // 折叠菜单后隐藏搜索框，这里同步清空关键词，避免“看不见输入框但菜单已被过滤”的困惑。
+        if (collapsed) {
+            menuSearchKeyword.value = ''
+        }
+    },
+    { immediate: true },
+)
 </script>
 
 <template>
@@ -240,22 +304,47 @@ const handleMenuItemClick = (path: string): void => {
             </div>
         </div>
 
+        <div
+            v-if="!isSidebar"
+            class="mb-3 px-3"
+        >
+            <a-input
+                v-model="menuSearchKeyword"
+                allow-clear
+                size="small"
+                class="side-nav__search-input w-full"
+                :placeholder="t('搜索权限菜单')"
+            >
+                <template #prefix>
+                    <IconSearch />
+                </template>
+            </a-input>
+        </div>
+
         <!-- 菜单区 -->
         <a-menu
+            v-if="visibleSidebarMenuItems.length"
             :class="[
                 'side-nav__menu flex-1 overflow-y-auto bg-transparent pb-[18px]',
                 isSidebar ? 'px-2' : 'px-3',
             ]"
             :selected-keys="selectedKeys"
+            :open-keys="searchOpenKeys"
             :collapsed="isSidebar"
             mode="vertical"
             theme="dark"
-            accordion
+            :accordion="!isSearchingMenu"
             auto-open-selected
             @menu-item-click="handleMenuItemClick"
         >
-            <Item v-for="menuItem of sidebarMenuItems" :key="menuItem.key" :item="menuItem" />
+            <Item v-for="menuItem of visibleSidebarMenuItems" :key="menuItem.key" :item="menuItem" />
         </a-menu>
+        <div
+            v-else-if="!isSidebar"
+            class="flex flex-1 items-start justify-center px-3 pt-8"
+        >
+            <a-empty :description="t('未匹配到权限菜单')" />
+        </div>
     </div>
 </template>
 
