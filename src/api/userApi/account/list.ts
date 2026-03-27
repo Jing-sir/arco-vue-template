@@ -4,12 +4,12 @@ import type { CancellationApplicationType, List, Pagination } from '@/interface/
 
 class AccountListApi extends Api {
     /** 代理商账户列表 */
-    getAccountList(params: Partial<AccountParams>): Promise<{ list: AccountList } & Pagination> {
+    getAccountList(params: Partial<AccountParams>): Promise<{ list: AccountList[] } & Pagination> {
         return this.api.post('/account/list', params)
     }
 
     /** 导出代理商账户列表 */
-    exportAccountList(params: AccountParams): Promise<Blob> {
+    exportAccountList(params: Partial<AccountParams>): Promise<Blob> {
         return this.api.post('/account/accountExcelWriter', params, { responseType: 'blob' })
     }
 

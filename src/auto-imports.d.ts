@@ -26,6 +26,7 @@ declare global {
   const allToRaw: typeof import('./utils/allToRaw').default
   const buildFlat: typeof import('./utils/common').buildFlat
   const buildTree: typeof import('./utils/common').buildTree
+  const colorArr: typeof import('./utils/constant').colorArr
   const computed: typeof import('vue').computed
   const copyToClipboard: typeof import('./utils/copyToClipboard').default
   const createApp: typeof import('vue').createApp
@@ -115,9 +116,11 @@ declare global {
   const toRef: typeof import('vue').toRef
   const toRefs: typeof import('vue').toRefs
   const toValue: typeof import('vue').toValue
+  const transMapBySelectOptions: typeof import('./utils/component').transMapBySelectOptions
   const triggerRef: typeof import('vue').triggerRef
   const typeOf: typeof import('./utils/common').typeOf
   const unref: typeof import('vue').unref
+  const unshiftSelectOptionAll: typeof import('./utils/component').unshiftSelectOptionAll
   const urlEncode: typeof import('./utils/common').urlEncode
   const useAttrs: typeof import('vue').useAttrs
   const useButtonRole: typeof import('./use/useButtonRole').default

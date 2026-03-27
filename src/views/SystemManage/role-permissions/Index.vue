@@ -49,6 +49,7 @@ useOnActivated(() => {
         ref="tableWrapRef"
         :api-fetch="fetchRoleList"
         :table-columns="tableColumns"
+        :enable-column-sort="false"
         :table-props="{ pagination: false }"
         row-key="roleId"
     >

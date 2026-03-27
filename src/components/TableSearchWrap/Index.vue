@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import SearchWrap from './SearchWrap/Index.vue';
+import ExportButton from './components/ExportButton.vue';
 import { usePagination } from 'vue-request';
+import { get } from 'lodash-es';
 import type {
     ColumnType,
     SearchOption,
     SearchParams,
+    TableExportConfig,
     TableFetchResult,
     TableRowKey,
     TableSearchFormExpose,
@@ -12,6 +15,7 @@ import type {
     TableSearchWrapExpose,
 } from '@/interface/TableType';
 import { PagingDefaultConf } from '@/utils/constant';
+import { onCopyCode } from '@/utils/common';
 import useTableSorter from '@/use/useTableSorter';
 import { useSlots } from 'vue';
 
@@ -45,6 +49,7 @@ interface TableSearchWrapProps {
     isMore?: boolean;
     apiFetch: (params?: Record<string, unknown>) => Promise<TableFetchResult>;
     tableColumns: ColumnType[];
+    exportConfig?: TableExportConfig | null;
     defaultParams?: SearchParams;
     immediate?: boolean;
     rowKey?: TableRowKey;
@@ -61,6 +66,7 @@ interface TableSearchWrapProps {
 const props = withDefaults(defineProps<TableSearchWrapProps>(), {
     searchConf: () => [],
     isMore: true,
+    exportConfig: null,
     defaultParams: () => ({}),
     immediate: true,
     rowKey: 'id',
@@ -75,6 +81,119 @@ const props = withDefaults(defineProps<TableSearchWrapProps>(), {
 
 const { t } = useI18n();
 const slots = useSlots();
+
+const AUTO_ELLIPSIS_SLOT_PREFIX = '__auto_ellipsis__';
+
+/**
+ * 把单元格原始值统一转换为可展示文本。
+ * - null/undefined/空字符串统一展示为 --
+ * - 数组按逗号拼接
+ * - 对象兜底转 JSON，避免直接显示 [object Object]
+ */
+const formatCellText = (value: unknown): string => {
+    if (value === null || typeof value === 'undefined' || value === '') {
+        return '--';
+    }
+
+    if (Array.isArray(value)) {
+        const text = value
+            .map((item) => formatCellText(item))
+            .filter((item) => item !== '--')
+            .join(', ');
+        return text || '--';
+    }
+
+    if (typeof value === 'object') {
+        try {
+            return JSON.stringify(value);
+        } catch {
+            return '--';
+        }
+    }
+
+    return String(value);
+};
+
+const isAutoEllipsisSlot = (slotName?: string): boolean =>
+    Boolean(slotName?.startsWith(AUTO_ELLIPSIS_SLOT_PREFIX));
+
+const hasExternalSlot = (slotName?: string): boolean =>
+    Boolean(slotName && slots[slotName]);
+
+/**
+ * 根据列宽估算“可能发生省略”的最小文本长度阈值。
+ * 说明：
+ * - 字符宽度按约 10px 估算，作为轻量级启发式判断
+ * - 最小阈值保底 8，避免过短文本误判
+ */
+const getPreviewThresholdByColumn = (column: ColumnType): number => {
+    if (typeof column.width === 'number' && column.width > 0) {
+        return Math.max(8, Math.floor(column.width / 10));
+    }
+
+    return 18;
+};
+
+/**
+ * 省略文本点击预览：
+ * - 包含换行的内容默认支持
+ * - 其余按“列宽估算阈值”判断，尽量只命中实际会被省略的长文本
+ */
+const canPreviewCellText = (text: string, column: ColumnType): boolean => {
+    if (text === '--') return false;
+    if (/[\r\n]/.test(text)) return true;
+    return text.length > getPreviewThresholdByColumn(column);
+};
+
+const getCellDisplayText = (
+    record: Record<string, unknown>,
+    column: ColumnType,
+): string => {
+    if (!column.dataIndex) {
+        return '--';
+    }
+
+    return formatCellText(get(record, column.dataIndex));
+};
+
+const handleCopyPopoverText = (text: string): void => {
+    if (!text || text === '--') return;
+    onCopyCode(text);
+};
+
+/**
+ * 为“非 slot 文本列”自动注入内部 slotName：
+ * - 统一启用省略号
+ * - 保留页面自定义 slot 的优先级，不覆盖业务自定义渲染
+ */
+const withAutoEllipsisColumns = (
+    columns: ColumnType[],
+    parentPath = '',
+): ColumnType[] =>
+    columns.map((column, index) => {
+        const nextPath = `${parentPath}${index}_`;
+
+        if (column.children?.length) {
+            return {
+                ...column,
+                children: withAutoEllipsisColumns(column.children, nextPath),
+            };
+        }
+
+        if (!column.dataIndex || column.slotName || column.autoEllipsis === false) {
+            return column;
+        }
+
+        const identity = String(column.key ?? column.dataIndex ?? nextPath);
+        const internalSlotName =
+            `${AUTO_ELLIPSIS_SLOT_PREFIX}${identity.replace(/[^A-Za-z0-9_]/g, '_')}_${nextPath}`;
+
+        return {
+            ...column,
+            slotName: internalSlotName,
+            ellipsis: column.ellipsis ?? true,
+        };
+    });
 
 /**
  * 搜索表单实例。
@@ -197,10 +316,19 @@ const {
 const dataSource = computed<Record<string, unknown>[]>(() => sortedDataSource.value);
 
 /**
+ * 表格列增强：
+ * 1. 对普通文本列自动开启省略号与点击预览
+ * 2. 不影响页面侧已经声明 slot 的列
+ */
+const renderableColumns = computed<ColumnType[]>(() =>
+    withAutoEllipsisColumns(normalizedColumns.value),
+);
+
+/**
  * 需要透传具名插槽的列。
  * 只有定义了 slotName 的列，才会在 a-table 中动态挂接插槽。
  */
-const slotColumns = computed(() => normalizedColumns.value.filter((column) => column.slotName));
+const slotColumns = computed(() => renderableColumns.value.filter((column) => column.slotName));
 
 /**
  * 当前总条数。
@@ -291,10 +419,21 @@ const resetTable = (): void => {
 const getSearchParams = (): SearchParams => ({ ...currentSearchParams.value });
 
 /**
+ * 导出参数统一带上当前搜索条件和分页信息，
+ * 这样列表导出默认和“当前筛选结果”保持一致。
+ */
+const exportParams = computed<Record<string, unknown>>(() => ({
+    ...getSearchParams(),
+    pageNo: currentPageNo.value,
+    pageSize: currentPageSize.value,
+}));
+
+/**
  * 是否需要展示工具栏。
  */
 const showToolbar = computed(
     () =>
+        Boolean(props.exportConfig) ||
         props.showRefresh ||
         Boolean(slots.roleBtnWrap) ||
         Boolean(slots.totalWrap) ||
@@ -547,14 +686,28 @@ defineExpose<TableSearchWrapExpose>({
                     :search-conf="props.searchConf"
                     :is-more="props.isMore"
                     @searchCallback="searchTable"
-                />
+                >
+                    <template #footerActions>
+                        <ExportButton
+                            v-if="props.exportConfig"
+                            :config="props.exportConfig"
+                            :params="exportParams"
+                        />
+                        <slot name="roleBtnWrap" />
+                    </template>
+                </SearchWrap>
             </slot>
         </div>
 
         <!-- 工具栏：按钮区、统计区、操作区统一放在这里 -->
-        <div v-if="showToolbar" class="flex flex-wrap items-center justify-between gap-3">
+        <div v-if="showToolbar" class="flex flex-wrap items-center justify-between gap-3 pb-[10px]">
             <div class="flex flex-wrap items-center gap-3">
                 <slot name="roleBtnWrap" />
+                <ExportButton
+                    v-if="props.exportConfig"
+                    :config="props.exportConfig"
+                    :params="exportParams"
+                />
                 <slot
                     name="totalWrap"
                     :total="totalCount"
@@ -593,7 +746,7 @@ defineExpose<TableSearchWrapExpose>({
                 <a-table
                     v-bind="mergedTableProps"
                     class="w-full"
-                    :columns="normalizedColumns"
+                    :columns="renderableColumns"
                     :data="dataSource"
                     :loading="tableLoading"
                     @page-size-change="onPageSizeChange"
@@ -638,6 +791,7 @@ defineExpose<TableSearchWrapExpose>({
                         #[column.slotName]="slotProps"
                     >
                         <slot
+                            v-if="hasExternalSlot(column.slotName)"
                             :name="column.slotName"
                             v-bind="{
                                 ...slotProps,
@@ -647,6 +801,49 @@ defineExpose<TableSearchWrapExpose>({
                                 searchParams: getSearchParams(),
                             }"
                         />
+                        <template v-else-if="isAutoEllipsisSlot(column.slotName)">
+                            <a-popover
+                                v-if="canPreviewCellText(getCellDisplayText(slotProps.record, column), column)"
+                                trigger="click"
+                                position="tl"
+                            >
+                                <span
+                                    class="block max-w-full cursor-pointer truncate"
+                                    :style="{ color: 'color-mix(in srgb, var(--color-primary-6) 72%, white 28%)' }"
+                                >
+                                    {{ getCellDisplayText(slotProps.record, column) }}
+                                </span>
+                                <template #content>
+                                    <div class="max-w-[560px] space-y-2">
+                                        <a-typography-paragraph
+                                            class="m-0 whitespace-pre-wrap break-all text-[var(--app-text)]"
+                                        >
+                                            {{ getCellDisplayText(slotProps.record, column) }}
+                                        </a-typography-paragraph>
+                                        <div class="flex justify-end">
+                                            <a-button
+                                                type="text"
+                                                size="mini"
+                                                @click.stop="handleCopyPopoverText(getCellDisplayText(slotProps.record, column))"
+                                            >
+                                                {{ t('复制') }}
+                                            </a-button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </a-popover>
+                            <span
+                                v-else
+                                class="block max-w-full truncate"
+                                :style="{
+                                    color: getCellDisplayText(slotProps.record, column) === '--'
+                                        ? 'var(--app-text-muted)'
+                                        : 'var(--app-text)',
+                                }"
+                            >
+                                {{ getCellDisplayText(slotProps.record, column) }}
+                            </span>
+                        </template>
                     </template>
                 </a-table>
             </slot>

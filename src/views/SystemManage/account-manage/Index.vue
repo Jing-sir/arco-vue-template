@@ -45,9 +45,9 @@ const searchSorter: TableSearchSorterConfig = {
 
 const tableColumns = computed<ColumnType[]>(() => [
     { title: t('序号'), slotName: 'index', width: 80 },
-    { title: t('管理员账号'), dataIndex: 'account' },
-    { title: t('姓名'), dataIndex: 'realName' },
-    { title: t('角色'), dataIndex: 'roleName' },
+    { title: t('管理员账号'), dataIndex: 'account', sorter: false },
+    { title: t('姓名'), dataIndex: 'realName', sorter: false },
+    { title: t('角色'), dataIndex: 'roleName', sorter: false },
     {
         title: t('账号状态'),
         dataIndex: 'state',

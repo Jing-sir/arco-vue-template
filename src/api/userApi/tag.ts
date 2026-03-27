@@ -49,7 +49,13 @@ class TagApi extends Api {
     }
 
     /** 标签详情 */
-    getTagInfo(params: { id: string }): Promise<Record<string, any>> {
+    getTagInfo(params: { id: string }): Promise<{
+        accountIds?: string
+        color?: string
+        id?: string
+        name?: string
+        sort?: number
+    }> {
         return this.api.get('/tag/info', { params })
     }
 
@@ -64,12 +70,24 @@ class TagApi extends Api {
     }
 
     /** 标签导入时的账户下拉 */
-    getTagAccountList(params?: { accountId?: string }): Promise<any[]> {
+    getTagAccountList(params?: { accountId?: string }): Promise<Array<{
+        accountId?: string
+        id?: string
+        labelCount?: number
+    }>> {
         return this.api.get('/tag/accountList', { params })
     }
 
     /** 标签导入 */
-    importTag(params: { file: File }): Promise<boolean> {
+    importTag(params: { file: File }): Promise<
+        | boolean
+        | Array<{
+            name?: string
+            color?: string
+            accountIds?: string
+            failReason?: string
+        }>
+    > {
         return this.api.post('/tag/importTag', params, {
             headers: { Accept: 'application/json, ext/plain', 'Content-Type': 'multipart/form-data' },
         })

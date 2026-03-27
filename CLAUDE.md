@@ -87,6 +87,7 @@ Current component responsibilities / 当前组件职责:
 - `SideNavigationBar/Item.vue`: internal recursive menu node renderer used only by `SideNavigationBar/index.vue`. 仅供 `SideNavigationBar/index.vue` 内部使用的递归侧栏节点组件。
 - `TableSearchWrap/Index.vue`: reusable page scaffold for search + table + pagination. 搜索加表格页面通用骨架。
 - `TableSearchWrap/SearchWrap/Index.vue`: reusable advanced search form renderer driven by `searchConf`. 基于 `searchConf` 配置的高级搜索区域。
+- `TableSearchWrap/components/LabelTagList.vue`: reusable tag-list cell renderer for list pages. 统一渲染列表页“用户标签/标签”列的通用标签组件。
 - `TableSearchWrap/components/PermissionButton.vue`: internal helper for route-aware permission buttons in list pages. TableSearchWrap 目录下的内部权限按钮组件，供列表页统一复用。
 - `TableSearchWrap/components/StatusText.vue`: internal helper for common status text and color mapping in list pages. TableSearchWrap 目录下的内部状态文案与颜色映射组件。
 - `TagsView.vue`: visited-page tabs cache UI. 访问页签与缓存视图组件。
@@ -95,6 +96,10 @@ Component rules / 组件规则:
 
 - All new search/list pages must use `TableSearchWrap/Index.vue` by default, and when an existing search/list page is being refactored or substantially edited, migrate it to `TableSearchWrap/Index.vue` unless a concrete requirement cannot be expressed through `searchConf`, slots, or exposed methods. 所有新建搜索/列表页默认必须使用 `TableSearchWrap/Index.vue`；已有搜索/列表页只要进入重构或较大改动，也应迁移到 `TableSearchWrap/Index.vue`，除非存在明确需求无法通过 `searchConf`、插槽或暴露方法表达。
 - Do not hand-write a separate search form + table + pagination scaffold in views when `TableSearchWrap/Index.vue` can cover the page. 只要 `TableSearchWrap/Index.vue` 能覆盖页面需求，就不要在视图层重新手写一套搜索表单 + 表格 + 分页骨架。
+- For list pages that support export, use the built-in `exportConfig` capability of `TableSearchWrap/Index.vue` and the internal reusable export component; do not hand-write page-local export buttons inside views. 支持导出的列表页必须使用 `TableSearchWrap/Index.vue` 的内建 `exportConfig` 能力与内部通用导出组件，不要在 views 里再手写页面私有导出按钮。
+- Keep export/add actions in the shared action area between search and table, and when advanced search is expanded, mirror those actions next to the search/reset buttons in the expanded footer. 导出/新增等动作统一放在搜索区与表格区之间的共享操作区；当高级搜索展开时，需要在展开区底部搜索/重置按钮旁再镜像一份这些动作。
+- For long text cells in `TableSearchWrap/Index.vue`, default to ellipsis display. When users click truncated text, show a popover with full content and copy support; the truncated text color should default to a lighter primary theme tone. Allow opting out per column only when the page has explicit custom rendering requirements. 在 `TableSearchWrap/Index.vue` 中，长文本单元格默认使用省略号展示；点击省略文本时需弹出可查看完整内容且支持复制的提示层；省略态文本颜色默认使用“主色浅色阶”。只有在页面存在明确自定义渲染需求时，才允许按列关闭该默认行为。
+- For all list-page columns named `用户标签` or `标签` (including fields like `labelList`, `labelNames`, `labelName`), render them through `TableSearchWrap/components/LabelTagList.vue`; do not duplicate inline `a-tag`/tooltip rendering in view files. 所有列表页中名为 `用户标签` 或 `标签` 的列（包括 `labelList`、`labelNames`、`labelName` 等字段）统一使用 `TableSearchWrap/components/LabelTagList.vue` 渲染；不要在 views 里重复手写 `a-tag`/tooltip 标签展示逻辑。
 - Reuse `Header.vue`, `SideNavigationBar/index.vue`, and `TagsView.vue` when working on layout-level changes. 处理后台骨架布局时，优先沿用这三个组件。
 - Reuse `GoogleCode.vue` and `Modal/BindGoogle.vue` for 2FA flows instead of creating parallel modal logic. 2FA 流程优先复用这两个组件。
 - If adding a new reusable component, name it by responsibility, not by page position. 新公用组件按职责命名，不按页面位置命名。

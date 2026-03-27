@@ -22,8 +22,8 @@ const formRef = ref<FormInstance | null>(null)
 const is2FAModalOpen = ref(false)
 
 const formState = reactive<LoginFormState>({
-    account: 'xiangnan',
-    password: 'xiangnan',
+    account: 'xiangnan-test',
+    password: 'xiangnan-test',
 } satisfies LoginFormState)
 
 const store = user()
@@ -151,7 +151,9 @@ const onCancelGoogleCode = (): void => {
                             </p>
                         </div>
 
-                        <div class="mt-8 rounded-xl border border-[var(--app-divider)] bg-[var(--app-login-panel-bg)] p-6">
+                        <div
+                            class="mt-8 rounded-xl border border-[var(--app-divider)] bg-[var(--app-login-panel-bg)] p-6"
+                        >
                             <div class="mb-6 flex items-center justify-between gap-4">
                                 <div>
                                     <p class="text-lg font-semibold text-[var(--app-text)]">

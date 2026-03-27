@@ -1,9 +1,20 @@
 <script setup lang="ts">
+import { storeToRefs } from 'pinia';
 import { useAttrs } from 'vue';
+import useSideBar from '@/store/sideBar';
+import { useRoute } from 'vue-router';
 
 type ButtonType = 'primary' | 'secondary' | 'outline' | 'dashed' | 'text';
 type ButtonStatus = 'normal' | 'success' | 'warning' | 'danger';
 type ButtonSize = 'mini' | 'small' | 'medium' | 'large';
+type RoleMenuItem = {
+    id?: string | number;
+    menuId?: string | number;
+    parentId?: string | number | null;
+    name?: string;
+    component?: string;
+    route?: string;
+};
 
 interface PermissionButtonProps {
     buttonKey?: string;
@@ -32,7 +43,8 @@ const emit = defineEmits<{
 }>();
 
 const attrs = useAttrs();
-const { isShowBtn } = useButtonRole();
+const route = useRoute();
+const { roleMenu } = storeToRefs(useSideBar());
 
 /**
  * 是否需要做权限校验。
@@ -41,12 +53,54 @@ const { isShowBtn } = useButtonRole();
 const shouldCheckPermission = computed(() => Boolean(props.buttonKey));
 
 /**
+ * 统一转成字符串，兼容后端 number/string 混合字段。
+ */
+const toValue = (value: unknown): string => String(value ?? '');
+
+/**
+ * 当前路由名。
+ * 如果组件显式传了 routeName，优先用显式值；否则回退当前 route.name。
+ */
+const currentRouteName = computed(() => toValue(props.routeName || route.name));
+
+/**
+ * 兼容老项目菜单结构：
+ * 1. 先用 routeName 找当前菜单节点（component/route/name 任一匹配）
+ * 2. 再按 menuId 或 id 找子按钮（parentId 对应）
+ */
+const getButtonsForMenu = (routeName: string): RoleMenuItem[] => {
+    const menuList = roleMenu.value as unknown as RoleMenuItem[];
+    const currentMenu = menuList.find((item) =>
+        [item.component, item.route, item.name].some((field) => toValue(field) === routeName),
+    );
+    if (!currentMenu) return [];
+
+    const menuId = toValue(currentMenu.menuId ?? currentMenu.id);
+    if (!menuId) return [];
+
+    return menuList.filter((item) => toValue(item.parentId) === menuId);
+};
+
+/**
  * 当前按钮是否具备权限。
- * 外部传 routeName 时优先使用显式 routeName；否则默认走当前 route.name。
+ * 优先匹配新项目规则 `${routeName}-${buttonKey}`，再回退老项目 `component === buttonKey`。
  */
 const hasPermission = computed(() => {
     if (!shouldCheckPermission.value) return true;
-    return isShowBtn(props.buttonKey, props.routeName || undefined);
+    const routeName = currentRouteName.value;
+    const buttonKey = toValue(props.buttonKey);
+    if (!routeName || !buttonKey) return false;
+
+    const menuList = roleMenu.value as unknown as RoleMenuItem[];
+    const newPermissionName = `${routeName}-${buttonKey}`;
+
+    const hasNewPermission = menuList.some((item) =>
+        [item.name, item.component].some((field) => toValue(field) === newPermissionName),
+    );
+    if (hasNewPermission) return true;
+
+    const buttonList = getButtonsForMenu(routeName);
+    return buttonList.some((item) => toValue(item.component) === buttonKey);
 });
 
 /**

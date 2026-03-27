@@ -46,6 +46,8 @@
     --app-shell-top-height: 154px;
     --page-shell-gap: 8px;
     --app-pane-radius: 10px;
+    --app-shell-joint-radius: 34px;
+    --app-shell-content-bg: var(--app-surface-strong);
     --app-body-glow-start: rgb(255 255 255 / 80%);
     --app-body-glow-end: rgb(255 255 255 / 0%);
     --app-body-gradient-start: #f7f9fb;

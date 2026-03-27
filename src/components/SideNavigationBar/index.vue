@@ -232,7 +232,9 @@ const handleMenuItemClick = (path: string): void => {
                 <p class="m-0 text-sm font-bold tracking-[0.01em] text-[var(--app-sidebar-text)]">
                     {{ t('管理后台') }}
                 </p>
-                <p class="m-0 mt-[2px] text-[11px] tracking-[0.04em] text-[var(--app-sidebar-text-muted)]">
+                <p
+                    class="m-0 mt-[2px] text-[11px] tracking-[0.04em] text-[var(--app-sidebar-text-muted)]"
+                >
                     {{ t('权限与运营控制台') }}
                 </p>
             </div>

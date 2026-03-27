@@ -77,6 +77,7 @@ export interface ColumnType<T = Record<string, unknown>> { // column type
     customRender?: (data: { index: number, text: string | number, record: T}) => void;
     fixed?: string;
     ellipsis?: boolean;
+    autoEllipsis?: boolean;
     sorter?: boolean | TableColumnSortConfig<T>;
     sortable?: {
         sorter?: boolean;
@@ -165,6 +166,16 @@ export interface TableFetchResult<TRecord = Record<string, unknown>> {
     pageNo: number;
     pageSize: number;
     totalSize: number;
+}
+
+export interface TableExportConfig {
+    exportApi: (params: Record<string, unknown>) => Promise<Blob>;
+    buttonKey?: string;
+    buttonText?: string;
+    fileName?: string;
+    disabled?: boolean;
+    buildParams?: (params: Record<string, unknown>) => Record<string, unknown>;
+    beforeExport?: (params: Record<string, unknown>) => boolean | Promise<boolean>;
 }
 
 export type TableRowKey<TRecord = Record<string, unknown>> =

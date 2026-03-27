@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { IconCaretDown, IconCaretUp, IconSearch } from '@arco-design/web-vue/es/icon';
-import dayjs from 'dayjs';
-import { debounce, map, reduce, toPairs } from 'lodash-es';
-import { timeStampToDate } from '@/filters/dateFormat';
+import { IconCaretDown, IconCaretUp, IconSearch } from '@arco-design/web-vue/es/icon'
+import dayjs from 'dayjs'
+import { debounce, map, reduce, toPairs } from 'lodash-es'
+import { timeStampToDate } from '@/filters/dateFormat'
 import type {
     DateRangeSearchOption,
     DateSingleSearchOption,
@@ -12,12 +12,12 @@ import type {
     SearchParams,
     SelectSearchOption,
     TableSearchFormExpose,
-} from '@/interface/TableType';
-import type { PropType } from 'vue';
-import { unref, watch } from 'vue';
+} from '@/interface/TableType'
+import type { PropType } from 'vue'
+import { unref, watch } from 'vue'
 
-const DEBOUNCE_DELAY = 600;
-const SEARCH_STATE_KEY = 'searchVal';
+const DEBOUNCE_DELAY = 600
+const SEARCH_STATE_KEY = 'searchVal'
 
 const props = defineProps({
     searchConf: {
@@ -29,208 +29,216 @@ const props = defineProps({
         type: Boolean,
         default: true,
     },
-});
+})
 
-const { t } = useI18n();
+const { t } = useI18n()
 const emits = defineEmits<{
-    searchCallback: [params: SearchParams];
-}>();
+    searchCallback: [params: SearchParams]
+}>()
 
-const formRef = ref();
-const isSearch = ref(sessionStorage.getItem(SEARCH_STATE_KEY) === 'true');
-const isDefaVal = ref(sessionStorage.getItem(SEARCH_STATE_KEY) === 'true');
+const formRef = ref()
+const isSearch = ref(sessionStorage.getItem(SEARCH_STATE_KEY) === 'true')
+const isDefaVal = ref(sessionStorage.getItem(SEARCH_STATE_KEY) === 'true')
 
 // 在本地克隆一份配置，避免表单交互直接修改调用方传进来的 searchConf。
 const formState = reactive({
     domains: JSON.parse(JSON.stringify(props.searchConf)),
-});
+})
 
 const getOptionList = (
     item: SearchOption,
-): Array<{ value: string | null | number; label: string }> => unref(item.optionsArr ?? item.options ?? []);
+): Array<{ value: string | null | number; label: string }> =>
+    unref(item.optionsArr ?? item.options ?? [])
 
-const getTranslatedOptionList = (item: SearchOption): Array<{ value: string | null | number; label: string }> =>
+const getTranslatedOptionList = (
+    item: SearchOption,
+): Array<{ value: string | null | number; label: string }> =>
     getOptionList(item).map((option) => ({
         ...option,
         label: t(option.label),
-    }));
+    }))
 
 const getFirstModelKey = (): string => {
-    const firstInputOption = props.searchConf.find((item) => item.type === 'input');
+    const firstInputOption = props.searchConf.find((item) => item.type === 'input')
 
-    if (!firstInputOption) return '';
+    if (!firstInputOption) return ''
 
     return typeof firstInputOption.modelKey === 'string'
         ? firstInputOption.modelKey
-        : firstInputOption.modelKey[0] || '';
-};
+        : firstInputOption.modelKey[0] || ''
+}
 
 const searchState = ref<{ searchKey: string; searchVal: string }>({
     searchKey: getFirstModelKey(),
     searchVal: '',
-});
+})
 
 // 将日期控件的值统一整理成接口可直接使用的字符串或时间戳。
-const getNormalizedDateValue = (
-    value: SearchFieldValue,
-    timeFormat?: string,
-): SearchFieldValue => {
+const getNormalizedDateValue = (value: SearchFieldValue, timeFormat?: string): SearchFieldValue => {
     if (value === '' || value === null || typeof value === 'undefined') {
-        return null;
+        return null
     }
 
     if (timeFormat === 'timeStamp') {
-        return String(dayjs(value).valueOf());
+        return String(dayjs(value).valueOf())
     }
 
-    return timeStampToDate(String(value), timeFormat || 'YYYY-MM-DD HH:mm:ss');
-};
+    return timeStampToDate(String(value), timeFormat || 'YYYY-MM-DD HH:mm:ss')
+}
 
 const emitSearch = (): void => {
-    emits('searchCallback', { ...getSearchCal.value });
-};
+    emits('searchCallback', { ...getSearchCal.value })
+}
 
 // 顶部快捷搜索使用防抖，避免每次输入都立即触发请求。
 const onSearch = debounce((): void => {
-    emitSearch();
-}, DEBOUNCE_DELAY);
+    emitSearch()
+}, DEBOUNCE_DELAY)
+
+// 清空输入框时立即触发查询，并取消已有防抖队列，避免重复请求。
+const onInputClear = (): void => {
+    onSearch.cancel()
+    emitSearch()
+}
 
 const onToggleSearch = (): void => {
-    isSearch.value = !isSearch.value;
-};
+    isSearch.value = !isSearch.value
+}
 
 const onChangeCheck = (): void => {
-    isSearch.value = isDefaVal.value;
-    sessionStorage.setItem(SEARCH_STATE_KEY, String(isDefaVal.value));
-};
+    isSearch.value = isDefaVal.value
+    sessionStorage.setItem(SEARCH_STATE_KEY, String(isDefaVal.value))
+}
 
 const onReset = (): void => {
-    formRef.value?.resetFields();
+    formRef.value?.resetFields()
     formState.domains.forEach((item: SearchOption) => {
         if (item.type === 'input') {
-            (item as InputSearchOption).value = '';
-            return;
+            ;(item as InputSearchOption).value = ''
+            return
         }
 
         if (item.type === 'select') {
-            (item as SelectSearchOption).value = null;
-            return;
+            ;(item as SelectSearchOption).value = null
+            return
         }
 
         if (item.type === 'date-single') {
-            (item as DateSingleSearchOption).value = null;
-            return;
+            ;(item as DateSingleSearchOption).value = null
+            return
         }
 
         if (item.type === 'date') {
-            (item as DateRangeSearchOption).modelKey.forEach((key: string) => {
-                (item as DateRangeSearchOption)[key] = '';
-            });
+            ;(item as DateRangeSearchOption).modelKey.forEach((key: string) => {
+                ;(item as DateRangeSearchOption)[key] = ''
+            })
         }
-    });
+    })
 
     searchState.value = {
         searchKey: getFirstModelKey(),
         searchVal: '',
-    };
-    emitSearch();
-};
+    }
+    emitSearch()
+}
 
 // 将顶部快捷搜索和下方高级筛选合并成最终接口查询参数。
 const getSearchCal = computed((): SearchParams => {
     const obj = reduce(
         getFormStateObj.value,
         (acc: SearchParams, item: SearchParams) => {
-            const [key, value] = toPairs(item)[0];
-            acc[key] = value;
-            return acc;
+            const [key, value] = toPairs(item)[0]
+            acc[key] = value
+            return acc
         },
         {} as SearchParams,
-    );
+    )
 
     if (!searchState.value.searchKey) {
-        return obj;
+        return obj
     }
 
     return {
         ...obj,
         [searchState.value.searchKey]: searchState.value.searchVal || null,
-    };
-});
+    }
+})
 
 // 按字段类型把 searchConf 中的每一项转换成最终接口参数结构。
 const getFormStateObj = computed((): SearchParams[] =>
     map(formState.domains, (item: SearchOption): SearchParams => {
         if (item.type === 'input') {
-            const inputItem = item as InputSearchOption;
+            const inputItem = item as InputSearchOption
             return {
                 [inputItem.modelKey]: inputItem.value || null,
-            };
+            }
         }
 
         if (item.type === 'select') {
-            const selectItem = item as SelectSearchOption;
+            const selectItem = item as SelectSearchOption
             return {
                 [selectItem.modelKey]: selectItem.value ?? null,
-            };
+            }
         }
 
         if (item.type === 'date-single') {
-            const dateSingleItem = item as DateSingleSearchOption;
+            const dateSingleItem = item as DateSingleSearchOption
             return {
                 [dateSingleItem.modelKey]: getNormalizedDateValue(
                     dateSingleItem.value ?? null,
                     dateSingleItem.timeFormat,
                 ),
-            };
+            }
         }
 
-        const dateItem = item as DateRangeSearchOption;
+        const dateItem = item as DateRangeSearchOption
         return reduce(
             dateItem.modelKey,
             (acc: SearchParams, childKey: string) => {
-                const value = dateItem[childKey] as SearchFieldValue;
-                acc[childKey] = getNormalizedDateValue(value, dateItem.timeFormat);
-                return acc;
+                const value = dateItem[childKey] as SearchFieldValue
+                acc[childKey] = getNormalizedDateValue(value, dateItem.timeFormat)
+                return acc
             },
             {} as SearchParams,
-        );
+        )
     }),
-);
+)
 
-const getSearchOptions = computed(() => props.searchConf.filter((item) => item.type === 'input'));
-const hasQuickSearch = computed(() => getSearchOptions.value.length > 0);
+const getSearchOptions = computed(() => props.searchConf.filter((item) => item.type === 'input'))
+const hasQuickSearch = computed(() => getSearchOptions.value.length > 0)
 
 // 顶部快捷搜索已经占用的字段，在高级筛选区里隐藏，避免重复渲染。
 const getConfArr = computed(() =>
     formState.domains.filter((item: SearchOption) => {
-        const key = typeof item.modelKey === 'string' ? item.modelKey : item.modelKey[0];
-        return !hasQuickSearch.value || key !== searchState.value.searchKey;
+        const key = typeof item.modelKey === 'string' ? item.modelKey : item.modelKey[0]
+        return !hasQuickSearch.value || key !== searchState.value.searchKey
     }),
-);
+)
 
 const fetchTipsText = computed(
-    () => getSearchOptions.value.find((item) => item.modelKey === searchState.value.searchKey)?.label || '',
-);
+    () =>
+        getSearchOptions.value.find((item) => item.modelKey === searchState.value.searchKey)
+            ?.label || '',
+)
 
 watch(
     () => props.searchConf,
     (value) => {
-        formState.domains = JSON.parse(JSON.stringify(value));
+        formState.domains = JSON.parse(JSON.stringify(value))
 
         if (!getSearchOptions.value.find((item) => item.modelKey === searchState.value.searchKey)) {
-            searchState.value.searchKey = getFirstModelKey();
+            searchState.value.searchKey = getFirstModelKey()
         }
     },
     { deep: true },
-);
+)
 
 // 对外暴露基础表单操作，供 TableSearchWrap 父组件复用当前搜索状态。
 defineExpose<TableSearchFormExpose>({
     reset: onReset,
     search: emitSearch,
     getSearchParams: (): SearchParams => ({ ...getSearchCal.value }),
-});
+})
 </script>
 <template>
     <div class="w-full">
@@ -262,6 +270,7 @@ defineExpose<TableSearchFormExpose>({
                         :placeholder="t('搜索{label}', { label: t(fetchTipsText) })"
                         @pressEnter="emitSearch"
                         @input="onSearch"
+                        @clear="onInputClear"
                     >
                         <template #prefix>
                             <IconSearch class="search-icon" />
@@ -312,16 +321,25 @@ defineExpose<TableSearchFormExpose>({
                                     v-if="item.type === 'input'"
                                     v-model="item.value"
                                     class="w-full"
-                                    :placeholder="t(item.placeholder || '请输入{label}', { label: t(item.label) })"
+                                    :placeholder="
+                                        t(item.placeholder || '请输入{label}', {
+                                            label: t(item.label),
+                                        })
+                                    "
                                     v-bind="item.props"
                                     @pressEnter="emitSearch"
                                     @input="onSearch"
+                                    @clear="onInputClear"
                                 />
                                 <a-select
                                     v-if="item.type === 'select'"
                                     v-model="item.value"
                                     :options="getTranslatedOptionList(item)"
-                                    :placeholder="t(item.placeholder || '请选择{label}', { label: t(item.label) })"
+                                    :placeholder="
+                                        t(item.placeholder || '请选择{label}', {
+                                            label: t(item.label),
+                                        })
+                                    "
                                     v-bind="item.props"
                                     @change="emitSearch"
                                 >
@@ -366,13 +384,18 @@ defineExpose<TableSearchFormExpose>({
                     </a-row>
                 </div>
             </a-form>
-            <div class="flex justify-end border-t border-[var(--app-divider)] bg-transparent px-3 pt-[10px] pb-3">
-                <a-button type="primary" size="small" class="mr-2" @click.stop="emitSearch">
-                    {{ t('搜索') }}
-                </a-button>
-                <a-button size="small" @click.stop="onReset">
-                    {{ t('重置') }}
-                </a-button>
+            <div
+                class="flex flex-wrap items-center justify-end gap-2 border-t border-[var(--app-divider)] bg-transparent px-3 pt-[10px] pb-3"
+            >
+                <div class="flex flex-wrap items-center gap-2">
+                    <slot name="footerActions" />
+                    <a-button type="primary" size="small" @click.stop="emitSearch">
+                        {{ t('搜索') }}
+                    </a-button>
+                    <a-button size="small" @click.stop="onReset">
+                        {{ t('重置') }}
+                    </a-button>
+                </div>
             </div>
         </div>
     </div>

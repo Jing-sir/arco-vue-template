@@ -21,7 +21,7 @@ export interface AccountParams {
     closeAccountCheck?: 1 | 2 | 3 | ''; // 注销审核状态: :1、注销审核中 2、审核通过 3、审核拒绝
     documentType: null | any
 }
-export interface AccountList {
+export interface AccountList extends Record<string, unknown> {
     advancedAuthState: 0 | 1 | 2 | 3; // 认证状态：0=未认证，1=认证中，2=成功，3=失败
     agentName: string; // 代理商名称
     authState: 0 | 1 | 2 | 3; // 认证状态：0=未认证，1=认证中，2=成功，3=失败
@@ -31,7 +31,7 @@ export interface AccountList {
     invitationCode: string; // 邀请码
     name: string; // 名
     surname: string; // 姓
-    state: 1 | 2; // 状态：1=启用,2=禁用
+    state: 1 | 2 | 3; // 状态：1=启用,2=禁用,3=注销
 }
 
 export interface AccountLogParams {

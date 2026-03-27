@@ -96,6 +96,66 @@ const constantRoutes: RouteRecordRaw[] = [
             },
         ],
     },
+    {
+        path: '/user', // 用户管理
+        name: 'user',
+        redirect: 'noRedirect',
+        component: () => import(/* webpackChunkName: "user" */ '@/Main.vue'),
+        meta: { title: '用户管理', icon: 'accountManage', role: 'user', requiresAuth: true },
+        children: [
+            {
+                path: 'userList',
+                name: 'userList',
+                component: () => import(/* webpackChunkName: "userList" */ '@/views/User/UserList/Index.vue'),
+                meta: { title: '用户管理', role: 'userList', requiresAuth: true },
+            },
+            {
+                path: 'labelList',
+                name: 'labelList',
+                component: () => import(/* webpackChunkName: "labelList" */ '@/views/User/LabelList/Index.vue'),
+                meta: { title: '标签管理', role: 'labelList', requiresAuth: true },
+            },
+            {
+                path: 'kolList',
+                name: 'kolList',
+                component: () => import(/* webpackChunkName: "kolList" */ '@/views/User/KOLList/Index.vue'),
+                meta: { title: 'KOL列表', role: 'kolList', requiresAuth: true },
+            },
+            {
+                path: 'user-auth',
+                name: 'userAuthentication',
+                component: () =>
+                    import(/* webpackChunkName: "userAuthentication" */ '@/views/User/UserAuthentication/Index.vue'),
+                meta: { title: '用户信息认证', role: 'userAuthentication', requiresAuth: true },
+            },
+            {
+                path: 'user-whitelist',
+                name: 'userWhiteList',
+                component: () => import(/* webpackChunkName: "userWhiteList" */ '@/views/User/UserWhiteList/Index.vue'),
+                meta: { title: '用户认证等级白名单', role: 'userWhiteList', requiresAuth: true },
+            },
+            {
+                path: 'cancellationApplication',
+                name: 'cancellationApplication',
+                component: () =>
+                    import(/* webpackChunkName: "cancellationApplication" */ '@/views/User/CancellationApplication/Index.vue'),
+                meta: { title: '注销申请', role: 'cancellationApplication', requiresAuth: true },
+            },
+            {
+                path: 'user-auth/:id',
+                name: 'UserAuthDetail',
+                component: () =>
+                    import(/* webpackChunkName: "userAuthenticationDetail" */ '@/views/User/UserAuthentication/AuditDetail/Index.vue'),
+                meta: { title: '审核详情', role: 'userAuthenticationDetail', requiresAuth: true, isShow: true },
+            },
+            {
+                path: 'userLoginLog',
+                name: 'userLoginLog',
+                component: () => import(/* webpackChunkName: "userLoginLog" */ '@/views/User/UserLoginLog/Index.vue'),
+                meta: { title: '用户登录日志', role: 'userLoginLog', requiresAuth: true },
+            },
+        ],
+    },
 ]
 
 export default constantRoutes;

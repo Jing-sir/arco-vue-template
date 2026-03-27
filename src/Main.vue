@@ -150,7 +150,11 @@ watch(
     :deep(.arco-layout-sider-trigger) {
         @apply border-0 text-white/80 transition-colors duration-200;
         height: 48px;
-        background: linear-gradient(180deg, var(--app-sidebar-surface-strong) 0%, var(--app-sidebar-surface) 100%);
+        background: linear-gradient(
+            180deg,
+            var(--app-sidebar-surface-strong) 0%,
+            var(--app-sidebar-surface) 100%
+        );
         backdrop-filter: blur(10px);
     }
 
