@@ -267,17 +267,17 @@ const tableColumns = computed<ColumnType[]>(() => [
                     status: (record) =>
                         Number(record.state) === 1 ? 'danger' : 'normal',
                     text: (record) =>
-                        Number(record.state) === 1 ? '禁用' : '启用',
+                        Number(record.state) === 1 ? t('禁用') : t('启用'),
                     onClick: (record) => handleToggleState(record as UserListRow),
                 },
                 {
                     buttonKey: 'reset',
-                    text: '重置登录密码',
+                    text: t('重置登录密码'),
                     onClick: (record) => handleResetPassword(record as UserListRow),
                 },
                 {
                     buttonKey: 'resetFund',
-                    text: '重置资金密码',
+                    text: t('重置资金密码'),
                     onClick: (record) => handleResetPayPassword(record as UserListRow),
                 },
             ],

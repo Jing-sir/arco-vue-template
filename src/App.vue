@@ -1,31 +1,43 @@
 <script setup lang="ts">
-import enUS from '@arco-design/web-vue/es/locale/lang/en-us';
-import zhCN from '@arco-design/web-vue/es/locale/lang/zh-cn';
-import { getI18nLanguage } from '@/setup/i18n-setup';
-import { computed, onBeforeMount } from 'vue';
-import i18n from './setup/i18n-setup';
-import 'dayjs/locale/zh-cn';
-import dayjs from 'dayjs';
-import 'dayjs/locale/en';
+import enUS from '@arco-design/web-vue/es/locale/lang/en-us'
+import zhCN from '@arco-design/web-vue/es/locale/lang/zh-cn'
+import { getI18nLanguage } from '@/setup/i18n-setup'
+import { computed, onBeforeMount } from 'vue'
+import i18n from './setup/i18n-setup'
+import 'dayjs/locale/zh-cn'
+import dayjs from 'dayjs'
+import 'dayjs/locale/en'
 
-const userStore = user();
-const themeStore = theme();
+/**
+ * App.vue — 应用根节点。
+ *
+ * 职责仅限于：
+ * 1. 挂载 Arco Design 全局配置（locale、size）
+ * 2. 提供全局 <router-view>
+ * 3. 应用级主题（颜色、模式）初始化
+ *
+ * 布局骨架（侧栏 + 头部 + 标签页 + 内容区）不在这里，
+ * 在已登录路由的 component Main.vue 中实现。
+ */
 
-const renderKey = computed(() => `app-key-${i18n.global.locale}-${Math.random()}`);
+const userStore = user()
+const themeStore = theme()
 
-const currLang = computed(() => i18n.global.locale.value === 'zh-CN' ? zhCN : enUS); // antd-vue国际化语言key
+const renderKey = computed(() => `app-key-${i18n.global.locale}-${Math.random()}`)
 
+const currLang = computed(() => (i18n.global.locale.value === 'zh-CN' ? zhCN : enUS)) // arco-vue国际化语言key
+
+// 应用启动时先同步语言环境，再初始化主题外观。
+// 主题外观包含两部分：
+// 1. 品牌主色，驱动项目内的主强调色
+// 2. 主题模式，驱动 light / dark 和 Arco dark token
 onBeforeMount(() => {
-    // 应用启动时先同步语言环境，再初始化主题外观。
-    // 主题外观包含两部分：
-    // 1. 品牌主色，驱动项目内的主强调色
-    // 2. 主题模式，驱动 light / dark 和 Arco dark token
-    dayjs.locale(getI18nLanguage() === 'zh-CN' ? 'zh-cn' : 'en');
-    themeStore.initThemeColor();
-    themeStore.initThemeMode();
-});
+    dayjs.locale(getI18nLanguage() === 'zh-CN' ? 'zh-cn' : 'en')
+    themeStore.initThemeColor()
+    themeStore.initThemeMode()
+})
 
-userStore.getPwdIv();
+userStore.getPwdIv()
 </script>
 
 <template>

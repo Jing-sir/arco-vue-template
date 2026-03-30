@@ -84,7 +84,7 @@ const searchConf = computed<SearchOption[]>(() => [
 const toolbarButtons = computed<TableToolbarButtonConfig[]>(() => [
     {
         buttonKey: 'userWhiteListAdd',
-        text: '新增',
+        text: t('新增'),
         type: 'primary',
         size: 'mini',
         onClick: () => {
@@ -156,13 +156,13 @@ const tableColumns = computed<ColumnType[]>(() => [
                     size: 'mini',
                     loadingField: 'stateLoading',
                     text: (record) =>
-                        Number(record.state) === whitelistStateEnum.Disable ? '启用' : '禁用',
+                        Number(record.state) === whitelistStateEnum.Disable ? t('启用') : t('禁用'),
                     onClick: (record) => handleSetState(record as WhitelistTableRow),
                 },
                 {
                     buttonKey: 'userListEditLabel',
                     size: 'mini',
-                    text: '编辑',
+                    text: t('编辑'),
                     onClick: (record) => {
                         editModalRef.value?.open(record as WhitelistTableRow)
                     },

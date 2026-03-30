@@ -146,7 +146,7 @@ const tableColumns = computed<ColumnType[]>(() => [
                 {
                     buttonKey: 'unbinging',
                     status: 'danger',
-                    text: '解绑',
+                    text: t('解绑'),
                     show: (record) => String(record.closeAccountCheck) === '1',
                     onClick: (record) => handleUnbindEmail(record as CancellationTableRow),
                 },

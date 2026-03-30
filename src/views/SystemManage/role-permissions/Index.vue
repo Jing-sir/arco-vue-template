@@ -12,7 +12,7 @@ const tableWrapRef = ref<TableSearchWrapExpose | null>(null)
 const toolbarButtons = computed<TableToolbarButtonConfig[]>(() => [
     {
         buttonKey: 'add',
-        text: '新增角色',
+        text: t('新增角色'),
         type: 'primary',
         onClick: async () => {
             await router.push('/systemManage/addRolePermissions')
@@ -33,7 +33,7 @@ const tableColumns = computed<ColumnType[]>(() => [
             type: 'actionButtons',
             buttons: [
                 {
-                    text: '查看权限',
+                    text: t('查看权限'),
                     onClick: async (record) => {
                         await router.push(
                             `/systemManage/viewRolePermissions/${String(record.roleId || '')}/1`,
@@ -41,7 +41,7 @@ const tableColumns = computed<ColumnType[]>(() => [
                     },
                 },
                 {
-                    text: '编辑',
+                    text: t('编辑'),
                     onClick: async (record) => {
                         await router.push(
                             `/systemManage/editRolePermissions/${String(record.roleId || '')}`,

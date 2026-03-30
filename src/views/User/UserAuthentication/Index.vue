@@ -165,7 +165,7 @@ const tableColumns = computed<ColumnType[]>(() => [
             buttons: [
                 {
                     buttonKey: 'userAuthenticationDetail',
-                    text: '审核详情',
+                    text: t('审核详情'),
                     onClick: (record) => openAuthDetail(record),
                 },
             ],

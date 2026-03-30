@@ -27,7 +27,7 @@ const resetUserId = ref('')
 const toolbarButtons = computed<TableToolbarButtonConfig[]>(() => [
     {
         buttonKey: 'add',
-        text: '新增管理员',
+        text: t('新增管理员'),
         type: 'primary',
         onClick: async () => {
             await router.push('/systemManage/addAccount')
@@ -35,18 +35,19 @@ const toolbarButtons = computed<TableToolbarButtonConfig[]>(() => [
     },
 ])
 
-const searchConf = ref<SearchOption[]>([
+// 使用 computed 而非 ref，确保语言切换时 label/placeholder 响应式更新。
+const searchConf = computed<SearchOption[]>(() => [
     {
-        label: '管理员账号',
+        label: t('管理员账号'),
         modelKey: 'account',
-        placeholder: '请输入',
+        placeholder: t('请输入'),
         type: 'input',
         value: '',
     },
     {
-        label: '姓名',
+        label: t('姓名'),
         modelKey: 'realName',
-        placeholder: '请输入',
+        placeholder: t('请输入'),
         type: 'input',
         value: '',
     },
@@ -91,17 +92,17 @@ const tableColumns = computed<ColumnType[]>(() => [
             type: 'actionButtons',
             buttons: [
                 {
-                    text: '重置登录密码',
+                    text: t('重置登录密码'),
                     onClick: (record) =>
                         handleCloseDialog(String(record.userId || ''), 'loginPwd'),
                 },
                 {
-                    text: '重置2FA',
+                    text: t('重置2FA'),
                     onClick: (record) =>
                         handleCloseDialog(String(record.userId || ''), '2FA'),
                 },
                 {
-                    text: '编辑',
+                    text: t('编辑'),
                     disabled: (record) => Number(record.state) === 1,
                     onClick: async (record) => {
                         await router.push(`/systemManage/editAccount/${String(record.userId || '')}`)

@@ -57,7 +57,7 @@ const searchConf = computed<SearchOption[]>(() => [
 const toolbarButtons = computed<TableToolbarButtonConfig[]>(() => [
     {
         buttonKey: 'add',
-        text: '新增标签',
+        text: t('新增标签'),
         type: 'primary',
         onClick: () => {
             openCreateModal()
@@ -65,7 +65,7 @@ const toolbarButtons = computed<TableToolbarButtonConfig[]>(() => [
     },
     {
         buttonKey: 'import-tags',
-        text: '导入标签',
+        text: t('导入标签'),
         type: 'primary',
         onClick: () => {
             importModalVisible.value = true
@@ -90,18 +90,18 @@ const tableColumns = computed<ColumnType[]>(() => [
             buttons: [
                 {
                     buttonKey: 'edit',
-                    text: '编辑',
+                    text: t('编辑'),
                     onClick: (record) => openEditModal(record as LabelListRow),
                 },
                 {
                     buttonKey: 'view',
-                    text: '查看',
+                    text: t('查看'),
                     onClick: (record) => openViewModal(record as LabelListRow),
                 },
                 {
                     buttonKey: 'del',
                     status: 'danger',
-                    text: '删除',
+                    text: t('删除'),
                     onClick: (record) => handleDelete(record as LabelListRow),
                 },
             ],

@@ -1,4 +1,18 @@
 <script setup lang="ts">
+/**
+ * Main.vue — 已登录后的主布局容器（Layout Shell）。
+ *
+ * 职责：
+ * 1. 渲染固定侧栏（SideNavigationBar）
+ * 2. 渲染顶部 Header 和标签页（TagsView）
+ * 3. 承载 <router-view>，支持 keep-alive 页面缓存
+ * 4. 监听路由变化触发权限菜单拉取
+ * 5. 维护网络在线状态与布局顶部高度 CSS 变量
+ *
+ * 注意：本文件不是应用根节点，不要与 App.vue 混淆。
+ * App.vue 是全局根（负责 locale/theme），
+ * Main.vue 是"登录后"的布局壳，作为多个一级权限路由的 component 使用。
+ */
 import Header from '@/components/Header.vue'
 import SideNavigationBar from '@/components/SideNavigationBar/index.vue'
 import TagsView from '@/components/TagsView.vue'

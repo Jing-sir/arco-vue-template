@@ -12,23 +12,24 @@ const { t } = useI18n()
 
 const tableWrapRef = ref<TableSearchWrapExpose | null>(null)
 
-const searchConf = ref<SearchOption[]>([
+// 使用 computed 而非 ref，确保语言切换时 label/placeholder 响应式更新。
+const searchConf = computed<SearchOption[]>(() => [
     {
-        label: '操作人',
+        label: t('操作人'),
         modelKey: 'opAccount',
-        placeholder: '请输入',
+        placeholder: t('请输入'),
         type: 'input',
         value: '',
     },
     {
-        label: '请求功能',
+        label: t('请求功能'),
         modelKey: 'reqFunc',
-        placeholder: '请输入',
+        placeholder: t('请输入'),
         type: 'input',
         value: '',
     },
     {
-        label: '操作时间',
+        label: t('操作时间'),
         modelKey: ['startTime', 'endTime'],
         sortField: 'opTime',
         sortType: 'date',
