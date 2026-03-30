@@ -77,6 +77,8 @@ const getActiveTabStyle = (isActive: boolean): Record<string, string> =>
             >
                 <span class="whitespace-nowrap">{{ formatRouteTitle('首页') }}</span>
             </button>
+
+            <!-- 动态页签 -->
             <button
                 v-for="({ name, path, meta, fullPath }, index) in visitedViews"
                 :key="path"
@@ -87,6 +89,7 @@ const getActiveTabStyle = (isActive: boolean): Record<string, string> =>
                 @click="handleGoCacheRoute({ fullPath })"
             >
                 <span class="whitespace-nowrap">{{ formatRouteTitle(meta.title) }}</span>
+                <!-- 关闭按钮：hover 或激活时显示 -->
                 <span
                     class="inline-flex h-4 w-4 items-center justify-center rounded-full text-xs text-[var(--app-tag-close-text)] opacity-0 transition-all hover:text-[var(--app-tag-close-hover-text)]"
                     :class="

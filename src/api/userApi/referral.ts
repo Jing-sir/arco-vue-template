@@ -14,18 +14,21 @@ class ReferralApi extends Api {
         pageSize: number
     }): Promise<
         {
-            list: {
+            list: Array<{
                 cardDepositOrderNo: string
                 createTime: string
                 depositAmount: string
                 depositType: string
+                ditchName?: string
+                ditchId?: string
                 earningAmount: string
                 id: string
                 invitationCode: string
                 inviteAccountId: string
                 parentAccountId: string
+                accountCardNo?: string
                 rebateRatio: string
-            }
+            }>
         } & Pagination
     > {
         return this.api.get('/referral/referralList', { params })
@@ -74,14 +77,14 @@ class ReferralApi extends Api {
         pageSize: number
     }): Promise<
         {
-            list: {
+            list: Array<{
                 accountId: string
                 createTime: string
                 id: string
                 rangeType: string
                 scale: string
                 scaleType: string
-            }
+            }>
         } & Pagination
     > {
         return this.api.get('/referral/referralConfigList', { params })

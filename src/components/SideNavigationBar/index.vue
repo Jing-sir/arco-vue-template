@@ -210,9 +210,7 @@ const filterMenuNodes = (items: SidebarMenuNode[], keyword: string): SidebarMenu
         }
     }
 
-    return items
-        .map((item) => walk(item))
-        .filter((item): item is SidebarMenuNode => item !== null)
+    return items.map((item) => walk(item)).filter((item): item is SidebarMenuNode => item !== null)
 }
 
 const normalizedMenuKeyword = computed(() => menuSearchKeyword.value.trim().toLowerCase())
@@ -273,16 +271,14 @@ watch(
         <!-- 品牌区 -->
         <div
             :class="[
-                'mx-[14px] mb-5 mt-4 grid h-16 overflow-hidden rounded-[10px] bg-[var(--app-sidebar-surface)] transition-all duration-300 ease-out',
+                'mx-3 mb-5 mt-4 grid h-16 items-center overflow-hidden rounded-[10px] bg-[var(--app-sidebar-surface)] transition-all duration-300 ease-out',
                 isSidebar
-                    ? 'grid-cols-[1fr] px-2'
+                    ? 'grid-cols-[1fr] justify-items-center p-2 h-[50px] !mx-0'
                     : 'grid-cols-[40px_minmax(0,1fr)] gap-3 px-3',
             ]"
         >
-            <!-- 品牌图标 -->
-            <div
-                class="relative flex h-10 w-10 shrink-0 items-center justify-center self-center justify-self-center rounded-[10px] bg-[var(--color-primary-6)] before:absolute before:left-[10px] before:top-[10px] before:h-2 before:w-5 before:rounded-full before:bg-white/90 before:content-[''] after:absolute after:left-[10px] after:top-[22px] after:h-2 after:w-3 after:rounded-full after:bg-white/90 after:content-['']"
-            />
+            <!-- 品牌图标：固定尺寸 + object-contain 防止拉伸 -->
+            <img src="@/assets/images/logo.png" alt="" class="h-8 w-8 shrink-0 object-contain" />
 
             <!-- 品牌文案 -->
             <div
@@ -294,20 +290,12 @@ watch(
                 ]"
             >
                 <p class="m-0 text-sm font-bold tracking-[0.01em] text-[var(--app-sidebar-text)]">
-                    {{ t('管理后台') }}
-                </p>
-                <p
-                    class="m-0 mt-[2px] text-[11px] tracking-[0.04em] text-[var(--app-sidebar-text-muted)]"
-                >
-                    {{ t('权限与运营控制台') }}
+                    {{ t('UPay 管理后台') }}
                 </p>
             </div>
         </div>
 
-        <div
-            v-if="!isSidebar"
-            class="mb-3 px-3"
-        >
+        <div v-if="!isSidebar" class="mb-3 px-3">
             <a-input
                 v-model="menuSearchKeyword"
                 allow-clear
@@ -326,7 +314,7 @@ watch(
             v-if="visibleSidebarMenuItems.length"
             :class="[
                 'side-nav__menu flex-1 overflow-y-auto bg-transparent pb-[18px]',
-                isSidebar ? 'px-2' : 'px-3',
+                isSidebar ? 'px-0' : 'px-3',
             ]"
             :selected-keys="selectedKeys"
             :open-keys="searchOpenKeys"
@@ -337,12 +325,13 @@ watch(
             auto-open-selected
             @menu-item-click="handleMenuItemClick"
         >
-            <Item v-for="menuItem of visibleSidebarMenuItems" :key="menuItem.key" :item="menuItem" />
+            <Item
+                v-for="menuItem of visibleSidebarMenuItems"
+                :key="menuItem.key"
+                :item="menuItem"
+            />
         </a-menu>
-        <div
-            v-else-if="!isSidebar"
-            class="flex flex-1 items-start justify-center px-3 pt-8"
-        >
+        <div v-else-if="!isSidebar" class="flex flex-1 items-start justify-center px-3 pt-8">
             <a-empty :description="t('未匹配到权限菜单')" />
         </div>
     </div>
@@ -405,25 +394,36 @@ watch(
 }
 
 :deep(.side-nav__menu.arco-menu-collapsed) {
-    width: 100%;
+    width: 100% !important;
 }
 
 :deep(.side-nav__menu.arco-menu-collapsed .arco-menu-inner) {
-    padding-inline: 0;
+    padding-inline: 4px;
 }
 
-:deep(.side-nav__menu.arco-menu-collapsed .arco-menu-item),
-:deep(.side-nav__menu.arco-menu-collapsed .arco-menu-inline-header) {
-    width: 100%;
-    margin-inline: 0;
-    padding-inline: 0 !important;
-    justify-content: center;
+:deep(.arco-menu-inner) {
+    padding: 0 !important;
 }
 
-:deep(.side-nav__menu.arco-menu-collapsed .arco-menu-item-content),
-:deep(.side-nav__menu.arco-menu-collapsed .arco-menu-inline-header-content) {
+/**
+ * 收起态仅修正图标偏移问题：
+ * - Arco 默认会给 .arco-icon 设置 margin-right: 100%，导致图标看起来贴边
+ * - 同时 title 节点虽然 opacity:0 但仍占位，会继续把图标挤向左侧
+ */
+:deep(.side-nav__menu.arco-menu-collapsed .arco-menu-has-icon > *:not(.arco-menu-icon)) {
+    width: 0 !important;
+    max-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    flex: 0 0 0 !important;
+    overflow: hidden !important;
+    opacity: 0 !important;
+}
+
+:deep(.side-nav__menu.arco-menu-collapsed .arco-menu-item.arco-menu-has-icon),
+:deep(.side-nav__menu.arco-menu-collapsed .arco-menu-inline-header.arco-menu-has-icon),
+:deep(.side-nav__menu.arco-menu-collapsed .arco-menu-pop-header.arco-menu-has-icon) {
     display: flex;
-    width: 100%;
     align-items: center;
     justify-content: center;
 }
@@ -432,12 +432,13 @@ watch(
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    margin-right: 0;
+    margin-right: 0 !important;
 }
 
 :deep(.side-nav__menu.arco-menu-collapsed .arco-menu-item .arco-icon),
 :deep(.side-nav__menu.arco-menu-collapsed .arco-menu-inline-header .arco-icon),
 :deep(.side-nav__menu.arco-menu-collapsed .arco-menu-pop-header .arco-icon) {
     margin-right: 0 !important;
+    transform: translateX(0) !important;
 }
 </style>
