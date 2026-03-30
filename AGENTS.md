@@ -164,14 +164,17 @@ Current files / 当前文件职责:
 - `constantRoutes.ts`:
   - routes that do not require backend permission gating
   - currently includes login and error/no-permission pages
-- `asyncRoutes.ts`:
+- `permissionRoutes.ts`:
   - routes that are filtered by backend menu permissions
-  - currently includes the home route tree
+  - currently includes the home route tree and all protected module routes
+- `asyncRoutes.ts`:
+  - compatibility re-export only; delegates to `permissionRoutes.ts`
+  - do not add new routes here; migrate imports to `permissionRoutes.ts` and delete this file when all references are updated
 
 Route rules / 路由规则:
 
 - Public or unauthenticated routes belong in `constantRoutes.ts`. 公开或免登录路由放 `constantRoutes.ts`。
-- Permission-protected routes belong in `asyncRoutes.ts`. 权限控制路由放 `asyncRoutes.ts`。
+- Permission-protected routes belong in `permissionRoutes.ts`. 权限控制路由放 `permissionRoutes.ts`。
 - Route `meta.title` must store a Chinese i18n key, not final translated text in English. `meta.title` 必须存中文 i18n key。
 - Route `meta.role` must stay aligned with backend permission names. `meta.role` 必须和后端权限名保持一致。
 
@@ -253,6 +256,10 @@ Current files / 当前文件职责:
   - login, user info, pwd IV, menu list, logout, cipher verification
 - `permission.ts`:
   - permission tree and home menu queries
+- `file.ts`:
+  - `/file/*` prefix endpoints: `uploadFile`, `uploadBanner`, `userUploadFile` (with progress + cancel)
+  - migrated from `fetchTest/index.ts` to follow URL-prefix archiving rule
+  - `/file/...` 前缀的文件上传接口；原存放于 `fetchTest/index.ts`，已迁移至此
 - `fetchTest.ts`:
   - business list request example for table pages
   - currently includes redemption list request
