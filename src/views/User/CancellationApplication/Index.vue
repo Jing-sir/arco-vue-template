@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import accountListApi from '@/api/userApi/account/list'
 import TableSearchWrap from '@/components/TableSearchWrap/Index.vue'
-import type { CancellationApplicationItem, CancellationApplicationType } from '@/interface/type'
+import type { CancellationApplicationItem, CancellationApplicationType } from '@/api/userApi/account/list'
 import type {
     ColumnType,
     SearchOption,

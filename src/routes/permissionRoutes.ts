@@ -1,7 +1,15 @@
 import type { RouteRecordRaw } from 'vue-router';
 
-// 需要权限路由
-const constantRoutes: RouteRecordRaw[] = [
+/**
+ * permissionRoutes — 需要后端权限菜单过滤的路由。
+ *
+ * 这些路由在 sideBar.ts 中结合后端返回的菜单列表做动态过滤，
+ * 只有当前用户有权限的路由才会出现在侧边栏中。
+ *
+ * 注意：此文件从原来的 asyncRoutes.ts 重命名而来，语义更清晰。
+ * asyncRoutes.ts 保留为兼容 re-export，待所有引用迁移完成后删除。
+ */
+const permissionRoutes: RouteRecordRaw[] = [
     {
         path: '/',
         name: 'main',
@@ -173,4 +181,4 @@ const constantRoutes: RouteRecordRaw[] = [
     },
 ]
 
-export default constantRoutes;
+export default permissionRoutes;

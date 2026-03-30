@@ -1,6 +1,18 @@
 import type { ComputedRef } from 'vue';
 import type { StatusPreset } from '@/enums/statusText';
 
+/**
+ * 通用分页结果字段。
+ * 多个 api 模块会用到这组字段约束列表接口返回结构。
+ * 从 interface/type.ts 迁移至此处统一维护，避免跨目录散落。
+ */
+export interface Pagination {
+    pageNo: number
+    pageSize: number
+    totalPages: number
+    totalSize: number
+}
+
 export interface TableCellPresetLabelTagsConfig {
     type: 'labelTags';
     labelListField?: string;

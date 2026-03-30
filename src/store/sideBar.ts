@@ -1,4 +1,4 @@
-import asyncRoutes from '../routes/asyncRoutes';
+import permissionRoutes from '../routes/permissionRoutes';
 import type { RouteRecordRaw } from 'vue-router';
 import NProgress from 'nprogress';
 import api from '../api/sys';
@@ -39,7 +39,7 @@ export default defineStore('sideBar', () => {
         const fetchRoleObj = Object.fromEntries(
             roleList.map((item) => [item.component, item.component]),
         )
-        return getAsyRouter(JSON.parse(JSON.stringify(asyncRoutes)), fetchRoleObj);
+        return getAsyRouter(JSON.parse(JSON.stringify(permissionRoutes)), fetchRoleObj);
     };
 
     // 获取sidebar 列表路由

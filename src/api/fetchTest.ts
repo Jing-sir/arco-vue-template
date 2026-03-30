@@ -1,43 +1,55 @@
-import type { TableResultType } from '@/interface/TableType';
-import { Api } from './api';
+/**
+ * @deprecated 此文件是旧版接口入口，已被 fetchTest/index.ts 取代。
+ *
+ * - userLogin    → 对应新版 sysApi.sysUserLogin（src/api/sys.ts）
+ * - redemptionList → 对应新版 fetchTest/index.ts 中的 redemptionList（待迁移至 /ditchFinancePaytrades 模块）
+ *
+ * 如果你的代码仍在 import 此文件，请迁移到上述新位置。
+ * 待确认无调用方后删除此文件。
+ */
 
-class FetchTest extends Api {
-    userLogin(params: { account: string, password: string, code: string }): Promise<any> {
-        return this.api.post('/sys/manage/login', params);
+import { Api } from './api'
+import type { TableResultType } from '@/interface/TableType'
+
+class FetchTestLegacy extends Api {
+    /** @deprecated 请改用 src/api/sys.ts 的 sysUserLogin */
+    userLogin(params: { account: string; password: string; code: string }): Promise<unknown> {
+        return this.api.post('/sys/manage/login', params)
     }
 
-    // paytrades赎回列表
+    /** @deprecated 请改用 fetchTest/index.ts 的 redemptionList */
     redemptionList(params: {
-        accountNo: string; // 账户号
-        currencyCode: string; // 交易币种
-        ditchCardId: string; // 渠道卡id
-        endTime: string; // 结束时间
-        internalCardId: string; // 内部卡id
-        pageNo: number; // 页码
-        pageSize: number; // 页面大小
-        startTime: string; // 开始时间
-        transactionId: string; // (交易关联) ID
-        type: 1 | 2 | null; // 业务类型,可用值:充值赎回 赎回手续费
-        uuid: string; // UUID(渠道交易id)
+        accountNo: string
+        currencyCode: string
+        ditchCardId: string
+        endTime: string
+        internalCardId: string
+        pageNo: number
+        pageSize: number
+        startTime: string
+        transactionId: string
+        type: 1 | 2 | null
+        uuid: string
     }): Promise<{
         list: {
-            accountNo: string; // 账户号
-            amount: string; // 交易金额
-            createTime: string; // 交易发生时间
-            currencyCode: string; // 交易币种
-            ditchCardId: string; // 内部卡id
-            frozenAmount: string; // 冻结金额
-            id: string; // id
-            internalCardId: string; // 渠道卡id
-            newAmount: string; // 变动后余额
-            newFrozenAmount: string; // 操作后冻结金额
-            note: string; // 备注
-            transactionId: string; // (交易关联) ID
-            type: 1 | 2; // 业务类型,可用值:充值赎回 赎回手续费
-            uuid: string; // UUID(渠道交易id)
+            accountNo: string
+            amount: string
+            createTime: string
+            currencyCode: string
+            ditchCardId: string
+            frozenAmount: string
+            id: string
+            internalCardId: string
+            newAmount: string
+            newFrozenAmount: string
+            note: string
+            transactionId: string
+            type: 1 | 2
+            uuid: string
         }[]
     } & TableResultType> {
-        return this.api.post('/ditchFinancePaytrades/redemptionList', params);
+        return this.api.post('/ditchFinancePaytrades/redemptionList', params)
     }
 }
-export default new FetchTest();
+
+export default new FetchTestLegacy()

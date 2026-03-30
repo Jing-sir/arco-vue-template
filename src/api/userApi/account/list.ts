@@ -1,6 +1,41 @@
 import { Api } from '@/api/api'
 import type { AccountList, AccountParams } from '@/api/userApi/types.d'
-import type { CancellationApplicationType, List, Pagination } from '@/interface/type'
+import type { Pagination } from '@/interface/TableType'
+
+/**
+ * 注销申请列表查询参数。
+ * 从 interface/type.ts 迁移至此处，与接口定义放在一起，职责更清晰。
+ * 与 `/account/closeAccountList` 入参保持一致，避免迁移后筛选行为偏差。
+ */
+export interface CancellationApplicationType {
+    pageNo: number
+    pageSize: number
+    accountId?: string
+    userEmail?: string
+    checkCloseState?: 1 | 2 | 3 | ''
+    state?: 1 | 2 | 3 | ''
+    startTime?: string
+    endTime?: string
+}
+
+/**
+ * 注销申请列表项。
+ * 兼容老项目返回结构：核心展示字段显式声明，其它扩展字段继续允许透传。
+ */
+export interface CancellationApplicationItem extends Record<string, unknown> {
+    id: string
+    accountId?: string
+    phone?: string
+    globalCode?: string
+    email?: string
+    createTime?: string
+    cancelTime?: string
+    updateTime?: string
+    closeAccountCheck?: 1 | 2 | 3 | ''
+    state?: 1 | 2 | 3
+}
+
+export type CancellationApplicationList = CancellationApplicationItem[]
 
 class AccountListApi extends Api {
     /** 代理商账户列表 */
@@ -29,7 +64,7 @@ class AccountListApi extends Api {
     }
 
     /** 注销申请列表 */
-    getCancellationApplicationList(params: CancellationApplicationType): Promise<{ list: List } & Pagination> {
+    getCancellationApplicationList(params: CancellationApplicationType): Promise<{ list: CancellationApplicationList } & Pagination> {
         return this.api.post('/account/closeAccountList', params)
     }
 

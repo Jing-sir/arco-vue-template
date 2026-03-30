@@ -1,259 +1,140 @@
-import { Api } from '../api';
-import axios from 'axios';
-import type {
-    OperationLogRow,
-    RolePermissionsType,
-    SystemRoleItem,
-    SystemUserRow,
-    TreeDataType,
-} from '@/interface/SystemManageType';
+import { Api } from '../api'
+import type { TableResultType } from '@/interface/TableType'
 
-export interface Pagination {
-    pageNo: number;
-    pageSize: number;
-    totalPages: number;
-    totalSize: number;
-}
+/**
+ * fetchTest/index.ts — 临时业务接口聚合层。
+ *
+ * 迁移进度（按 URL 前缀）：
+ * - /sys/*    → src/api/sys.ts        ✅ 已迁移，此处保留同名方法 re-export 保持调用方兼容
+ * - /file/*   → src/api/file.ts       ✅ 已迁移，此处保留同名方法 re-export 保持调用方兼容
+ * - /accountCard/*               ⬜ 待迁移至 src/api/accountCard.ts
+ * - /ditchFinancePaytrades/*     ⬜ 待迁移至对应前缀模块
+ * - /ditchAssetsDetails/*        ⬜ 待迁移至对应前缀模块
+ *
+ * 当前页面调用方：
+ *   - views/SystemManage/operation-log/Index.vue         → 使用 fetchOperationLogList
+ *   - views/SystemManage/role-permissions/form/Index.vue → 使用 sysRoleMenuList / sysRoleAddUpdate / sysRoleInfo / sysInfoCheckMenuList
+ *   - views/SystemManage/account-manage/Index.vue        → 使用 sysUserList
+ *   - views/SystemManage/account-manage/form/Index.vue   → 使用 sysUserAddOrUpdate / sysRoleList / sysUserInfo
+ *   - views/SystemManage/account-manage/modal/ResetPasswords.vue → 使用 sysUserResetPassword / setSysUserResetSecret
+ *
+ * 待上述页面的 import 统一切换到 src/api/sys.ts 后，此文件中的 re-export 可删除。
+ */
 
-class FetchTest extends Api {
-    sysUserLogin(params: { account: string; password: string; facode: string }): Promise<{
-        initLogin: boolean; // 是否首次登陆 首次需要强制重新设置登陆密码
-        opPassword: boolean; // 是否设置了操作密码 true false
-        opPasswordSetting: boolean; // 是否有设置操作密码权限 true false
-        passwordError: boolean; // 是否密码错误
-        passwordErrorNum: number; // 密码错误次数 及提示消息
-        token: string; // token
-        googleState: number; // 谷歌验证码状态 0 未开启 1 已开启
-    }> {
-        // 登陆
-        return this.api.post('/sys/login', params);
+// ── /sys/* 接口 re-export（已迁移至 src/api/sys.ts）─────────────────
+import sysApi from '../sys'
+
+// ── /file/* 接口 re-export（已迁移至 src/api/file.ts）───────────────
+import fileApi from '../file'
+
+// ── 剩余待迁移业务接口 ────────────────────────────────────────────────
+class FetchTestResidual extends Api {
+    /** 预计渠道提款金额 /accountCard/predictDitchAmount */
+    sysAccountCardPredictDitchAmount(params: {
+        amount: string
+        cardNo: string
+        ditchCardId: string
+    }) {
+        return this.api.get('/accountCard/predictDitchAmount', { params })
     }
 
-    loginOut(): Promise<any> {
-        // 退出登录
-        return this.api.get('/sys/user/loginOut');
-    }
-
-    userInfo() {
-        interface _Response {
-            account: string; // 账号
-            bindAccount: string; // 绑定账号
-            fullName: string; // 姓名
-            roleId: string; // 角色ID
-            roleName: string; // 角色名称
-            state: 1 | 2; // 状态 1、启用 2、禁用
-            userId: string; // 用户ID
-            isFACode: number;
-        }
-
-        return this.api.get('/sys/user/getInfo').then((result: any) => result as _Response);
-    }
-
-    sysUserList(params: {
-        pageNo: number;
-        pageSize: number;
-        account: string;
-        realName: string; // 姓名
-    }): Promise<{
-        list: SystemUserRow[];
-    } & Pagination> {
-        // 管理员-列表
-        return this.api.get('/sys/user/list', { params });
-    }
-
-    sysUserAddOrUpdate(params: {
-        account?: string; // 账号
-        id?: string | undefined; // ID
-        fullName?: string; // 姓名
-        roleId?: string | undefined; // 角色ID
-        state?: number; // 状态 1启用 2禁用
-    }): Promise<any> {
-        // 添加编辑管理员
-        return this.api.post('/sys/user/addOrUpdate', params);
-    }
-
-    sysUserInfo(params: { userId: string | undefined }): Promise<{
-        account: string; // 账户
-        createTime: string; // 创建时间
-        fullName: string; // 昵称
-        id: string;
-        newsletter: string; // 邮箱
-        remark: string; // 备注
-        roleId: string; // 角色ID
-        roleName: string; // 角色
-        state: number; // 账号状态:1、启用 2、禁用 3、密码错误冻结
-        updateTime: string; // 修改时间
-    }> {
-        // 查看管理员详情
-        return this.api.get('/sys/user/getUserInfo', { params });
-    }
-
-    sysRoleList(): Promise<SystemRoleItem[]> {
-        // 角色列表
-        return this.api.get('/sys/role/list');
-    }
-
-    sysRoleMenuList(): Promise<TreeDataType[]> {
-        // 获取权限菜单数据
-        return this.api.get('/sys/menu/permissions/list');
-    }
-
-    sysUserMenuList(): Promise<TreeDataType[]> {
-        // 获取菜单
-        return this.api.get('/sys/menu/list');
-    }
-
-    sysAccountCardPredictDitchAmount(params: { amount: string; cardNo: string; ditchCardId: string }) {
-        // 预计渠道提款金额
-        return this.api.get('/accountCard/predictDitchAmount', { params }).then((result: any) => result as any);
-    }
-
-    sysRoleAddUpdate(params: {
-        // 添加/编辑角色
-        checkOpPassword: boolean;
-        menuIdList: {
-            checkUserPassword: number; // 1、免密 2、校验
-            menuId: number; // 菜单ID
-        }[];
-        roleId?: string;
-        remark?: string;
-        state?: 1 | 2;
-        roleName: string;
-    }): Promise<any> {
-        return this.api.post('/sys/role/addOrUpdate', params);
-    }
-
-    sysInfoCheckMenuList(params: { roleId: string }): Promise<TreeDataType[]> {
-        // 编辑获取权限角色 及 已勾选权限菜单数据
-        return this.api.get('/sys/menu/permissions/check/list', { params });
-    }
-
-    sysRoleInfo(params: { roleId: string }): Promise<RolePermissionsType> {
-        // 获取角色信息
-        return this.api.get('/sys/role/getInfo', { params });
-    }
-
-    fetchOperationLogList(params: {
-        pageNo: number;
-        pageSize: number;
-        opAccount: string;
-        reqFunc: string;
-        startTime?: string;
-        endTime?: string;
-    }): Promise<{
-        list: OperationLogRow[];
-    } & Pagination> {
-        // 操作日志列表
-        return this.api.get('/sys/operationLog/list', { params });
-    }
-
-    sysUserResetPassword(params: {
-        password?: string;
-        type: 1 | 2 | 3; // 1、重置登陆密码 2、重置审核密码 3、重置锁屏密码
-        userId: string;
-        facode: string;
-    }): Promise<any> {
-        // 重置登陆密码
-        return this.api.post('/sys/user/resetPassword', params);
-    }
-
+    /** 提款 /accountCard/drawings */
     sysAccountCardDrawings(params: {
-        // 提款
-        accountBalance: string;
-        accountId: string;
-        agentId: string;
-        applyTime: string;
-        cardNumber: string;
-        ditchCardId: string;
-        drawingsAmount: string;
-        invalidTime: string;
-        isReturn: 0 | 1;
-        predictDitchAmount: string;
-        surname: string;
-        name: string;
-    }): Promise<any> {
-        return this.api.post('/accountCard/drawings', params);
+        accountBalance: string
+        accountId: string
+        agentId: string
+        applyTime: string
+        cardNumber: string
+        ditchCardId: string
+        drawingsAmount: string
+        invalidTime: string
+        isReturn: 0 | 1
+        predictDitchAmount: string
+        surname: string
+        name: string
+    }): Promise<void> {
+        return this.api.post('/accountCard/drawings', params)
     }
 
-    sysUserUpdatePassword(params: {
-        password?: string;
-        type: 1 | 2 | 3; // 1、重置登陆密码 2、重置审核密码 3、重置锁屏密码
-        oldPassword: string;
-        facode: string;
-    }): Promise<any> {
-        // 修改登陆密码
-        return this.api.post('/sys/user/updatePassword', params);
+    /** paytrades 赎回列表 /ditchFinancePaytrades/redemptionList */
+    redemptionList(params: {
+        accountNo: string
+        currencyCode: string
+        ditchCardId: string
+        endTime: string
+        internalCardId: string
+        pageNo: number
+        pageSize: number
+        startTime: string
+        transactionId: string
+        type: 1 | 2 | null  // 1 充值赎回，2 赎回手续费
+        uuid: string
+    }): Promise<{
+        list: {
+            accountNo: string
+            amount: string
+            createTime: string
+            currencyCode: string
+            ditchCardId: string
+            frozenAmount: string
+            id: string
+            internalCardId: string
+            newAmount: string
+            newFrozenAmount: string
+            note: string
+            transactionId: string
+            type: 1 | 2
+            uuid: string
+        }[]
+    } & TableResultType> {
+        return this.api.post('/ditchFinancePaytrades/redemptionList', params)
     }
 
-    getSetLoginPwdMsgCode() {
-        // 获取设置密码验证码
-        return this.api.get('/sysUser/getSetLoginPwdMsgCode');
-    }
-
-    setLoginPass(params: { code?: string; password: string }): Promise<{ opPassword: boolean; opPasswordSetting: boolean }> {
-        // 设置登录密码
-        return this.api.post('/sys/setLoginPassword', params);
-    }
-
-    setSysUserResetSecret(params: {
-        code?: string;
-        password: string;
-        userId: string;
-        facode: string;
-    }): Promise<{ opPassword: boolean; opPasswordSetting: boolean }> {
-        // 重置秘钥
-        return this.api.post('/sys/user/resetSecret', params);
-    }
-
-    uploadFile(params: { file: any; fileType: any }): Promise<{
-        // fileType 1=卡片
-        fullUrl: string;
-        uri: string;
-    }> {
-        // 上传文件、图片等
-        return this.api.post('/file/upload', params, {
-            headers: { Accept: 'application/json, ext/plain' },
-        });
-    }
-
-    uploadBanner(params: { file: any; fileType: any; platform: 1 | 2 }): Promise<{
-        // fileType 1=卡片
-        fullUrl: string;
-        uri: string;
-    }> {
-        // 上传文件、图片等
-        return this.api.post('/file/uploadBanner', params, {
-            headers: { Accept: 'application/json, ext/plain' },
-        });
-    }
-
-    userUploadFile(
-        params: { file: any; fileType: any },
-        onUploadProgress: any
-    ): {
-        promise: Promise<{
-            // fileType 1=卡片
-            fullUrl: string;
-            uri: string;
-        }>;
-        cancel: () => void;
-    } {
-        const cancelTokenSource = axios.CancelToken.source();
-        // 上传文件、图片等
-        return {
-            promise: this.api.post('/file/upload', params, {
-                headers: { Accept: 'application/json, ext/plain' },
-                onUploadProgress,
-                cancelToken: cancelTokenSource.token,
-            }),
-            cancel: cancelTokenSource.cancel,
-        };
-    }
-
-    fetchTypeList() {
-        // 交易类型下拉
-        return this.api.get('/ditchAssetsDetails/messageTypeList').then((result: any) => result as string[]);
+    /** 交易类型下拉 /ditchAssetsDetails/messageTypeList */
+    fetchTypeList(): Promise<string[]> {
+        return this.api.get('/ditchAssetsDetails/messageTypeList')
     }
 }
 
-export default new FetchTest();
+const residualApi = new FetchTestResidual()
+
+/**
+ * 兼容导出：合并 sysApi、fileApi 和剩余业务方法，
+ * 使现有调用方 `import api from '@/api/fetchTest/index'` 不需要立即改动。
+ */
+export default {
+    // /sys/* re-export
+    sysUserLogin: sysApi.sysUserLogin.bind(sysApi),
+    loginOut: sysApi.loginOut.bind(sysApi),
+    loginInfo: sysApi.loginInfo.bind(sysApi),
+    userInfo: sysApi.loginInfo.bind(sysApi),   // 旧别名兼容
+    sysUserList: sysApi.sysUserList.bind(sysApi),
+    sysUserAddOrUpdate: sysApi.sysUserAddOrUpdate.bind(sysApi),
+    sysUserInfo: sysApi.sysUserInfo.bind(sysApi),
+    sysRoleList: sysApi.sysRoleList.bind(sysApi),
+    sysRoleMenuList: sysApi.sysRoleMenuList.bind(sysApi),
+    sysUserMenuList: sysApi.menuList.bind(sysApi),  // 旧别名兼容
+    menuList: sysApi.menuList.bind(sysApi),
+    sysRoleAddUpdate: sysApi.sysRoleAddUpdate.bind(sysApi),
+    sysInfoCheckMenuList: sysApi.sysInfoCheckMenuList.bind(sysApi),
+    sysRoleInfo: sysApi.sysRoleInfo.bind(sysApi),
+    fetchOperationLogList: sysApi.fetchOperationLogList.bind(sysApi),
+    sysUserResetPassword: sysApi.sysUserResetPassword.bind(sysApi),
+    setSysUserResetSecret: sysApi.setSysUserResetSecret.bind(sysApi),
+    sysUserUpdatePassword: sysApi.sysUserUpdatePassword.bind(sysApi),
+    setLoginPass: sysApi.setLoginPass.bind(sysApi),
+    getSetLoginPwdMsgCode: sysApi.getSetLoginPwdMsgCode.bind(sysApi),
+    checkCipher: sysApi.checkCipher.bind(sysApi),
+    validateGoogle: sysApi.validateGoogle.bind(sysApi),
+
+    // /file/* re-export
+    uploadFile: fileApi.uploadFile.bind(fileApi),
+    uploadBanner: fileApi.uploadBanner.bind(fileApi),
+    userUploadFile: fileApi.userUploadFile.bind(fileApi),
+
+    // 剩余待迁移
+    sysAccountCardPredictDitchAmount: residualApi.sysAccountCardPredictDitchAmount.bind(residualApi),
+    sysAccountCardDrawings: residualApi.sysAccountCardDrawings.bind(residualApi),
+    redemptionList: residualApi.redemptionList.bind(residualApi),
+    fetchTypeList: residualApi.fetchTypeList.bind(residualApi),
+}

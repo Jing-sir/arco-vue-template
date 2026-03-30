@@ -1,9 +1,9 @@
 import constantRoutes from '@/routes/constantRoutes';
+import permissionRoutes from '@/routes/permissionRoutes';
 import type { RouteRecordRaw } from 'vue-router';
-import asyncRoutes from '@/routes/asyncRoutes';
 
 const routes: RouteRecordRaw[] = [
-    ...asyncRoutes,
+    ...permissionRoutes,
     ...constantRoutes,
 ];
 
