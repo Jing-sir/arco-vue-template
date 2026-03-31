@@ -17,6 +17,7 @@ import type {
     TableSearchWrapExpose,
 } from '@/interface/TableType'
 import { buildTableFetchResult } from '@/utils/table'
+import { toTagSelectOptions } from '@/utils/selectOptions'
 import { Message } from '@arco-design/web-vue'
 import CancelEntrustModal from './components/CancelEntrustModal.vue'
 
@@ -523,7 +524,7 @@ const loadFilterOptions = async (): Promise<void> => {
     entrustTypeOptions.value = types
     validPeriodOptions.value = periods
     orderStatusOptions.value = statuses
-    tagOptions.value = tags.map((item) => ({ label: String(item.name), value: String(item.id) }))
+    tagOptions.value = toTagSelectOptions(tags)
 }
 
 /**

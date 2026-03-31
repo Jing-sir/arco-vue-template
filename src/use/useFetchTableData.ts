@@ -100,7 +100,7 @@ export default function useFetchTableData<
     // 这个方法把“重置页码 + 发请求”打包成一个常用动作。
     const resetAndLoad = (params: Params = {} as Params): void => {
         pagination.pageNo = 1;
-        runAsync(params).then();
+        void runAsync(params).catch(() => undefined);
     };
 
     onBeforeMount(async () => {

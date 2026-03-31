@@ -75,6 +75,7 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Settings2FA: typeof import('./components/Settings2FA.vue')['default']
+    SettingsPassword: typeof import('./components/SettingsPassword.vue')['default']
     SideNavigationBar: typeof import('./components/SideNavigationBar/index.vue')['default']
     StatusText: typeof import('./components/TableSearchWrap/components/StatusText.vue')['default']
     TagsView: typeof import('./components/TagsView.vue')['default']

@@ -3,6 +3,7 @@ import flashExchangeApi from '@/api/flashExchange'
 import type { FlashOption, SaveSwapRatePayload, SwapRateItem } from '@/api/flashExchange'
 import tagApi from '@/api/userApi/tag'
 import SwapConfigWarningModal from '@/views/FlashExchange/components/SwapConfigWarningModal.vue'
+import type { LabelTagOption } from '@/utils/labelTags'
 import { fetchTradeOptions } from '@/utils/tradeOptions'
 import type { FieldRule, FormInstance } from '@arco-design/web-vue'
 import { Message } from '@arco-design/web-vue'
@@ -10,12 +11,6 @@ import cloneDeep from 'lodash-es/cloneDeep'
 
 interface TariffConfigModalExpose {
     open: (mode?: 'add' | 'edit' | 'info', source?: SwapRateItem) => void
-}
-
-interface TagOption {
-    id: string
-    name: string
-    color: string
 }
 
 type ModalMode = 'add' | 'edit' | 'info'
@@ -47,7 +42,7 @@ const formState = reactive<SaveSwapRatePayload>(cloneDeep(defaultFormState))
 const infoState = ref<SwapRateItem | null>(null)
 
 const tradeOptions = ref<FlashOption[]>([])
-const tagOptions = ref<TagOption[]>([])
+const tagOptions = ref<LabelTagOption[]>([])
 
 const rangeValueCache = ref<Record<number, string | string[] | undefined>>({
     2: undefined,

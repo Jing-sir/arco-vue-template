@@ -164,7 +164,7 @@ const queryTagDetail = async (id: string): Promise<void> => {
 const onSearchUser = debounce((keyword: string) => {
     const normalizedKeyword = keyword.trim()
     if (!normalizedKeyword) return
-    queryTagUsers(normalizedKeyword).then()
+    void queryTagUsers(normalizedKeyword).catch(() => undefined)
 }, 300)
 
 const close = (): void => {

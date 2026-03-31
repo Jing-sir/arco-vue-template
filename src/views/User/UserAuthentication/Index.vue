@@ -3,6 +3,7 @@ import accountAuthApi from '@/api/userApi/account/auth'
 import TableSearchWrap from '@/components/TableSearchWrap/Index.vue'
 import type { ColumnType, SearchOption, TableFetchResult, TableSearchWrapExpose } from '@/interface/TableType'
 import { buildTableFetchResult } from '@/utils/table'
+import { toCountryAlpha3Options } from '@/utils/selectOptions'
 import { Message } from '@arco-design/web-vue'
 import { userIdTypeMap } from '@/api/userApi/userEnum'
 import useConfirmAction from '@/use/useConfirmAction'
@@ -236,10 +237,7 @@ const bootLevelAndCountry = async (): Promise<void> => {
 
     currentLevel.value = String(levelValue ?? '0')
 
-    countryOptions.value = countryList.map((item) => ({
-        label: String(item.nameZh ?? item.alpha3 ?? '--'),
-        value: String(item.alpha3 ?? ''),
-    }))
+    countryOptions.value = toCountryAlpha3Options(countryList)
 }
 
 onMounted(() => {

@@ -44,14 +44,17 @@ declare global {
   const effectScope: typeof import('vue').effectScope
   const encrypt: typeof import('./utils/aes_128_cbc').encrypt
   const encryptAESGCM: typeof import('./utils/aesGcm').encryptAESGCM
+  const fetchTradeOptions: typeof import('./utils/tradeOptions').fetchTradeOptions
   const formatTaskState: typeof import('./utils/common').formatTaskState
   const formatText: typeof import('./utils/common').formatText
+  const formatTradeOptionLabel: typeof import('./utils/tradeOptions').formatTradeOptionLabel
   const generateIv: typeof import('./utils/aes_128_cbc').generateIv
   const generateKey: typeof import('./utils/aes_128_cbc').generateKey
   const getActivePinia: typeof import('pinia').getActivePinia
   const getCurrentInstance: typeof import('vue').getCurrentInstance
   const getCurrentScope: typeof import('vue').getCurrentScope
   const getCurrentWatcher: typeof import('vue').getCurrentWatcher
+  const getFlashLimitRangeText: typeof import('./utils/rangeText').getFlashLimitRangeText
   const h: typeof import('vue').h
   const handlePaste: typeof import('./utils/common').handlePaste
   const hideMiddleText: typeof import('./utils/common').hideMiddleText
@@ -101,6 +104,8 @@ declare global {
   const ref: typeof import('vue').ref
   const removeEventListener: typeof import('./utils/common').removeEventListener
   const resolveComponent: typeof import('vue').resolveComponent
+  const resolveLabelTagList: typeof import('./utils/labelTags').resolveLabelTagList
+  const sanitizeTradeOptions: typeof import('./utils/tradeOptions').sanitizeTradeOptions
   const setActivePinia: typeof import('pinia').setActivePinia
   const setMapStoreSuffix: typeof import('pinia').setMapStoreSuffix
   const shallowReactive: typeof import('vue').shallowReactive
@@ -160,6 +165,9 @@ declare global {
   // @ts-ignore
   export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, ShallowRef, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
+  // @ts-ignore
+  export type { LabelTagOption, LabelTagItem } from './utils/labelTags'
+  import('./utils/labelTags')
   // @ts-ignore
   export type { ResponseType } from './use/useFetchTableData'
   import('./use/useFetchTableData')

@@ -2,6 +2,7 @@
 import flashExchangeApi from '@/api/flashExchange'
 import type { FlashOption, SaveSwapLimitPayload, SwapLimitItem } from '@/api/flashExchange'
 import tagApi from '@/api/userApi/tag'
+import type { LabelTagOption } from '@/utils/labelTags'
 import { fetchTradeOptions } from '@/utils/tradeOptions'
 import SwapConfigWarningModal from '@/views/FlashExchange/components/SwapConfigWarningModal.vue'
 import type { FieldRule, FormInstance } from '@arco-design/web-vue'
@@ -10,12 +11,6 @@ import cloneDeep from 'lodash-es/cloneDeep'
 
 interface TransactionLimitModalExpose {
     open: (mode?: 'add' | 'edit' | 'info', source?: SwapLimitItem) => void
-}
-
-interface TagOption {
-    id: string
-    name: string
-    color: string
 }
 
 type ModalMode = 'add' | 'edit' | 'info'
@@ -61,7 +56,7 @@ const formState = reactive<LimitFormState>(cloneDeep(defaultFormState))
 const infoState = ref<SwapLimitItem | null>(null)
 
 const tradeOptions = ref<FlashOption[]>([])
-const tagOptions = ref<TagOption[]>([])
+const tagOptions = ref<LabelTagOption[]>([])
 const externalTradeLimit = ref<{ minTrade: string; maxTrade: string } | null>(null)
 
 const rangeValueCache = ref<Record<number, string | string[] | undefined>>({
@@ -180,12 +175,7 @@ const loadTradeOptions = async (): Promise<void> => {
 }
 
 const loadTagOptions = async (): Promise<void> => {
-    const list = await tagApi.getTagList()
-    tagOptions.value = list.map((item) => ({
-        id: String(item.id),
-        name: String(item.name),
-        color: String(item.color),
-    }))
+    tagOptions.value = await tagApi.getTagList()
 }
 
 const loadExternalTradeLimit = async (): Promise<void> => {
@@ -337,7 +327,7 @@ watch(
     () => formState.tradeId,
     () => {
         if (visible.value) {
-            loadExternalTradeLimit().then()
+            void loadExternalTradeLimit()
         }
     },
 )

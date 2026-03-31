@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { IconComputer, IconMenuFold, IconMenuUnfold, IconMoonFill, IconSunFill } from '@arco-design/web-vue/es/icon'
-import BindGoogle from '@/components/Modal/BindGoogle.vue'
+import Settings2FA from '@/components/Settings2FA.vue'
+import SettingsPassword from '@/components/SettingsPassword.vue'
 import type { RouteRecordRaw } from 'vue-router'
 import { Message } from '@arco-design/web-vue'
 import cookies from 'cookies-js'
@@ -23,7 +24,6 @@ const props = withDefaults(
 
 const { t } = useI18n()
 
-const googleRef = ref<InstanceType<typeof BindGoogle> | null>(null)
 const hasRoute = useRoute()
 
 const store = sideBar()
@@ -33,6 +33,9 @@ const { push } = useRouter()
 const storeTagsView = tagsView()
 const { isSidebar } = storeToRefs(store)
 const { themeMode, resolvedThemeMode } = storeToRefs(themeStore)
+const isPasswordModalOpen = ref(false)
+const is2FAModalOpen = ref(false)
+const twoFAModalType = ref<'add' | 'edit'>('edit')
 
 const homeRoute: HeaderRouteRecord = {
     path: '/',
@@ -58,12 +61,26 @@ const isHome = (route?: HeaderRouteRecord) => {
     return String(name).trim().toLocaleLowerCase() === 'main'
 }
 
-const onOpenGoogle = (): void => {
-    googleRef.value?.onShowDialog(true)
+const onOpenPass = (): void => {
+    // 老项目里“修改密码”要求先绑定 2FA，这里保持同样的前置约束。
+    if (userStore.userInfo?.isFACode !== 1) {
+        Message.warning(t('请绑定2FA再操作'))
+        return
+    }
+    isPasswordModalOpen.value = true
 }
 
-const onOpenPass = (): void => {
-    Message.info(t('请前往账号管理修改密码'))
+const onOpen2FA = (): void => {
+    twoFAModalType.value = userStore.userInfo?.isFACode === 1 ? 'edit' : 'add'
+    is2FAModalOpen.value = true
+}
+
+const onClosePasswordModal = (): void => {
+    isPasswordModalOpen.value = false
+}
+
+const onClose2FAModal = (): void => {
+    is2FAModalOpen.value = false
 }
 
 const onLink = (item: HeaderRouteRecord) => {
@@ -79,6 +96,7 @@ const onLink = (item: HeaderRouteRecord) => {
 const onLoginOut = (): void => {
     api.loginOut().then(() => {
         cookies.set('manageToken', '')
+        cookies.set('upayToken', '')
         storeTagsView.clearVisitedView()
         push('/login')
     })
@@ -115,6 +133,7 @@ const currentPageTitle = computed(() => formatRouteTitle(currentPageTitleKey.val
 
 const userDisplayName = computed(() => userStore.userInfo?.fullName || '')
 const userInitial = computed(() => userDisplayName.value.slice(0, 1).toUpperCase() || 'A')
+const twoFALabel = computed(() => (userStore.userInfo?.isFACode === 1 ? t('更换2FA') : t('绑定2FA')))
 /**
  * 在线状态在页面标题区和用户区都可能复用，集中到 computed 可以避免模板里重复分支。
  */
@@ -152,7 +171,17 @@ onMounted(() => {
 
 <template>
     <div class="mt-2 rounded-xl border border-[var(--app-divider)] bg-[var(--app-surface-strong)] px-0.5 py-2">
-        <BindGoogle ref="googleRef" />
+        <SettingsPassword
+            :visible="isPasswordModalOpen"
+            @onClose="onClosePasswordModal"
+            @onSuccess="onClosePasswordModal"
+        />
+        <Settings2FA
+            :visible="is2FAModalOpen"
+            :type="twoFAModalType"
+            @onClose="onClose2FAModal"
+            @onSuccess="onClose2FAModal"
+        />
 
         <div class="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_auto]">
             <div class="flex min-w-0 items-start gap-3">
@@ -269,9 +298,7 @@ onMounted(() => {
                     </div>
                     <template #content>
                         <a-menu>
-                            <a-menu-item key="google" @click="onOpenGoogle">{{
-                                t('修改2FA')
-                            }}</a-menu-item>
+                            <a-menu-item key="google" @click="onOpen2FA">{{ twoFALabel }}</a-menu-item>
                             <a-menu-item key="password" @click="onOpenPass">{{
                                 t('修改密码')
                             }}</a-menu-item>

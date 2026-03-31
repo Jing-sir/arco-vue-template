@@ -11,6 +11,7 @@ import type {
     TableSearchWrapExpose,
 } from '@/interface/TableType'
 import { buildTableFetchResult } from '@/utils/table'
+import { toTagSelectOptions } from '@/utils/selectOptions'
 import { Message } from '@arco-design/web-vue'
 import dayjs from 'dayjs'
 
@@ -250,7 +251,7 @@ const exportConfig = computed<TableExportConfig>(() => ({
 
 const queryTags = async (): Promise<void> => {
     const tagList = await tagApi.getTagList()
-    tagOptions.value = tagList.map((item) => ({ label: item.name, value: item.id }))
+    tagOptions.value = toTagSelectOptions(tagList)
 }
 
 onMounted(() => {

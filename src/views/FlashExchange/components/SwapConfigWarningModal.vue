@@ -8,7 +8,7 @@ interface WarningModalExpose {
 }
 
 interface TagOption {
-    id: string
+    id: string | number
     name: string
     color: string
 }

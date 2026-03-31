@@ -11,6 +11,7 @@ import type {
     TableExportConfig,
     TableSearchWrapExpose,
 } from '@/interface/TableType'
+import { toCountryAlpha3Options, toTagSelectOptions } from '@/utils/selectOptions'
 import { Message } from '@arco-design/web-vue'
 import useConfirmAction from '@/use/useConfirmAction'
 
@@ -405,15 +406,8 @@ const querySearchOptions = async (): Promise<void> => {
         accountAuthApi.getUapyCountryList(),
     ])
 
-    tagOptions.value = tagList.map((item) => ({
-        label: item.name,
-        value: item.id,
-    }))
-
-    countryOptions.value = countryList.map((item) => ({
-        label: String(item.nameZh ?? item.alpha3 ?? '--'),
-        value: String(item.alpha3 ?? ''),
-    }))
+    tagOptions.value = toTagSelectOptions(tagList)
+    countryOptions.value = toCountryAlpha3Options(countryList)
 }
 
 watch(
@@ -428,7 +422,7 @@ watch(
                 ...tableWrapRef.value.getSearchParams(),
                 accountId: nextUid || null,
             })
-            .then()
+            .catch(() => undefined)
     },
 )
 

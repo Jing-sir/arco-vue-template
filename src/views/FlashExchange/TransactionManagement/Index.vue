@@ -11,6 +11,7 @@ import type {
 } from '@/interface/TableType'
 import { buildTableFetchResult } from '@/utils/table'
 import { fetchTradeOptions, formatTradeOptionLabel } from '@/utils/tradeOptions'
+import { Message } from '@arco-design/web-vue'
 import TradePairModal from './modal/TradePairModal.vue'
 
 interface TradePairModalExpose {
@@ -252,12 +253,16 @@ const handleModalSuccess = async (): Promise<void> => {
 }
 
 useOnActivated(() => {
-    loadTradeOptions().then()
+    loadTradeOptions().catch(() => {
+        Message.error(t('加载失败，请稍后重试'))
+    })
     tableWrapRef.value?.reset()
 })
 
 onMounted(() => {
-    loadTradeOptions().then()
+    loadTradeOptions().catch(() => {
+        Message.error(t('加载失败，请稍后重试'))
+    })
 })
 </script>
 
