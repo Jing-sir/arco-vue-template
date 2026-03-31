@@ -195,7 +195,10 @@ const normalizeLogParams = (
     usernameEn: String(params.usernameEn || ''),
     nationalNumber: String(params.nationalNumber || ''),
     deviceId: String(params.deviceId || ''),
-    labelId: String(params.labelId || ''),
+    labelId:
+        params.labelId === '' || params.labelId === null || typeof params.labelId === 'undefined'
+            ? null
+            : String(params.labelId),
 })
 
 const fetchAccountLogList = async (
@@ -236,6 +239,7 @@ const exportConfig = computed<TableExportConfig>(() => ({
         return sysAccountLogApi.exportAccountLog({
             ...normalizedParams,
             platform: normalizedParams.platform ?? undefined,
+            labelId: normalizedParams.labelId ?? undefined,
             pageNo: 1,
             pageSize: 2000,
         })

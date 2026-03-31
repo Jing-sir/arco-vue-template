@@ -19,6 +19,12 @@ export interface TableCellPresetLabelTagsConfig {
     labelNamesField?: string;
     maxVisible?: number;
     emptyText?: string;
+    renderWhen?: {
+        field: string;
+        values: Array<string | number | boolean>;
+    };
+    fallbackTextField?: string;
+    fallbackTooltipField?: string;
 }
 
 export interface TableCellPresetStatusTextConfig {
@@ -28,6 +34,13 @@ export interface TableCellPresetStatusTextConfig {
     valueFields?: string[];
     fallback?: string;
     showRawWhenUnknown?: boolean;
+}
+
+export interface TableCellPresetPercentTextConfig {
+    type: 'percentText';
+    valueField?: string;
+    suffix?: string;
+    fallback?: string;
 }
 
 export type TableButtonType = 'primary' | 'secondary' | 'outline' | 'dashed' | 'text';
@@ -81,6 +94,7 @@ export interface TableCellPresetActionButtonsConfig<TRecord = Record<string, unk
 export type TableCellPresetConfig =
     | TableCellPresetLabelTagsConfig
     | TableCellPresetStatusTextConfig
+    | TableCellPresetPercentTextConfig
     | TableCellPresetActionButtonsConfig;
 
 export interface TableResultType {

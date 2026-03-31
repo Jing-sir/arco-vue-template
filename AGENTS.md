@@ -49,6 +49,19 @@ Keep `AGENTS.md` and `CLAUDE.md` identical.
 - For UI/layout code, comments can be lighter, but should still describe the main structure, regions, or layout purpose so the component hierarchy is easy to understand. 对于 UI / 布局代码，注释可以相对简洁，但仍需说明主要结构、区域划分或布局目的，便于理解组件层级。
 - Do not add meaningless filler comments; comments must help a future maintainer understand the code faster. 不要添加没有信息量的注释；注释必须真正帮助后续维护者更快理解代码。
 
+## 3.3 Search Param Rules / 搜索参数规则
+
+- For search forms powered by `TableSearchWrap`, preserve empty `select` values as `null` when sending requests; do not convert `null`/`undefined` back to `''` unless the backend contract explicitly requires empty-string semantics. 对于 `TableSearchWrap` 驱动的搜索表单，空 `select` 值请求时应保持为 `null`；除非后端契约明确要求空字符串语义，否则不要再把 `null`/`undefined` 转回 `''`。
+- Query normalization should focus on stable pagination defaults (such as `pageNo` / `pageSize`) and avoid over-normalizing select filters. 查询参数归一化应聚焦在稳定分页默认值（如 `pageNo` / `pageSize`），避免对 select 筛选做过度归一化。
+- If a specific endpoint truly requires `''` for empty select filters, document that requirement in-place with a concise backend-contract comment before keeping or adding that conversion. 若某个接口确实要求 select 空值传 `''`，必须在代码就近写明简洁的“后端契约”注释，再保留或新增该转换。
+
+## 3.4 Data Contract Rules / 数据契约规则
+
+- When an API method already has explicit TypeScript request/response types, treat that type as the default contract and avoid speculative payload parsing in page components (for example `list/rows/records/data.list` guessing chains). 当 API 方法已经有明确的 TypeScript 入参/返回类型时，默认以该类型为契约，不要在页面组件里做猜测式 payload 解析（例如 `list/rows/records/data.list` 链式猜测）。
+- Do not copy-paste local compatibility helpers such as `extractRaw*` / `normalize*` across multiple views. If fallback logic is truly needed, extract one shared helper and reuse it. 不要在多个页面复制粘贴 `extractRaw*` / `normalize*` 这类局部兼容函数；若确实需要兜底逻辑，统一抽成一个共享 helper 复用。
+- Compatibility fallbacks are allowed only with a concrete backend inconsistency and must include a short nearby comment describing the endpoint and reason. 兼容兜底只在后端存在明确不一致时允许，并且必须在代码就近写明接口与原因的简短注释。
+- If the same pure function logic appears in two or more modules, extract it into a shared utility/composable instead of duplicating it in views. 当同一份纯函数逻辑在两个及以上模块出现时，必须抽到共享 utility/composable，不要在 views 中重复粘贴。
+
 ## 4. Directory Rules / 目录总规则
 
 - `src/components`: shared UI components only. 放公用 UI 组件，不放整页业务实现。
@@ -92,13 +105,17 @@ Current component responsibilities / 当前组件职责:
 - `TableSearchWrap/components/StatusText.vue`: internal helper for common status text and color mapping in list pages. TableSearchWrap 目录下的内部状态文案与颜色映射组件。
 - `TableSearchWrap/Index.vue` cell preset:
   - supports `column.cellPreset.type = 'labelTags'` to render `LabelTagList`
+  - `labelTags` supports conditional tag-mode rendering via config (`renderWhen` + `fallbackTextField` + `fallbackTooltipField`), so pages like `范围详情` can switch between tags and plain text without custom slots
   - supports `column.cellPreset.type = 'statusText'` to render `StatusText`
+  - supports `column.cellPreset.type = 'percentText'` to render percentage text like `12.5%` without page-level slots
   - supports `column.cellPreset.type = 'actionButtons'` to render row operation buttons via `PermissionButton`
   - accepts a single `exportConfig` object and keeps export behavior unified in the internal export component
   - when `cellPreset` can satisfy rendering needs, prefer config over per-page slots
   - `TableSearchWrap/Index.vue` 的 `cellPreset` 已内建：
     - `labelTags`：统一标签列渲染
+    - `labelTags` 支持通过配置做条件渲染（`renderWhen` + `fallbackTextField` + `fallbackTooltipField`），如 `范围详情` 可按条件在“标签模式”和“普通文本模式”间切换，无需页面自定义 slot
     - `statusText`：统一状态列渲染
+    - `percentText`：统一百分比文本渲染（如 `12.5%`）
     - `actionButtons`：统一操作列按钮渲染
     - 导出统一由单个 `exportConfig` 对象驱动并在组件内部处理
     - 能用 `cellPreset` 表达时，优先配置，不再在页面层重复写 slot
@@ -117,7 +134,8 @@ Component rules / 组件规则:
 - For time/date columns in `TableSearchWrap/Index.vue`, keep plain text rendering only: do not use primary highlight color, do not open popovers, and do not show copy actions. `TableSearchWrap/Index.vue` 中所有时间/日期类型列统一只做普通文本展示：不使用主色高亮、不弹出 popover、不显示复制按钮。
 - For all list-page columns named `用户标签` or `标签` (including fields like `labelList`, `labelNames`, `labelName`), render them through `TableSearchWrap/components/LabelTagList.vue`; do not duplicate inline `a-tag`/tooltip rendering in view files. 所有列表页中名为 `用户标签` 或 `标签` 的列（包括 `labelList`、`labelNames`、`labelName` 等字段）统一使用 `TableSearchWrap/components/LabelTagList.vue` 渲染；不要在 views 里重复手写 `a-tag`/tooltip 标签展示逻辑。
 - For status-like columns in list pages, prefer `TableSearchWrap/components/StatusText.vue` with a shared preset in `src/enums/statusText.ts`; avoid re-implementing per-page status maps and color classes. 列表页中的状态类列优先使用 `TableSearchWrap/components/StatusText.vue` 并在 `src/enums/statusText.ts` 维护共享 preset；不要在页面里重复写状态映射和颜色 class。
-- For `TableSearchWrap` pages, prefer declaring `column.cellPreset` for common cell rendering (`labelTags` / `statusText` / `actionButtons`) before adding page-level slots; keep slots only for genuinely custom content. 对于 `TableSearchWrap` 页面，优先用 `column.cellPreset` 声明通用单元格渲染（`labelTags` / `statusText` / `actionButtons`），只有在确实自定义内容时才新增页面 slot。
+- For percent/rate columns (for example fee ratio and min/max rate), prefer `column.cellPreset.type='percentText'` instead of writing repeated `{{ value }}%` slots in pages. 对于百分比/费率列（如手续费比例、浮动最小值/最大值），优先使用 `column.cellPreset.type='percentText'`，不要在页面里重复写 `{{ value }}%` slot。
+- For `TableSearchWrap` pages, prefer declaring `column.cellPreset` for common cell rendering (`labelTags` / `statusText` / `percentText` / `actionButtons`) before adding page-level slots; keep slots only for genuinely custom content. 对于 `TableSearchWrap` 页面，优先用 `column.cellPreset` 声明通用单元格渲染（`labelTags` / `statusText` / `percentText` / `actionButtons`），只有在确实自定义内容时才新增页面 slot。
 - `src/views/User/UserAuthCell.vue` is legacy-compatible but no longer the default pattern for list columns; new/refactored list columns should prefer `column.cellPreset.type='statusText'`. `src/views/User/UserAuthCell.vue` 保留兼容用途，但不再是列表列默认方案；新建/重构列表列默认改为 `column.cellPreset.type='statusText'`。
 - Reuse `Header.vue`, `SideNavigationBar/index.vue`, and `TagsView.vue` when working on layout-level changes. 处理后台骨架布局时，优先沿用这三个组件。
 - Reuse `GoogleCode.vue` and `Modal/BindGoogle.vue` for 2FA flows instead of creating parallel modal logic. 2FA 流程优先复用这两个组件。
@@ -136,7 +154,7 @@ Current files / 当前文件职责:
   - table paging result type
   - search form config types
   - generic table column shape
-  - table cell preset config types (for `labelTags`, `statusText`, and `actionButtons`)
+  - table cell preset config types (for `labelTags`, `statusText`, `percentText`, and `actionButtons`)
   - action button config types used by operation columns
   - upload file item shape
   - tabs-related types
@@ -213,6 +231,7 @@ Hard i18n rule / 强制国际化规则:
 - This folder stores generic utilities. 这里放通用工具能力。
 - Prefer adding generic, cross-feature code here. 只把跨功能可复用的通用能力放这里。
 - Do not place page-specific business transforms here. 页面私有业务转换不要放这里。
+- Put utility/helper functions in `src/utils` only; do not create or keep scattered utility files under `views/`, `components/`, or other feature folders. 工具函数/辅助函数一律放在 `src/utils`；不要在 `views/`、`components/` 或其它业务目录新增或保留分散的 utils 文件。
 
 Critical file rules / 关键文件规则:
 

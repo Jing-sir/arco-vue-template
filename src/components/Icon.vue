@@ -8,6 +8,7 @@ import {
     IconGift,
     IconLocation,
     IconSettings,
+    IconSwap,
     IconUserGroup,
 } from '@arco-design/web-vue/es/icon';
 import type { Component } from 'vue';
@@ -32,6 +33,7 @@ const builtInIconMap: Record<string, Component> = {
     rolePermissions: IconSettings,
     accountManage: IconUserGroup,
     addressManage: IconLocation,
+    flashExchange: IconSwap,
     invitationRebateManage: IconGift,
     error: IconBook,
 };

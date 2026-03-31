@@ -134,6 +134,60 @@ const permissionRoutes: RouteRecordRaw[] = [
         ],
     },
     {
+        path: '/flashExchange',
+        name: 'flashExchange',
+        redirect: 'noRedirect',
+        component: () => import(/* webpackChunkName: "flashExchange" */ '@/Main.vue'),
+        meta: {
+            title: '闪兑',
+            icon: 'flashExchange',
+            role: 'flashExchange',
+            requiresAuth: true,
+        },
+        children: [
+            {
+                path: 'transactionManagement',
+                name: 'transactionManagement',
+                component: () =>
+                    import(
+                        /* webpackChunkName: "transactionManagement" */ '@/views/FlashExchange/TransactionManagement/Index.vue'
+                    ),
+                meta: { title: '交易对管理', role: 'transactionManagement', requiresAuth: true },
+            },
+            {
+                path: 'orderManagement',
+                name: 'orderManagement',
+                component: () =>
+                    import(
+                        /* webpackChunkName: "orderManagement" */ '@/views/FlashExchange/OrderManagement/Index.vue'
+                    ),
+                meta: { title: '订单管理', role: 'orderManagement', requiresAuth: true },
+            },
+            {
+                path: 'tariffManagement',
+                name: 'tariffManagement',
+                component: () =>
+                    import(
+                        /* webpackChunkName: "tariffManagement" */ '@/views/FlashExchange/TariffManagement/Index.vue'
+                    ),
+                meta: { title: '费率管理', role: 'tariffManagement', requiresAuth: true },
+            },
+            {
+                path: 'transactionLimitManagement',
+                name: 'transactionLimitManagement',
+                component: () =>
+                    import(
+                        /* webpackChunkName: "transactionLimitManagement" */ '@/views/FlashExchange/TransactionLimitManagement/Index.vue'
+                    ),
+                meta: {
+                    title: '交易限额限次管理',
+                    role: 'transactionLimitManagement',
+                    requiresAuth: true,
+                },
+            },
+        ],
+    },
+    {
         path: '/invitation-rebate-manage',
         name: 'userListInvitation',
         redirect: 'noRedirect',

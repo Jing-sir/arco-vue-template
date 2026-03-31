@@ -28,6 +28,9 @@ export type StatusPreset =
     | 'account'
     | 'success'
     | 'boolean'
+    | 'flashShowState'
+    | 'flashSwitchState'
+    | 'flashTradeStatus'
     | 'reviewState'
     | 'reviewResult'
     | 'authState'
@@ -56,6 +59,43 @@ const BOOLEAN_STATUS_MAP: Record<string, StatusMeta> = {
     false: { label: '否', tone: 'muted' },
     '1': { label: '是', tone: 'danger' },
     '0': { label: '否', tone: 'muted' },
+    '2': { label: '否', tone: 'muted' },
+}
+
+/**
+ * 闪兑列表：展示开关（是否在行情区/交易区显示）
+ * 兼容后端 1/2 与 1/0 两种返回结构。
+ */
+const FLASH_SHOW_STATE_MAP: Record<string, StatusMeta> = {
+    '1': { label: '是', tone: 'success' },
+    '2': { label: '否', tone: 'danger' },
+    '0': { label: '否', tone: 'danger' },
+    是: { label: '是', tone: 'success' },
+    否: { label: '否', tone: 'danger' },
+}
+
+/**
+ * 闪兑列表：开关状态（开启/关闭）
+ * 兼容后端 1/2 与 1/0 两种返回结构。
+ */
+const FLASH_SWITCH_STATE_MAP: Record<string, StatusMeta> = {
+    '1': { label: '开启', tone: 'success' },
+    '2': { label: '关闭', tone: 'danger' },
+    '0': { label: '关闭', tone: 'danger' },
+    开启: { label: '开启', tone: 'success' },
+    关闭: { label: '关闭', tone: 'danger' },
+}
+
+/**
+ * 闪兑列表：交易对状态（上架/下架）
+ * 兼容后端 1/2 与 1/0 两种返回结构。
+ */
+const FLASH_TRADE_STATUS_MAP: Record<string, StatusMeta> = {
+    '1': { label: '上架', tone: 'success' },
+    '2': { label: '下架', tone: 'danger' },
+    '0': { label: '下架', tone: 'danger' },
+    上架: { label: '上架', tone: 'success' },
+    下架: { label: '下架', tone: 'danger' },
 }
 
 const REVIEW_STATE_MAP: Record<string, StatusMeta> = {
@@ -174,6 +214,9 @@ export const STATUS_PRESET_MAP: Record<StatusPreset, Record<string, StatusMeta>>
     account: ACCOUNT_STATUS_MAP,
     success: SUCCESS_STATUS_MAP,
     boolean: BOOLEAN_STATUS_MAP,
+    flashShowState: FLASH_SHOW_STATE_MAP,
+    flashSwitchState: FLASH_SWITCH_STATE_MAP,
+    flashTradeStatus: FLASH_TRADE_STATUS_MAP,
     reviewState: REVIEW_STATE_MAP,
     reviewResult: REVIEW_RESULT_MAP,
     authState: AUTH_STATE_MAP,

@@ -146,11 +146,16 @@ const {
  */
 const {
     isLabelTagsCellPreset,
+    isPercentTextCellPreset,
     isStatusTextCellPreset,
     isActionButtonsCellPreset,
     pickPresetStatusValue,
+    pickPresetPercentText,
     pickPresetLabelList,
     pickPresetLabelNames,
+    shouldRenderPresetLabelTags,
+    pickPresetLabelFallbackText,
+    pickPresetLabelFallbackTooltip,
     isActionButtonVisible,
     isActionButtonDisabled,
     getActionButtonLoading,
@@ -443,7 +448,13 @@ defineExpose<TableSearchWrapExpose>({
                         />
                         <template v-else-if="isCellPresetSlot(column.slotName)">
                             <LabelTagList
-                                v-if="isLabelTagsCellPreset(column.cellPreset)"
+                                v-if="
+                                    isLabelTagsCellPreset(column.cellPreset) &&
+                                    shouldRenderPresetLabelTags(
+                                        slotProps.record,
+                                        column.cellPreset,
+                                    )
+                                "
                                 :label-list="
                                     pickPresetLabelList(slotProps.record, column, column.cellPreset)
                                 "
@@ -453,6 +464,26 @@ defineExpose<TableSearchWrapExpose>({
                                 :max-visible="column.cellPreset.maxVisible"
                                 :empty-text="column.cellPreset.emptyText"
                             />
+                            <a-tooltip
+                                v-else-if="isLabelTagsCellPreset(column.cellPreset)"
+                                :content="
+                                    pickPresetLabelFallbackTooltip(
+                                        slotProps.record,
+                                        column,
+                                        column.cellPreset,
+                                    ) || column.cellPreset.emptyText || '--'
+                                "
+                            >
+                                <span class="block max-w-full truncate">
+                                    {{
+                                        pickPresetLabelFallbackText(
+                                            slotProps.record,
+                                            column,
+                                            column.cellPreset,
+                                        ) || column.cellPreset.emptyText || '--'
+                                    }}
+                                </span>
+                            </a-tooltip>
                             <StatusText
                                 v-else-if="isStatusTextCellPreset(column.cellPreset)"
                                 :value="
@@ -466,6 +497,18 @@ defineExpose<TableSearchWrapExpose>({
                                 :fallback="column.cellPreset.fallback"
                                 :show-raw-when-unknown="column.cellPreset.showRawWhenUnknown"
                             />
+                            <span
+                                v-else-if="isPercentTextCellPreset(column.cellPreset)"
+                                class="block max-w-full truncate"
+                            >
+                                {{
+                                    pickPresetPercentText(
+                                        slotProps.record,
+                                        column,
+                                        column.cellPreset,
+                                    )
+                                }}
+                            </span>
                             <div
                                 v-else-if="isActionButtonsCellPreset(column.cellPreset)"
                                 :class="

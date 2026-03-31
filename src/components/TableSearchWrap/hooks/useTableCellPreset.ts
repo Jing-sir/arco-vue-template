@@ -7,6 +7,7 @@ import type {
     TableCellPresetActionButtonsConfig,
     TableCellPresetConfig,
     TableCellPresetLabelTagsConfig,
+    TableCellPresetPercentTextConfig,
     TableCellPresetStatusTextConfig,
 } from '@/interface/TableType'
 
@@ -36,6 +37,10 @@ export default function useTableCellPreset({ t }: UseTableCellPresetOptions) {
     const isStatusTextCellPreset = (
         preset: TableCellPresetConfig | undefined,
     ): preset is TableCellPresetStatusTextConfig => Boolean(preset && preset.type === 'statusText')
+
+    const isPercentTextCellPreset = (
+        preset: TableCellPresetConfig | undefined,
+    ): preset is TableCellPresetPercentTextConfig => Boolean(preset && preset.type === 'percentText')
 
     const isActionButtonsCellPreset = (
         preset: TableCellPresetConfig | undefined,
@@ -100,6 +105,85 @@ export default function useTableCellPreset({ t }: UseTableCellPresetOptions) {
         const labelNames = get(record, preset.labelNamesField)
         if (labelNames === null || typeof labelNames === 'undefined') return undefined
         return String(labelNames)
+    }
+
+    /**
+     * labelTags 条件渲染：
+     * - 未配置 renderWhen 时默认按标签模式渲染
+     * - 配置后仅在命中指定字段值时渲染标签，否则回退普通文本
+     */
+    const shouldRenderPresetLabelTags = (
+        record: Record<string, unknown>,
+        preset: TableCellPresetLabelTagsConfig,
+    ): boolean => {
+        if (!preset.renderWhen) return true
+
+        const sourceValue = get(record, preset.renderWhen.field)
+        if (sourceValue === null || typeof sourceValue === 'undefined') return false
+
+        const normalizedSourceValue = String(sourceValue)
+        return preset.renderWhen.values.some(
+            (value) => String(value) === normalizedSourceValue,
+        )
+    }
+
+    const pickPresetLabelFallbackText = (
+        record: Record<string, unknown>,
+        column: ColumnType,
+        preset: TableCellPresetLabelTagsConfig,
+    ): string => {
+        const targetField =
+            preset.fallbackTextField ||
+            preset.labelNamesField ||
+            String(column.dataIndex || '')
+
+        if (!targetField) return ''
+        const text = get(record, targetField)
+        if (text === null || typeof text === 'undefined' || text === '') return ''
+        return String(text)
+    }
+
+    const pickPresetLabelFallbackTooltip = (
+        record: Record<string, unknown>,
+        column: ColumnType,
+        preset: TableCellPresetLabelTagsConfig,
+    ): string => {
+        const targetField =
+            preset.fallbackTooltipField ||
+            preset.fallbackTextField ||
+            preset.labelNamesField ||
+            String(column.dataIndex || '')
+
+        if (!targetField) return ''
+        const text = get(record, targetField)
+        if (text === null || typeof text === 'undefined' || text === '') return ''
+        return String(text)
+    }
+
+    /**
+     * 百分比文本渲染：
+     * - 默认从当前列 dataIndex 读取值
+     * - 空值显示 fallback（默认 --）
+     * - 非空值拼接后缀（默认 %）
+     */
+    const pickPresetPercentText = (
+        record: Record<string, unknown>,
+        column: ColumnType,
+        preset: TableCellPresetPercentTextConfig,
+    ): string => {
+        const targetField = preset.valueField || String(column.dataIndex || '')
+        if (!targetField) return preset.fallback || '--'
+
+        const rawValue = get(record, targetField)
+        if (rawValue === null || typeof rawValue === 'undefined' || rawValue === '') {
+            return preset.fallback || '--'
+        }
+
+        const suffix = preset.suffix || '%'
+        const normalizedText = String(rawValue)
+        if (!suffix) return normalizedText
+        if (normalizedText.trim().endsWith(suffix)) return normalizedText
+        return `${normalizedText}${suffix}`
     }
 
     /**
@@ -193,17 +277,22 @@ export default function useTableCellPreset({ t }: UseTableCellPresetOptions) {
     }
 
     return {
-        isLabelTagsCellPreset,
-        isStatusTextCellPreset,
-        isActionButtonsCellPreset,
-        pickPresetStatusValue,
+        getActionButtonText,
         pickPresetLabelList,
         pickPresetLabelNames,
+        pickPresetPercentText,
+        getActionButtonStatus,
+        pickPresetStatusValue,
         isActionButtonVisible,
+        isLabelTagsCellPreset,
+        isPercentTextCellPreset,
+        isStatusTextCellPreset,
         isActionButtonDisabled,
         getActionButtonLoading,
-        getActionButtonStatus,
-        getActionButtonText,
         handleActionButtonClick,
+        isActionButtonsCellPreset,
+        shouldRenderPresetLabelTags,
+        pickPresetLabelFallbackText,
+        pickPresetLabelFallbackTooltip,
     }
 }

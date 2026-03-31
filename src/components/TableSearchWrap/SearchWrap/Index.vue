@@ -39,11 +39,6 @@ const formRef = ref()
 const isSearch = ref(sessionStorage.getItem(SEARCH_STATE_KEY) === 'true')
 const isDefaVal = ref(sessionStorage.getItem(SEARCH_STATE_KEY) === 'true')
 
-// 在本地克隆一份配置，避免表单交互直接修改调用方传进来的 searchConf。
-const formState = reactive({
-    domains: JSON.parse(JSON.stringify(props.searchConf)),
-})
-
 const getOptionList = (
     item: SearchOption,
 ): Array<{ value: string | null | number; label: string }> =>
@@ -51,6 +46,49 @@ const getOptionList = (
 
 const isEmptySelectValue = (value: unknown): boolean =>
     value === '' || value === null || typeof value === 'undefined'
+
+/**
+ * Select 组件绑定值归一化：
+ * - 空值 => ''（确保界面能命中“全部”选项并展示文案）
+ * - 非空值 => 原始值
+ */
+const normalizeSelectModelValue = (value: unknown): string | number =>
+    isEmptySelectValue(value) ? '' : (value as string | number)
+
+/**
+ * Select 查询值归一化：
+ * - 空值 => null（接口语义仍保持“全部”）
+ * - 非空值 => 原始值
+ */
+const normalizeSelectQueryValue = (value: unknown): string | number | null =>
+    isEmptySelectValue(value) ? null : (value as string | number)
+
+/**
+ * searchConf 本地副本标准化：
+ * 1. 深拷贝，避免直接改父组件传入配置
+ * 2. select 默认值统一收敛到 ''，保证默认可见“全部”
+ */
+const normalizeSearchConf = (searchConf: SearchOption[]): SearchOption[] => {
+    const clonedDomains = JSON.parse(JSON.stringify(searchConf)) as SearchOption[]
+
+    clonedDomains.forEach((item) => {
+        if (item.type === 'select') {
+            const selectItem = item as SelectSearchOption
+            selectItem.value = normalizeSelectModelValue(selectItem.value)
+        }
+    })
+
+    return clonedDomains
+}
+
+interface SearchFormState {
+    domains: SearchOption[]
+}
+
+// 在本地克隆一份配置，避免表单交互直接修改调用方传进来的 searchConf。
+const formState = reactive<SearchFormState>({
+    domains: normalizeSearchConf(props.searchConf),
+})
 
 /**
  * Select 选项统一补齐“全部”：
@@ -63,10 +101,14 @@ const getSelectOptionList = (
     const optionList = getOptionList(item)
 
     if (optionList.some((option) => isEmptySelectValue(option.value))) {
-        return optionList
+        return optionList.map((option) =>
+            isEmptySelectValue(option.value)
+                ? { ...option, value: '' }
+                : option,
+        )
     }
 
-    return [{ label: '全部', value: null }, ...optionList]
+    return [{ label: t('全部'), value: '' }, ...optionList]
 }
 
 /**
@@ -140,7 +182,7 @@ const onReset = (): void => {
         }
 
         if (item.type === 'select') {
-            ;(item as SelectSearchOption).value = null
+            ;(item as SelectSearchOption).value = ''
             return
         }
 
@@ -160,6 +202,20 @@ const onReset = (): void => {
         searchKey: getFirstModelKey(),
         searchVal: '',
     }
+    emitSearch()
+}
+
+/**
+ * Select 值变化时，空值统一回写为 ''，保证“全部”文案可见。
+ */
+const onSelectChange = (item: SearchOption, value: unknown): void => {
+    if (item.type !== 'select') {
+        emitSearch()
+        return
+    }
+
+    const selectItem = item as SelectSearchOption
+    selectItem.value = normalizeSelectModelValue(value)
     emitSearch()
 }
 
@@ -198,7 +254,7 @@ const getFormStateObj = computed((): SearchParams[] =>
         if (item.type === 'select') {
             const selectItem = item as SelectSearchOption
             return {
-                [selectItem.modelKey]: selectItem.value ?? null,
+                [selectItem.modelKey]: normalizeSelectQueryValue(selectItem.value),
             }
         }
 
@@ -245,7 +301,7 @@ const fetchTipsText = computed(
 watch(
     () => props.searchConf,
     (value) => {
-        formState.domains = JSON.parse(JSON.stringify(value))
+        formState.domains = normalizeSearchConf(value) as typeof formState.domains
 
         if (!getSearchOptions.value.find((item) => item.modelKey === searchState.value.searchKey)) {
             searchState.value.searchKey = getFirstModelKey()
@@ -356,13 +412,14 @@ defineExpose<TableSearchFormExpose>({
                                     v-if="item.type === 'select'"
                                     v-model="item.value"
                                     :options="getDisplayOptionList(item)"
+                                    allow-search
                                     :placeholder="
                                         t(item.placeholder || '请选择{label}', {
                                             label: item.label,
                                         })
                                     "
                                     v-bind="item.props"
-                                    @change="emitSearch"
+                                    @change="(value: unknown) => onSelectChange(item, value)"
                                 />
                                 <a-date-picker
                                     v-if="item.type === 'date-single'"

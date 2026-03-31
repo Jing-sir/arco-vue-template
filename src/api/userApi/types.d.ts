@@ -52,7 +52,7 @@ export interface AccountLogParams {
     usernameEn: string;
     nationalNumber: string;
     deviceId: string;
-    labelId: string;
+    labelId: string | null;
 }
 export interface AccountLogData {
     accountId: string;

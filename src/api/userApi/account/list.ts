@@ -12,8 +12,8 @@ export interface CancellationApplicationType {
     pageSize: number
     accountId?: string
     userEmail?: string
-    checkCloseState?: 1 | 2 | 3 | ''
-    state?: 1 | 2 | 3 | ''
+    checkCloseState?: 1 | 2 | 3 | null
+    state?: 1 | 2 | 3 | null
     startTime?: string
     endTime?: string
 }

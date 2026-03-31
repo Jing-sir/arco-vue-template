@@ -13,7 +13,7 @@ import { Message } from '@arco-design/web-vue'
 import useConfirmAction from '@/use/useConfirmAction'
 
 type CancellationTableRow = CancellationApplicationItem
-type CancellationStatus = 1 | 2 | 3 | ''
+type CancellationStatus = 1 | 2 | 3 | null
 
 const { t } = useI18n()
 const { confirmAndRun } = useConfirmAction()
@@ -28,24 +28,24 @@ const closeAccountCheckOptions = computed(() => [
 
 /**
  * 统一把状态筛选值收敛到后端可识别的取值：
- * - 空条件：''
+ * - 空条件：null
  * - 有效状态：1 / 2 / 3
  * - 其它异常输入：兜底回空条件
  */
 const normalizeStatusValue = (value: unknown): CancellationStatus => {
-    if (value === '' || value === null || typeof value === 'undefined') return ''
+    if (value === '' || value === null || typeof value === 'undefined') return null
     const normalized = Number(value)
     if (normalized === 1 || normalized === 2 || normalized === 3) {
         return normalized
     }
-    return ''
+    return null
 }
 
 /**
  * 兼容老项目查询契约：
  * 1. 所有筛选字段都显式传给后端
- * 2. 空值统一用空字符串，而不是 null / undefined
- * 3. 保留 `state` 字段默认空值，避免后端分支与老项目不一致
+ * 2. 文本输入字段保持空字符串口径
+ * 3. select 状态字段空值保持 null，避免把“全部”二次转成 ''
  */
 const normalizeCancellationParams = (
     params: Record<string, unknown> = {},

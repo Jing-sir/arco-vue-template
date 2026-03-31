@@ -91,7 +91,15 @@ const tableColumns = computed<ColumnType[]>(() => [
     { title: t('渠道名称'), dataIndex: 'ditchName', width: 140, sorter: false },
     { title: t('渠道ID'), dataIndex: 'ditchId', width: 220, sorter: false },
     { title: t('返佣/减免数量'), dataIndex: 'earningAmount', width: 150, sorter: false },
-    { title: t('返佣比例'), dataIndex: 'rebateRatio', slotName: 'rebateRatio', width: 120, sorter: false },
+    {
+        title: t('返佣比例'),
+        dataIndex: 'rebateRatio',
+        width: 120,
+        sorter: false,
+        cellPreset: {
+            type: 'percentText',
+        },
+    },
     { title: t('上级邀请码'), dataIndex: 'invitationCode', width: 180, sorter: false },
     { title: t('UID'), dataIndex: 'inviteAccountId', width: 220, sorter: false },
     { title: t('UID卡号'), dataIndex: 'accountCardNo', width: 180, sorter: false },
@@ -100,15 +108,20 @@ const tableColumns = computed<ColumnType[]>(() => [
 ])
 
 /**
- * 老接口要求 pageNo/pageSize 必传，且字符串筛选字段保持空串语义。
- * 这里统一做参数归一，避免 null/undefined 造成后端分支偏差。
+ * 列表查询参数统一归一：
+ * 1. pageNo/pageSize 必传且保持数字
+ * 2. 输入型筛选字段保持字符串口径
+ * 3. select 空值保持 null（后端“全部”语义）
  */
 const normalizeReferralQueryParams = (params: Record<string, unknown> = {}) => ({
     inviteAccountId: String(params.inviteAccountId || ''),
     parentAccountId: String(params.parentAccountId || ''),
     invitationCode: String(params.invitationCode || ''),
     cardDepositOrderNo: String(params.cardDepositOrderNo || ''),
-    depositType: params.depositType ?? '',
+    depositType:
+        params.depositType === '' || params.depositType === null || typeof params.depositType === 'undefined'
+            ? null
+            : params.depositType,
     pageNo: Number(params.pageNo || 1),
     pageSize: Number(params.pageSize || 20),
 })
@@ -141,8 +154,6 @@ const formatDepositType = (record: InvitationRebateRow): string => {
     return getDepositTypeLabel(rawType)
 }
 
-const formatRebateRatio = (record: InvitationRebateRow): string => `${String(record.rebateRatio ?? '')}%`
-
 /**
  * 兼容 keep-alive 的历史行为：
  * - hash 为 #no-refresh 时不刷新
@@ -165,10 +176,6 @@ useOnActivated(() => {
     >
         <template #depositType="{ record }">
             {{ formatDepositType(record as InvitationRebateRow) }}
-        </template>
-
-        <template #rebateRatio="{ record }">
-            {{ formatRebateRatio(record as InvitationRebateRow) }}
         </template>
     </TableSearchWrap>
 </template>
