@@ -1,6 +1,6 @@
 // 内部协议
 // kapok://${userName}@${userId}/${action}?${queryParameters}#${describe}
-const _protocol:string = 'kapok';
+const DEFAULT_PROTOCOL = 'kapok';
 class Protocol {
     uri: string;
 
@@ -27,9 +27,12 @@ class Protocol {
         return `${this.uri} is running`;
     }
 }
-const snake = new Protocol('lily');
 
-console.log(snake.run());
+/**
+ * 默认协议实例（无副作用）。
+ * 保持模块在 import 时只暴露能力，不执行调试输出。
+ */
+const protocol = new Protocol(DEFAULT_PROTOCOL);
 
-const http = new Protocol('ss');
-export default http;
+export { Protocol };
+export default protocol;

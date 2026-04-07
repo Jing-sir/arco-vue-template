@@ -93,13 +93,30 @@ const onLink = (item: HeaderRouteRecord) => {
     push(path)
 }
 
-const onLoginOut = (): void => {
-    api.loginOut().then(() => {
-        cookies.set('manageToken', '')
-        cookies.set('upayToken', '')
-        storeTagsView.clearVisitedView()
-        push('/login')
-    })
+/**
+ * 清理前端本地登录态（token + 标签页缓存）。
+ * 这个步骤必须和后端接口结果解耦，避免“后端登出失败时用户仍卡在已登录状态”。
+ */
+const clearLocalSession = (): void => {
+    cookies.set('manageToken', '')
+    cookies.set('upayToken', '')
+    storeTagsView.clearVisitedView()
+}
+
+/**
+ * 登出流程策略：
+ * 1. 先尝试通知后端销毁会话
+ * 2. 无论接口成功或失败，都执行本地会话清理并跳转登录页
+ *
+ * 这样可以保证前端退出行为稳定，避免网络抖动导致“点击退出无反应”。
+ */
+const onLoginOut = async (): Promise<void> => {
+    try {
+        await api.loginOut()
+    } finally {
+        clearLocalSession()
+        await push('/login')
+    }
 }
 
 const formatRouteTitle = (title?: string | (() => string)): string =>

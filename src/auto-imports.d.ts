@@ -18,6 +18,7 @@ declare global {
   const NUMBER_MIN: typeof import('./utils/constant').NUMBER_MIN
   const PASSWORD: typeof import('./utils/constant').PASSWORD
   const PagingDefaultConf: typeof import('./utils/constant').PagingDefaultConf
+  const Protocol: typeof import('./utils/protocol').Protocol
   const SIX_NUMBER: typeof import('./utils/constant').SIX_NUMBER
   const THOUSANDS_REGULAR: typeof import('./utils/constant').THOUSANDS_REGULAR
   const VERSION_NUMBER_RULES: typeof import('./utils/constant').VERSION_NUMBER_RULES
@@ -119,9 +120,11 @@ declare global {
   const theme: typeof import('./store/theme').default
   const throttleFunc: typeof import('./utils/common').throttleFunc
   const toCapital: typeof import('./utils/common').toCapital
+  const toCountryAlpha3Options: typeof import('./utils/selectOptions').toCountryAlpha3Options
   const toRaw: typeof import('vue').toRaw
   const toRef: typeof import('vue').toRef
   const toRefs: typeof import('vue').toRefs
+  const toTagSelectOptions: typeof import('./utils/selectOptions').toTagSelectOptions
   const toValue: typeof import('vue').toValue
   const transMapBySelectOptions: typeof import('./utils/component').transMapBySelectOptions
   const triggerRef: typeof import('vue').triggerRef

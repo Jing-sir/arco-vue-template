@@ -4,8 +4,8 @@ import Settings2FA from '@/components/Settings2FA.vue'
 import GoogleCode from '@/components/GoogleCode.vue'
 import { Message } from '@arco-design/web-vue'
 import { encryptAESGCM } from '@/utils/aesGcm'
+import logoUrl from '@/assets/images/logo.png'
 import { useRequest } from 'vue-request'
-import logoUrl from '@/assets/logo.png'
 import cookies from 'cookies-js'
 import api from '@/api/sys'
 import md5 from 'md5'
@@ -22,8 +22,8 @@ const formRef = ref<FormInstance | null>(null)
 const is2FAModalOpen = ref(false)
 
 const formState = reactive<LoginFormState>({
-    account: 'xiangnan-test',
-    password: 'xiangnan-test',
+    account: '',
+    password: '',
 } satisfies LoginFormState)
 
 const store = user()

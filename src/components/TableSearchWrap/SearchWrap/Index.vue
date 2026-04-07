@@ -16,7 +16,7 @@ import type { PropType } from 'vue'
 import dayjs from 'dayjs'
 
 const DEBOUNCE_DELAY = 600
-const SEARCH_STATE_KEY = 'searchVal'
+const SEARCH_STATE_KEY_PREFIX = 'searchVal'
 
 const props = defineProps({
     searchConf: {
@@ -34,10 +34,24 @@ const { t } = useI18n()
 const emits = defineEmits<{
     searchCallback: [params: SearchParams]
 }>()
+const currentRoute = useRoute()
 
 const formRef = ref()
-const isSearch = ref(sessionStorage.getItem(SEARCH_STATE_KEY) === 'true')
-const isDefaVal = ref(sessionStorage.getItem(SEARCH_STATE_KEY) === 'true')
+/**
+ * 搜索面板展开状态按“路由作用域”隔离：
+ * - 避免一个列表页的默认展开配置污染到其它列表页
+ * - 路由缺少 name 时回退 path，保证 key 始终稳定可用
+ */
+const searchStateStorageKey = computed(() => {
+    const routeScope = String(currentRoute.name ?? currentRoute.path ?? 'global')
+    return `${SEARCH_STATE_KEY_PREFIX}:${routeScope}`
+})
+
+const getStoredSearchExpandState = (): boolean =>
+    sessionStorage.getItem(searchStateStorageKey.value) === 'true'
+
+const isSearch = ref(getStoredSearchExpandState())
+const isDefaVal = ref(getStoredSearchExpandState())
 
 const getOptionList = (
     item: SearchOption,
@@ -170,7 +184,7 @@ const onToggleSearch = (): void => {
 
 const onChangeCheck = (): void => {
     isSearch.value = isDefaVal.value
-    sessionStorage.setItem(SEARCH_STATE_KEY, String(isDefaVal.value))
+    sessionStorage.setItem(searchStateStorageKey.value, String(isDefaVal.value))
 }
 
 const onReset = (): void => {
@@ -296,6 +310,15 @@ const fetchTipsText = computed(
     () =>
         getSearchOptions.value.find((item) => item.modelKey === searchState.value.searchKey)
             ?.label || '',
+)
+
+watch(
+    () => searchStateStorageKey.value,
+    () => {
+        const nextExpandState = getStoredSearchExpandState()
+        isSearch.value = nextExpandState
+        isDefaVal.value = nextExpandState
+    },
 )
 
 watch(

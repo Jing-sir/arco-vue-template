@@ -1,7 +1,9 @@
 import permissionRoutes from '../routes/permissionRoutes';
 import type { RouteRecordRaw } from 'vue-router';
 import NProgress from 'nprogress';
+import { Message } from '@arco-design/web-vue';
 import api from '../api/sys';
+import { formatText } from '@/utils/common';
 
 type MenuItem = PromiseReturnType<typeof api.menuList>[number];
 
@@ -12,6 +14,7 @@ export default defineStore('sideBar', () => {
     const isSidebar = ref<boolean>(false); // 侧边栏开关状态
     const routes = ref<Array<RouteRecordRaw>>([]); // 路由权限列表
     const roleMenu = ref<MenuItem[]>([]);
+    let fetchSidebarPromise: Promise<void> | null = null;
 
     const updateIsSidebar = (status: boolean): void => { // 更新isSidebar状态
         isSidebar.value = status;
@@ -43,24 +46,38 @@ export default defineStore('sideBar', () => {
     };
 
     // 获取sidebar 列表路由
-    const fetchSidebarRoutes = (): void => {
+    const fetchSidebarRoutes = (): Promise<void> => {
+        // 路由快速切换时可能触发并发拉取，这里统一复用同一请求，避免重复覆盖状态。
+        if (fetchSidebarPromise) return fetchSidebarPromise;
+
         NProgress.start();
-        api.menuList().then((r) => {
-            const accessibleRoutes = filterAsyRouter(r);
+        fetchSidebarPromise = api.menuList()
+            .then((r) => {
+                const accessibleRoutes = filterAsyRouter(r);
 
-            roleMenu.value = r;
-            routes.value = accessibleRoutes;
+                roleMenu.value = r;
+                routes.value = accessibleRoutes;
 
-            const fetchObj = Object.fromEntries(
-                r.map((item: MenuItem) => [item.component, item.component]),
-            )
+                const fetchObj = Object.fromEntries(
+                    r.map((item: MenuItem) => [item.component, item.component]),
+                )
 
-            if (route.meta.requiresAuth && !route.meta.ignorePermission && !fetchObj[String(route.meta.role)]) {
-                router.push('/error/404')
-            }
-        }).finally(() => {
-            NProgress.done();
-        });
+                if (route.meta.requiresAuth && !route.meta.ignorePermission && !fetchObj[String(route.meta.role)]) {
+                    void router.push('/error/404')
+                }
+            })
+            .catch((error: unknown) => {
+                // http 拦截器有具体报错时会先展示，这里只对空错误做统一兜底提示，避免重复弹窗。
+                if (!String(error ?? '').trim()) {
+                    Message.error(formatText('权限菜单加载失败，请稍后重试'));
+                }
+            })
+            .finally(() => {
+                fetchSidebarPromise = null;
+                NProgress.done();
+            });
+
+        return fetchSidebarPromise;
     };
 
     /* const onRefreshToken = (val: number): void => {
