@@ -321,10 +321,67 @@ watch(
     },
 )
 
+/**
+ * 监听 searchConf 变化，用于响应语言切换、动态选项更新等场景。
+ *
+ * 只同步元数据字段（label / placeholder / options / optionsArr / props），
+ * 不覆盖用户已填写的 value，避免 keep-alive 场景下切回页面时搜索条件被清空。
+ *
+ * 背景：searchConf 是页面侧的 computed，语言切换时会产生新对象，
+ * 但 value 始终是初始空值；如果直接整体替换 formState.domains，
+ * 用户已输入的筛选条件会被抹掉。
+ */
 watch(
     () => props.searchConf,
     (value) => {
-        formState.domains = normalizeSearchConf(value) as typeof formState.domains
+        // 遍历最新配置，只把元数据补丁到现有 domain 上，value 保持不动。
+        value.forEach((newItem) => {
+            const newKey = Array.isArray(newItem.modelKey)
+                ? newItem.modelKey[0]
+                : newItem.modelKey
+
+            const existing = formState.domains.find((d) => {
+                const dKey = Array.isArray(d.modelKey) ? d.modelKey[0] : d.modelKey
+                return dKey === newKey
+            })
+
+            if (existing) {
+                // 只更新展示相关的元数据，不碰 value
+                existing.label = newItem.label
+                if ('placeholder' in newItem) {
+                    ;(existing as InputSearchOption).placeholder = (
+                        newItem as InputSearchOption
+                    ).placeholder
+                }
+                if ('options' in newItem) {
+                    ;(existing as SelectSearchOption).options = (
+                        newItem as SelectSearchOption
+                    ).options
+                }
+                if ('optionsArr' in newItem) {
+                    ;(existing as SelectSearchOption).optionsArr = (
+                        newItem as SelectSearchOption
+                    ).optionsArr
+                }
+                if ('props' in newItem) {
+                    existing.props = newItem.props
+                }
+            } else {
+                // 新增的字段直接追加（带 value 初始化）
+                formState.domains.push(
+                    ...normalizeSearchConf([newItem]) as typeof formState.domains,
+                )
+            }
+        })
+
+        // 移除已从 searchConf 中删除的字段
+        formState.domains = formState.domains.filter((d) => {
+            const dKey = Array.isArray(d.modelKey) ? d.modelKey[0] : d.modelKey
+            return value.some((item) => {
+                const itemKey = Array.isArray(item.modelKey) ? item.modelKey[0] : item.modelKey
+                return itemKey === dKey
+            })
+        }) as typeof formState.domains
 
         if (!getSearchOptions.value.find((item) => item.modelKey === searchState.value.searchKey)) {
             searchState.value.searchKey = getFirstModelKey()

@@ -33,7 +33,7 @@ const { t } = useI18n()
 const currentRoute = useRoute()
 
 // 路由跳转方法
-const { push } = useRouter()
+const router = useRouter()
 
 // 侧边栏 store
 const store = sideBar()
@@ -249,9 +249,16 @@ const selectedKeys = computed<string[]>(() => {
 
 /**
  * 菜单点击跳转
+ *
+ * 左侧菜单导航是“获取最新数据”语义：
+ * - 显式清空 hash，避免沿用 tabbar 的 #no-refresh 标记
+ * - 让 useOnActivated 走默认刷新分支，拉取最新列表数据
  */
 const handleMenuItemClick = (path: string): void => {
-    push(path)
+    void router.push({
+        path,
+        hash: '',
+    })
 }
 
 watch(

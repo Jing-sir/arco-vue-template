@@ -11,6 +11,7 @@ type CachedRouteLocation = {
 const store = useTagsView();
 const route = useRoute();
 const router = useRouter();
+const noRefreshHashPattern = /(?:#no-refresh)+$/;
 
 const { visitedViews: rawVisitedViews } = storeToRefs(store);
 
@@ -30,8 +31,14 @@ watch(
 const deleteVisitedView = (index: number, isActive: boolean): void =>
     store.deleteVisitedView(index, isActive);
 
+/**
+ * tab 切换属于“读缓存”行为：
+ * 1. 先清洗历史残留的 #no-refresh（兼容早期重复拼接）
+ * 2. 再仅追加一次 #no-refresh，供 useOnActivated 区分“菜单刷新”与“tab复用”
+ */
 const handleGoCacheRoute = (targetRoute: CachedRouteLocation): void => {
-    router.replace(`${targetRoute.fullPath}#no-refresh`);
+    const normalizedPath = targetRoute.fullPath.replace(noRefreshHashPattern, '');
+    router.replace(`${normalizedPath}#no-refresh`);
 };
 
 const handleGoHome = (): void => {
@@ -41,7 +48,7 @@ const handleGoHome = (): void => {
 const formatRouteTitle = (title?: string | (() => string)): string =>
     title ? String(i18n.global.t(String(typeof title === 'function' ? title() : title))) : '';
 
-const normalizeFullPath = (path = ''): string => path.replace(/#no-refresh$/, '');
+const normalizeFullPath = (path = ''): string => path.replace(noRefreshHashPattern, '');
 
 const isActiveHome = computed(() => route.path === '/');
 

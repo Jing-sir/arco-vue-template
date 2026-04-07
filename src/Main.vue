@@ -27,15 +27,14 @@ let shellTopResizeObserver: ResizeObserver | null = null
 
 const store = sideBar()
 const { isSidebar, roleMenu } = storeToRefs(store)
+const tagsViewStore = tagsView()
 
-const storeTagsView = tagsView()
-const { visitedViews } = storeToRefs(storeTagsView)
-
-const keepAlive = computed(() =>
-    visitedViews.value
-        .map((item: { name?: string | null }) => item.name)
-        .filter((item: string | null | undefined): item is string => Boolean(item)),
-)
+/**
+ * keep-alive 缓存 key 由“路由 path + 缓存版本”组成：
+ * - tabbar 普通切换：版本不变，命中缓存，保留搜索与列表状态
+ * - tabbar 关闭页面：store 会提升该 path 的版本，再次进入时触发全新挂载
+ */
+const getRouteCacheKey = (path = ''): string => `${path}::${tagsViewStore.getRouteCacheVersion(path)}`
 
 const onCollapse = (val: boolean) => {
     isSidebar.value = val
@@ -136,8 +135,14 @@ watch(
                             leave-active-class="transform-gpu transition duration-200 ease-in"
                             leave-to-class="-translate-y-2 opacity-0"
                         >
-                            <keep-alive :include="[...keepAlive, 'AllFees', 'TotalFees']">
-                                <component :is="Component" :key="route.path" />
+                            <!--
+                              keep-alive 直接按路由实例缓存（依赖 component key），
+                              不再依赖 include 的组件 name 匹配。
+                              原因：当前多数页面是 <script setup> 且未显式声明 name，
+                              include(route.name) 会命中失败，导致 tab 切换时页面被重建、搜索条件丢失。
+                            -->
+                            <keep-alive>
+                                <component :is="Component" :key="getRouteCacheKey(route.path)" />
                             </keep-alive>
                         </transition>
                     </router-view>
