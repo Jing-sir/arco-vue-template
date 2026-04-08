@@ -12,6 +12,7 @@ const store = useTagsView();
 const route = useRoute();
 const router = useRouter();
 const noRefreshHashPattern = /(?:#no-refresh)+$/;
+const tabTrackRef = ref<HTMLElement | null>(null);
 
 const { visitedViews: rawVisitedViews } = storeToRefs(store);
 
@@ -30,6 +31,9 @@ watch(
 
 const deleteVisitedView = (index: number, isActive: boolean): void =>
     store.deleteVisitedView(index, isActive);
+
+const isTabCacheNavigation = (hash = ''): boolean =>
+    /^(#no-refresh)+$/.test(hash);
 
 /**
  * tab 切换属于“读缓存”行为：
@@ -63,6 +67,52 @@ const isActiveTab = (item: {
     return normalizeFullPath(route.fullPath) === normalizeFullPath(item.fullPath);
 };
 
+type OrderedVisitedViewEntry = {
+    rawIndex: number;
+    view: RouteLocationNormalizedLoaded;
+};
+
+/**
+ * 菜单点击（非 #no-refresh）时，把当前激活页签提到“首页”后第一个，
+ * 避免页签很多时当前页被滚动条藏到右侧。
+ * tabbar 点击（#no-refresh）时保持原顺序，避免频繁重排打断使用习惯。
+ */
+const orderedVisitedViewEntries = computed<OrderedVisitedViewEntry[]>(() => {
+    const entries = visitedViews.value.map((view, rawIndex) => ({
+        view,
+        rawIndex,
+    }));
+
+    if (entries.length <= 1 || isTabCacheNavigation(route.hash)) {
+        return entries;
+    }
+
+    const activeIndex = entries.findIndex(({ view }) =>
+        isActiveTab({
+            name: view.name,
+            path: view.path,
+            fullPath: view.fullPath,
+        }),
+    );
+
+    if (activeIndex <= 0) {
+        return entries;
+    }
+
+    const [activeEntry] = entries.splice(activeIndex, 1);
+    return [activeEntry, ...entries];
+});
+
+watch(
+    () => route.fullPath,
+    () => {
+        if (isTabCacheNavigation(route.hash)) return;
+        nextTick(() => {
+            tabTrackRef.value?.scrollTo({ left: 0 });
+        });
+    },
+);
+
 const getActiveTabStyle = (isActive: boolean): Record<string, string> =>
     isActive
         ? {
@@ -74,7 +124,10 @@ const getActiveTabStyle = (isActive: boolean): Record<string, string> =>
 
 <template>
     <div class="w-full overflow-hidden pb-[14px]">
-        <div class="flex gap-2 overflow-x-auto rounded-xl bg-[var(--app-tags-track-bg)] p-2">
+        <div
+            ref="tabTrackRef"
+            class="flex gap-2 overflow-x-auto rounded-xl bg-[var(--app-tags-track-bg)] p-2"
+        >
             <button
                 type="button"
                 class="group inline-flex min-h-[32px] shrink-0 items-center gap-2 rounded-lg px-[14px] text-[12px] font-semibold text-[var(--app-text-muted)] transition-colors hover:bg-[var(--app-tags-hover-bg)] hover:text-[var(--app-text)]"
@@ -87,24 +140,44 @@ const getActiveTabStyle = (isActive: boolean): Record<string, string> =>
 
             <!-- 动态页签 -->
             <button
-                v-for="({ name, path, meta, fullPath }, index) in visitedViews"
-                :key="path"
+                v-for="entry in orderedVisitedViewEntries"
+                :key="entry.view.path"
                 type="button"
                 class="group inline-flex min-h-[32px] shrink-0 items-center gap-2 rounded-lg px-[14px] text-[12px] font-semibold text-[var(--app-text-muted)] transition-colors hover:bg-[var(--app-tags-hover-bg)] hover:text-[var(--app-text)]"
-                :class="isActiveTab({ name, path, fullPath }) ? 'text-white hover:text-white' : ''"
-                :style="getActiveTabStyle(isActiveTab({ name, path, fullPath }))"
-                @click="handleGoCacheRoute({ fullPath })"
+                :class="
+                    isActiveTab({
+                        name: entry.view.name,
+                        path: entry.view.path,
+                        fullPath: entry.view.fullPath,
+                    })
+                        ? 'text-white hover:text-white'
+                        : ''
+                "
+                :style="
+                    getActiveTabStyle(
+                        isActiveTab({
+                            name: entry.view.name,
+                            path: entry.view.path,
+                            fullPath: entry.view.fullPath,
+                        }),
+                    )
+                "
+                @click="handleGoCacheRoute({ fullPath: entry.view.fullPath })"
             >
-                <span class="whitespace-nowrap">{{ formatRouteTitle(meta.title) }}</span>
+                <span class="whitespace-nowrap">{{ formatRouteTitle(entry.view.meta.title) }}</span>
                 <!-- 关闭按钮：hover 或激活时显示 -->
                 <span
                     class="inline-flex h-4 w-4 items-center justify-center rounded-full text-xs text-[var(--app-tag-close-text)] opacity-0 transition-all hover:text-[var(--app-tag-close-hover-text)]"
                     :class="
-                        isActiveTab({ name, path, fullPath })
+                        isActiveTab({
+                            name: entry.view.name,
+                            path: entry.view.path,
+                            fullPath: entry.view.fullPath,
+                        })
                             ? 'opacity-100 text-white/80 hover:text-white'
                             : 'group-hover:opacity-100'
                     "
-                    @click.stop="deleteVisitedView(index, $route.path === path)"
+                    @click.stop="deleteVisitedView(entry.rawIndex, $route.path === entry.view.path)"
                 >
                     ×
                 </span>

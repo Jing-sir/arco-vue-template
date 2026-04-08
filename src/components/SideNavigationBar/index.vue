@@ -255,8 +255,9 @@ const selectedKeys = computed<string[]>(() => {
  * - 让 useOnActivated 走默认刷新分支，拉取最新列表数据
  */
 const handleMenuItemClick = (path: string): void => {
+    const normalizedPath = path.replace(/(?:#no-refresh)+$/, '')
     void router.push({
-        path,
+        path: normalizedPath,
         hash: '',
     })
 }

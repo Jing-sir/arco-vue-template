@@ -3,8 +3,8 @@ import { defineStore } from 'pinia';
 import { useRouter, useRoute } from 'vue-router';
 import type { RouteLocationNormalized } from 'vue-router';
 
-/** 持久化 tab 数据的 localStorage key */
-const TAGS_STORAGE_KEY = 'tagsView_visitedViews';
+/** 持久化 tab 数据的 localStorage key（v2 用于隔离旧缓存结构） */
+const TAGS_STORAGE_KEY = 'tagsView_visitedViews_v2';
 
 /**
  * 从 localStorage 读取持久化的 tab 列表。
@@ -43,6 +43,11 @@ const saveVisitedViewsToStorage = (views: Partial<RouteLocationNormalized>[]): v
 export default defineStore('tagsView', () => {
     // 初始化时优先从 localStorage 恢复，没有则使用空数组
     const visitedViews = ref<Partial<RouteLocationNormalized>[]>(loadVisitedViewsFromStorage());
+    /**
+     * 路由缓存版本号：
+     * - tabbar 切换不变，复用缓存
+     * - menu 点击/关闭 tab 时递增，强制该 path 重新挂载
+     */
     const routeCacheVersionMap = ref<Record<string, number>>({});
     const noRefreshHashPattern = /(?:#no-refresh)+$/;
 
@@ -124,6 +129,7 @@ export default defineStore('tagsView', () => {
         visitedViews,
         firstToUpper,
         addVisitedView,
+        bumpRouteCacheVersion,
         getRouteCacheVersion,
         clearVisitedView,
         deleteVisitedView,

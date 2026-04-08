@@ -223,6 +223,105 @@ const permissionRoutes: RouteRecordRaw[] = [
             },
         ],
     },
+    // ─── 资产管理模块 ────────────────────────────────────────────────────────────
+    {
+        path: '/asset',
+        name: 'asset',
+        redirect: 'noRedirect',
+        component: () => import(/* webpackChunkName: "asset" */ '@/Main.vue'),
+        meta: {
+            title: '资产管理',
+            icon: 'assetManage',
+            role: 'asset',
+            requiresAuth: true,
+        },
+        children: [
+            {
+                // 代理商资产（老项目 role=assetList，对齐后端权限菜单）
+                path: 'assetList',
+                name: 'assetList',
+                component: () =>
+                    import(
+                        /* webpackChunkName: "agentAssetList" */ '@/views/AssetManage/agent-asset-list/Index.vue'
+                    ),
+                meta: { title: '代理商资产', role: 'assetList', requiresAuth: true },
+            },
+            {
+                // 用户资产
+                path: 'userAssetList',
+                name: 'userAssetList',
+                component: () =>
+                    import(
+                        /* webpackChunkName: "userAssetList" */ '@/views/AssetManage/user-asset-list/Index.vue'
+                    ),
+                meta: { title: '用户资产', role: 'userAssetList', requiresAuth: true },
+            },
+            {
+                // 用户资产流水
+                path: 'userAssetsJournal',
+                name: 'userAssetsJournal',
+                component: () =>
+                    import(
+                        /* webpackChunkName: "userAssetsJournal" */ '@/views/AssetManage/user-asset-journal/Index.vue'
+                    ),
+                meta: { title: '用户资产流水', role: 'userAssetsJournal', requiresAuth: true },
+            },
+            {
+                // 划转记录
+                path: 'transfer',
+                name: 'transfer',
+                component: () =>
+                    import(
+                        /* webpackChunkName: "transfer" */ '@/views/AssetManage/asset-transfer-record/Index.vue'
+                    ),
+                meta: { title: '划转记录', role: 'transfer', requiresAuth: true },
+            },
+            {
+                // 用户资产冻结表（老项目 role=assetFreeze，对齐后端权限菜单）
+                path: 'assetFreeze',
+                name: 'assetFreeze',
+                component: () =>
+                    import(
+                        /* webpackChunkName: "userAssetFreeze" */ '@/views/AssetManage/user-asset-freeze/Index.vue'
+                    ),
+                meta: { title: '用户资产冻结表', role: 'assetFreeze', requiresAuth: true },
+            },
+            {
+                // 用户资产冻结历史（老项目 role=assetFreezeHistory，对齐后端权限菜单）
+                path: 'assetFreezeHistory',
+                name: 'assetFreezeHistory',
+                component: () =>
+                    import(
+                        /* webpackChunkName: "userAssetFreezeHistory" */ '@/views/AssetManage/user-asset-freeze-history/Index.vue'
+                    ),
+                meta: { title: '用户资产冻结历史', role: 'assetFreezeHistory', requiresAuth: true },
+            },
+            {
+                // 用户法币资产（老项目 role=userFiatAssetList，对齐后端权限菜单）
+                path: 'userFiatAssetList',
+                name: 'userFiatAssetList',
+                component: () =>
+                    import(
+                        /* webpackChunkName: "userFiatAsset" */ '@/views/AssetManage/user-fiat-asset/Index.vue'
+                    ),
+                meta: { title: '用户法币资产', role: 'userFiatAssetList', requiresAuth: true },
+            },
+            {
+                // 用户法币资产流水
+                path: 'userFiatAssetJournal',
+                name: 'userFiatAssetJournal',
+                component: () =>
+                    import(
+                        /* webpackChunkName: "userFiatAssetJournal" */ '@/views/AssetManage/user-fiat-asset-journal/Index.vue'
+                    ),
+                meta: {
+                    title: '用户法币资产流水',
+                    role: 'userFiatAssetJournal',
+                    requiresAuth: true,
+                },
+            },
+        ],
+    },
     {
         path: '/systemManage', // 系统管理
         name: 'systemManage',

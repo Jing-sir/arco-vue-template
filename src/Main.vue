@@ -32,7 +32,7 @@ const tagsViewStore = tagsView()
 /**
  * keep-alive 缓存 key 由“路由 path + 缓存版本”组成：
  * - tabbar 普通切换：版本不变，命中缓存，保留搜索与列表状态
- * - tabbar 关闭页面：store 会提升该 path 的版本，再次进入时触发全新挂载
+ * - 左侧 menu 点击：menu 逻辑会先 bump 版本，再跳转，触发该页重挂载拿最新数据
  */
 const getRouteCacheKey = (path = ''): string => `${path}::${tagsViewStore.getRouteCacheVersion(path)}`
 
@@ -129,20 +129,23 @@ watch(
                 <template v-if="isOnline">
                     <router-view v-slot="{ Component, route }">
                         <transition
-                            mode="out-in"
-                            enter-active-class="transform-gpu transition duration-300 ease-out"
-                            enter-from-class="translate-y-2 opacity-0"
-                            leave-active-class="transform-gpu transition duration-200 ease-in"
-                            leave-to-class="-translate-y-2 opacity-0"
+                            enter-active-class="transform-gpu transition duration-220 ease-out"
+                            enter-from-class="translate-y-1 opacity-0"
+                            leave-active-class="transform-gpu transition duration-160 ease-in"
+                            leave-to-class="-translate-y-1 opacity-0"
                         >
                             <!--
-                              keep-alive 直接按路由实例缓存（依赖 component key），
-                              不再依赖 include 的组件 name 匹配。
-                              原因：当前多数页面是 <script setup> 且未显式声明 name，
-                              include(route.name) 会命中失败，导致 tab 切换时页面被重建、搜索条件丢失。
+                              缓存策略：
+                              1. tabbar 切换：命中 keep-alive，保留搜索与列表状态
+                              2. tab 关闭后再次进入：通过 path 缓存版本触发全新挂载
+                              3. 动画使用默认模式（非 out-in），避免先卸载旧页导致内容区短暂空白
                             -->
                             <keep-alive>
-                                <component :is="Component" :key="getRouteCacheKey(route.path)" />
+                                <component
+                                    v-if="Component"
+                                    :is="Component"
+                                    :key="getRouteCacheKey(route.path)"
+                                />
                             </keep-alive>
                         </transition>
                     </router-view>

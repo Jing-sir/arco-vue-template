@@ -40,6 +40,10 @@ export type StatusPreset =
     | 'userState'
     | 'cancellationCheckState'
     | 'cancellationUserState'
+    | 'userAssetLogState'
+    | 'assetFrozenType'
+    | 'fiatUserAssetStatus'
+    | 'fiatUserAssetLogState'
 
 const ACCOUNT_STATUS_MAP: Record<string, StatusMeta> = {
     '1': { label: '启用', tone: 'success' },
@@ -196,6 +200,61 @@ const CANCELLATION_USER_STATE_MAP: Record<string, StatusMeta> = {
 }
 
 /**
+ * 用户资产流水 state 状态映射：
+ * 1=已上账（绿）/ 2=失败（红）/ 3=待上账（黄）/ 4=链异常（红）
+ */
+const USER_ASSET_LOG_STATE_MAP: Record<string, StatusMeta> = {
+    '1': { label: '已上账', tone: 'success' },
+    '2': { label: '失败', tone: 'danger' },
+    '3': { label: '待上账', tone: 'warning' },
+    '4': { label: '链异常', tone: 'danger' },
+    已上账: { label: '已上账', tone: 'success' },
+    失败: { label: '失败', tone: 'danger' },
+    待上账: { label: '待上账', tone: 'warning' },
+    链异常: { label: '链异常', tone: 'danger' },
+}
+
+/**
+ * 用户资产冻结历史 typeName 映射：
+ * type=1 -> 冻结（红）/ type=2 -> 解冻（绿）
+ * 兼容数字和已翻译文案两种后端返回形式。
+ */
+const ASSET_FROZEN_TYPE_MAP: Record<string, StatusMeta> = {
+    '1': { label: '冻结', tone: 'danger' },
+    '2': { label: '解冻', tone: 'success' },
+    冻结: { label: '冻结', tone: 'danger' },
+    解冻: { label: '解冻', tone: 'success' },
+}
+
+/**
+ * 用户法币资产 status 映射：
+ * 1=启用（绿）/ 0=禁用（红）；兼容文案形式。
+ * 如后端新增状态值，在此扩展。
+ */
+const FIAT_USER_ASSET_STATUS_MAP: Record<string, StatusMeta> = {
+    '1': { label: '启用', tone: 'success' },
+    '0': { label: '禁用', tone: 'danger' },
+    启用: { label: '启用', tone: 'success' },
+    禁用: { label: '禁用', tone: 'danger' },
+}
+
+/**
+ * 用户法币资产流水 state 映射：
+ * 1=已上账（绿）/ 2=失败（红）/ 3=待上账（黄）/ 4=链异常（红）
+ * 与 userAssetLogState 语义一致，分开维护以便后续扩展。
+ */
+const FIAT_USER_ASSET_LOG_STATE_MAP: Record<string, StatusMeta> = {
+    '1': { label: '已上账', tone: 'success' },
+    '2': { label: '失败', tone: 'danger' },
+    '3': { label: '待上账', tone: 'warning' },
+    '4': { label: '链异常', tone: 'danger' },
+    已上账: { label: '已上账', tone: 'success' },
+    失败: { label: '失败', tone: 'danger' },
+    待上账: { label: '待上账', tone: 'warning' },
+    链异常: { label: '链异常', tone: 'danger' },
+}
+
+/**
  * 语义色到主题 token 的映射。
  * 组件层只关心语义色，不关心具体色值来源。
  */
@@ -226,6 +285,10 @@ export const STATUS_PRESET_MAP: Record<StatusPreset, Record<string, StatusMeta>>
     userState: USER_STATE_MAP,
     cancellationCheckState: CANCELLATION_CHECK_STATE_MAP,
     cancellationUserState: CANCELLATION_USER_STATE_MAP,
+    userAssetLogState: USER_ASSET_LOG_STATE_MAP,
+    assetFrozenType: ASSET_FROZEN_TYPE_MAP,
+    fiatUserAssetStatus: FIAT_USER_ASSET_STATUS_MAP,
+    fiatUserAssetLogState: FIAT_USER_ASSET_LOG_STATE_MAP,
 }
 
 /**
