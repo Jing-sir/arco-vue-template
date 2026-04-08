@@ -61,6 +61,7 @@ declare module 'vue' {
     ATypographyParagraph: typeof import('@arco-design/web-vue')['TypographyParagraph']
     AVerificationCode: typeof import('@arco-design/web-vue')['VerificationCode']
     BindGoogle: typeof import('./components/Modal/BindGoogle.vue')['default']
+    CellEllipsis: typeof import('./components/TableSearchWrap/components/CellEllipsis.vue')['default']
     CodeInput: typeof import('./components/CodeInput.vue')['default']
     ColorPicker: typeof import('./components/ColorPicker.vue')['default']
     Error: typeof import('./components/Error.vue')['default']

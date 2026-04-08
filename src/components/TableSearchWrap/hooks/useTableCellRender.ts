@@ -58,19 +58,7 @@ export default function useTableCellRender({ columns, slots }: UseTableCellRende
     const hasExternalSlot = (slotName?: string): boolean => Boolean(slotName && slots[slotName])
 
     /**
-     * 根据列宽估算“可能发生省略”的最小文本长度阈值。
-     * 字符宽度按约 10px 的轻量启发式估算，避免短文本误判。
-     */
-    const getPreviewThresholdByColumn = (column: ColumnType): number => {
-        if (typeof column.width === 'number' && column.width > 0) {
-            return Math.max(8, Math.floor(column.width / 10))
-        }
-
-        return 18
-    }
-
-    /**
-     * 时间类字段不展示“复制”按钮，也不触发省略弹层，
+     * 时间类字段不展示"复制"按钮，也不触发省略弹层，
      * 避免把日期文本当成长文案处理，保持列表阅读节奏一致。
      */
     const isTimeLikeColumn = (column: ColumnType): boolean => {
@@ -88,11 +76,24 @@ export default function useTableCellRender({ columns, slots }: UseTableCellRende
         return /(时间|日期|time|date)/i.test(title)
     }
 
+    /**
+     * 判断单元格是否应渲染为"可点击弹出全文 + 复制"的交互态。
+     *
+     * 旧逻辑用列宽/10 估算字符阈值，但该启发式无法覆盖中英文混排、
+     * 字体宽度差异等情况，导致视觉上已省略的文本却无法点击查看全文。
+     *
+     * 新逻辑：只要满足以下全部条件，就启用弹层交互：
+     *   1. 文本非空（不是 --）
+     *   2. 非时间/日期类列（时间列只做普通文本展示）
+     *
+     * 对于确实没被截断的短文本，点击弹层仍能正常展示完整内容和复制按钮，
+     * 交互一致且不会误导用户。主色高亮样式作为"可交互"的视觉提示，
+     * 比依赖字数估算更可靠。
+     */
     const canPreviewCellText = (text: string, column: ColumnType): boolean => {
         if (text === '--') return false
         if (isTimeLikeColumn(column)) return false
-        if (/[\r\n]/.test(text)) return true
-        return text.length > getPreviewThresholdByColumn(column)
+        return true
     }
 
     const getCellDisplayText = (record: Record<string, unknown>, column: ColumnType): string => {
@@ -112,6 +113,7 @@ export default function useTableCellRender({ columns, slots }: UseTableCellRende
      * 为声明了 cellPreset 且未声明 slotName 的列注入内部 slotName：
      * - 统一由 TableSearchWrap 内部渲染 LabelTagList / StatusText / actionButtons
      * - 页面仍可通过显式 slotName 覆盖默认渲染
+     * - 同时清除 ellipsis，防止 Arco 对表头文案做截断省略
      */
     const withCellPresetColumns = (columnList: ColumnType[], parentPath = ''): ColumnType[] =>
         columnList.map((column, index) => {
@@ -134,12 +136,16 @@ export default function useTableCellRender({ columns, slots }: UseTableCellRende
             return {
                 ...column,
                 slotName: internalSlotName,
+                // cellPreset 列的渲染由内部 slot 完全接管，
+                // 清除 ellipsis 防止 Arco 同时截断表头。
+                ellipsis: false,
             }
         })
 
     /**
-     * 为“非 slot 文本列”自动注入内部 slotName：
-     * - 统一启用省略号
+     * 为"非 slot 文本列"自动注入内部 slotName：
+     * - 单元格省略截断由我们的 slot 接管（truncate + 点击弹出全文）
+     * - 传给 Arco 的 ellipsis 设为 false，防止 Arco 同时对表头做截断省略
      * - 保留页面自定义 slot 的优先级，不覆盖业务自定义渲染
      */
     const withAutoEllipsisColumns = (columnList: ColumnType[], parentPath = ''): ColumnType[] =>
@@ -168,7 +174,9 @@ export default function useTableCellRender({ columns, slots }: UseTableCellRende
             return {
                 ...column,
                 slotName: internalSlotName,
-                ellipsis: column.ellipsis ?? true,
+                // 单元格截断由 slot 内部的 truncate class 控制，
+                // ellipsis: false 防止 Arco 对表头文案也做省略截断。
+                ellipsis: false,
             }
         })
 

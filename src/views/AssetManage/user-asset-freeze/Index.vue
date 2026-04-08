@@ -49,14 +49,18 @@ const searchConf = computed<SearchOption[]>(() => [
 
 // ─── 表格列配置 ────────────────────────────────────────────────────────────────
 const columns = computed<ColumnType[]>(() => [
-    { title: t('ID'), dataIndex: 'id', width: 80, ellipsis: true },
-    { title: t('用户UID'), dataIndex: 'userId', width: 200, ellipsis: true },
+    { title: t('ID'), dataIndex: 'id', width: 80,
+    },
+    { title: t('用户UID'), dataIndex: 'userId', width: 200,
+    },
     { title: t('币种'), dataIndex: 'symbol', width: 120 },
     { title: t('业务类型'), dataIndex: 'frozenType', width: 180 },
     { title: t('冻结数量'), dataIndex: 'frozenAmount', width: 150 },
     { title: t('可解冻数量'), dataIndex: 'thawAmount', width: 150 },
-    { title: t('动账原因'), dataIndex: 'reason', width: 100, ellipsis: true },
-    { title: t('订单号'), dataIndex: 'orderNo', width: 180, ellipsis: true },
+    { title: t('动账原因'), dataIndex: 'reason', width: 100,
+    },
+    { title: t('订单号'), dataIndex: 'orderNo', width: 180,
+    },
     { title: t('操作人'), dataIndex: 'sysUser', width: 120 },
     { title: t('冻结时间'), dataIndex: 'createTime', width: 160 },
     {

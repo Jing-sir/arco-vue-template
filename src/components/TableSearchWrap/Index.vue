@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import SearchWrap from './SearchWrap/Index.vue'
+import CellEllipsis from './components/CellEllipsis.vue'
 import ExportButton from './components/ExportButton.vue'
 import LabelTagList from './components/LabelTagList.vue'
 import PermissionButton from './components/PermissionButton.vue'
@@ -376,7 +377,7 @@ defineExpose<TableSearchWrapExpose>({
         <!-- 表格主体区域：scroll.y 会在这里按真实 DOM 高度自动计算 -->
         <div
             ref="tableContainerRef"
-            class="overflow-hidden rounded-[10px] bg-[var(--app-surface-strong)] [&_.arco-table-container]:rounded-[4px] [&_.arco-table-th]:bg-[var(--app-table-header-bg)] [&_.arco-table-th]:font-semibold [&_.arco-table-th]:text-[var(--app-table-header-text)] [&_.arco-table-tr-empty_.arco-table-td]:p-0 [&_.arco-table-tr_.arco-table-td]:[border-bottom-color:var(--app-divider)] [&_.arco-table-tr:hover_.arco-table-td]:bg-[var(--app-table-row-hover)]"
+            class="overflow-hidden rounded-[10px] bg-[var(--app-surface-strong)] [&_.arco-table-container]:rounded-[4px] [&_.arco-table-th]:bg-[var(--app-table-header-bg)] [&_.arco-table-th]:font-semibold [&_.arco-table-th]:text-[var(--app-table-header-text)] [&_.arco-table-th]:whitespace-nowrap [&_.arco-table-th_.arco-table-th-item]:whitespace-nowrap [&_.arco-table-tr-empty_.arco-table-td]:p-0 [&_.arco-table-tr_.arco-table-td]:[border-bottom-color:var(--app-divider)] [&_.arco-table-tr:hover_.arco-table-td]:bg-[var(--app-table-row-hover)]"
         >
             <slot
                 name="table"
@@ -554,66 +555,20 @@ defineExpose<TableSearchWrapExpose>({
                             <span v-else>--</span>
                         </template>
                         <template v-else-if="isAutoEllipsisSlot(column.slotName)">
-                            <a-popover
-                                v-if="
-                                    canPreviewCellText(
-                                        getCellDisplayText(slotProps.record, column),
-                                        column,
-                                    )
-                                "
-                                trigger="click"
-                                position="tl"
-                            >
-                                <span
-                                    class="block max-w-full cursor-pointer truncate"
-                                    :style="{
-                                        color: 'color-mix(in srgb, var(--color-primary-6) 72%, white 28%)',
-                                    }"
-                                >
-                                    {{ getCellDisplayText(slotProps.record, column) }}
-                                </span>
-                                <template #content>
-                                    <div class="max-w-[560px] space-y-2">
-                                        <a-typography-paragraph
-                                            class="m-0 whitespace-pre-wrap break-all text-[var(--app-text)]"
-                                        >
-                                            {{ getCellDisplayText(slotProps.record, column) }}
-                                        </a-typography-paragraph>
-                                        <div
-                                            v-if="!isTimeLikeColumn(column)"
-                                            class="flex justify-end"
-                                        >
-                                            <a-button
-                                                type="text"
-                                                size="mini"
-                                                @click.stop="
-                                                    handleCopyPopoverText(
-                                                        getCellDisplayText(
-                                                            slotProps.record,
-                                                            column,
-                                                        ),
-                                                    )
-                                                "
-                                            >
-                                                {{ t('复制') }}
-                                            </a-button>
-                                        </div>
-                                    </div>
-                                </template>
-                            </a-popover>
-                            <span
-                                v-else
-                                class="block max-w-full truncate"
-                                :style="{
-                                    color:
-                                        getCellDisplayText(slotProps.record, column) === '--'
-                                            ? 'var(--app-text-muted)'
-                                            : 'var(--app-text)',
-                                }"
-                            >
-                                {{ getCellDisplayText(slotProps.record, column) }}
-                            </span>
-                        </template>
+                            <!--
+                                单元格自动省略 + 按需弹出全文交互。
+                                用 DOM overflow 检测（scrollWidth > offsetWidth）替代
+                                字符数启发式估算，确保只有真正被截断的单元格才：
+                                  1. 变为主色高亮 + cursor-pointer
+                                  2. 激活 popover（通过 :disabled 控制）
+                                未截断的短文本保持普通文本颜色，无交互噪音。
+                            -->
+                            <CellEllipsis
+                                :text="getCellDisplayText(slotProps.record, column)"
+                                :show-copy="!isTimeLikeColumn(column)"
+                                :copyable="canPreviewCellText(getCellDisplayText(slotProps.record, column), column)"
+                                @copy="handleCopyPopoverText"
+                            /></template>
                     </template>
                 </a-table>
             </slot>

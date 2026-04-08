@@ -73,12 +73,15 @@ const searchConf = computed<SearchOption[]>(() => [
 
 // ─── 表格列配置 ────────────────────────────────────────────────────────────────
 const columns = computed<ColumnType[]>(() => [
-    { title: t('流水ID'), dataIndex: 'id', width: 100, ellipsis: true },
-    { title: t('用户UID'), dataIndex: 'accountId', width: 200, ellipsis: true },
+    { title: t('流水ID'), dataIndex: 'id', width: 100,
+    },
+    { title: t('用户UID'), dataIndex: 'accountId', width: 200,
+    },
     { title: t('历史代理商'), dataIndex: 'historyAgentName', width: 140 },
     { title: t('动账币种'), dataIndex: 'symbol', width: 100 },
     { title: t('动账金额'), dataIndex: 'amount', width: 100 },
-    { title: t('动账订单号'), dataIndex: 'sourceOrderNo', width: 270, ellipsis: true },
+    { title: t('动账订单号'), dataIndex: 'sourceOrderNo', width: 270,
+    },
     { title: t('动账类型'), dataIndex: 'sourceType', width: 190 },
     {
         title: t('状态'),
@@ -86,7 +89,8 @@ const columns = computed<ColumnType[]>(() => [
         width: 100,
         cellPreset: { type: 'statusText', preset: 'userAssetLogState' },
     },
-    { title: t('动账说明'), dataIndex: 'reason', width: 180, ellipsis: true },
+    { title: t('动账说明'), dataIndex: 'reason', width: 180,
+    },
     { title: t('可用期初金额'), dataIndex: 'beforeBalance', width: 150 },
     { title: t('可用期末金额'), dataIndex: 'afterBalance', width: 150 },
     { title: t('AML资产期初'), dataIndex: 'beforeAmlBalance', width: 150 },
@@ -113,7 +117,8 @@ const columns = computed<ColumnType[]>(() => [
     { title: t('卡消费业务冻结期末金额'), dataIndex: 'afterCardFrozenBalance', width: 200 },
     { title: t('动账时间'), dataIndex: 'createTime', width: 180 },
     { title: t('动账版本'), dataIndex: 'version', width: 100 },
-    { title: t('动账hash'), dataIndex: 'hash', width: 280, ellipsis: true },
+    { title: t('动账hash'), dataIndex: 'hash', width: 280,
+    },
     { title: t('备注'), dataIndex: 'remarks', width: 180, fixed: 'right' },
 ]);
 

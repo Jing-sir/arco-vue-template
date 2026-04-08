@@ -116,8 +116,10 @@ const searchConf = computed<SearchOption[]>(() => [
 
 // ─── 表格列配置 ────────────────────────────────────────────────────────────────
 const columns = computed<ColumnType[]>(() => [
-    { title: t('ID'), dataIndex: 'id', width: 90, ellipsis: true },
-    { title: t('用户UID'), dataIndex: 'userId', width: 200, ellipsis: true },
+    { title: t('ID'), dataIndex: 'id', width: 90,
+    },
+    { title: t('用户UID'), dataIndex: 'userId', width: 200,
+    },
     { title: t('所属代理商'), dataIndex: 'agentName', width: 120 },
     { title: t('资金类型'), dataIndex: 'symbol', width: 100 },
     {
@@ -136,11 +138,13 @@ const columns = computed<ColumnType[]>(() => [
         width: 80,
         cellPreset: { type: 'statusText', preset: 'userState' },
     },
-    { title: t('账户hash'), dataIndex: 'hash', width: 280, ellipsis: true },
+    { title: t('账户hash'), dataIndex: 'hash', width: 280,
+    },
     { title: t('账户创建时间'), dataIndex: 'createTime', width: 120 },
     { title: t('账户更新时间'), dataIndex: 'updateTime', width: 120 },
     { title: t('version'), dataIndex: 'version', width: 80 },
-    { title: t('是否展示负数'), dataIndex: 'showMinusAccount', width: 150, ellipsis: true },
+    { title: t('是否展示负数'), dataIndex: 'showMinusAccount', width: 150,
+    },
     {
         title: t('操作'),
         dataIndex: 'action',

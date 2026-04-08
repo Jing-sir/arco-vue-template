@@ -41,14 +41,19 @@ const searchConf = computed<SearchOption[]>(() => [
 
 // ─── 表格列配置 ────────────────────────────────────────────────────────────────
 const columns = computed<ColumnType[]>(() => [
-    { title: t('ID'), dataIndex: 'id', width: 180, ellipsis: true },
-    { title: t('划转订单号'), dataIndex: 'orderNo', width: 180, ellipsis: true },
+    { title: t('ID'), dataIndex: 'id', width: 180,
+    },
+    { title: t('划转订单号'), dataIndex: 'orderNo', width: 180,
+    },
     { title: t('资产类型'), dataIndex: 'symbol', width: 120 },
-    { title: t('卡号'), dataIndex: 'cardNo', width: 180, ellipsis: true },
+    { title: t('卡号'), dataIndex: 'cardNo', width: 180,
+    },
     { title: t('发起数量'), dataIndex: 'amount', width: 150 },
     { title: t('扣除手续费'), dataIndex: 'fee', width: 150 },
-    { title: t('资产人转出Id'), dataIndex: 'agentAssetId', width: 180, ellipsis: true },
-    { title: t('备注'), dataIndex: 'remarks', width: 200, ellipsis: true },
+    { title: t('资产人转出Id'), dataIndex: 'agentAssetId', width: 180,
+    },
+    { title: t('备注'), dataIndex: 'remarks', width: 200,
+    },
     { title: t('操作时间'), dataIndex: 'createTime', width: 160 },
 ])
 

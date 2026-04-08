@@ -67,9 +67,12 @@ const searchConf = computed<SearchOption[]>(() => [
 
 // ─── 表格列配置 ────────────────────────────────────────────────────────────────
 const columns = computed<ColumnType[]>(() => [
-    { title: t('ID'), dataIndex: 'id', width: 90, ellipsis: true },
-    { title: t('用户UID'), dataIndex: 'accountId', width: 180, ellipsis: true },
-    { title: t('代理商ID'), dataIndex: 'agentId', width: 180, ellipsis: true },
+    { title: t('ID'), dataIndex: 'id', width: 90,
+    },
+    { title: t('用户UID'), dataIndex: 'accountId', width: 180,
+    },
+    { title: t('代理商ID'), dataIndex: 'agentId', width: 180,
+    },
     { title: t('代理商名称'), dataIndex: 'agentName', width: 180 },
     { title: t('资产类型'), dataIndex: 'currency', width: 120 },
     { title: t('可用数量'), dataIndex: 'balance', width: 140 },
@@ -84,7 +87,8 @@ const columns = computed<ColumnType[]>(() => [
         // 老项目有 headersCustom 自定义 status 列，这里改用 statusText preset
         cellPreset: { type: 'statusText', preset: 'fiatUserAssetStatus' },
     },
-    { title: t('账户hash'), dataIndex: 'hash', width: 320, ellipsis: true },
+    { title: t('账户hash'), dataIndex: 'hash', width: 320,
+    },
     { title: t('账户创建时间'), dataIndex: 'createTime', width: 180 },
     { title: t('账户更新时间'), dataIndex: 'updateTime', width: 180 },
 ]);

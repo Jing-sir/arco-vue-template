@@ -39,13 +39,17 @@ const searchConf = computed<SearchOption[]>(() => [
 
 // ─── 表格列配置 ────────────────────────────────────────────────────────────────
 const columns = computed<ColumnType[]>(() => [
-    { title: t('ID'), dataIndex: 'id', width: 80, ellipsis: true },
-    { title: t('用户UID'), dataIndex: 'userId', width: 200, ellipsis: true },
+    { title: t('ID'), dataIndex: 'id', width: 80,
+    },
+    { title: t('用户UID'), dataIndex: 'userId', width: 200,
+    },
     { title: t('币种'), dataIndex: 'symbol', width: 120 },
     { title: t('冻结类型'), dataIndex: 'frozenType', width: 180 },
     { title: t('冻结数量'), dataIndex: 'amount', width: 120 },
-    { title: t('冻结原因'), dataIndex: 'reason', width: 100, ellipsis: true },
-    { title: t('冻结订单号'), dataIndex: 'orderNo', width: 220, ellipsis: true },
+    { title: t('冻结原因'), dataIndex: 'reason', width: 100,
+    },
+    { title: t('冻结订单号'), dataIndex: 'orderNo', width: 220,
+    },
     { title: t('冻结人'), dataIndex: 'sysUser', width: 120 },
     { title: t('冻结时间'), dataIndex: 'createTime', width: 160 },
     {

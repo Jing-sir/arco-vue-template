@@ -82,14 +82,18 @@ const searchConf = computed<SearchOption[]>(() => [
 ]);
 
 // ─── 表格列配置 ────────────────────────────────────────────────────────────────
-const columns = computed<ColumnType<FiatUserAssetLogItem>[]>(() => [
-    { title: t('ID'), dataIndex: 'id', width: 120, ellipsis: true },
-    { title: t('用户UID'), dataIndex: 'accountId', width: 180, ellipsis: true },
+const columns = computed<ColumnType[]>(() => [
+    { title: t('ID'), dataIndex: 'id', width: 120,
+    },
+    { title: t('用户UID'), dataIndex: 'accountId', width: 180,
+    },
     { title: t('代理商名称'), dataIndex: 'agentName', width: 180 },
-    { title: t('代理商ID'), dataIndex: 'agentId', width: 180, ellipsis: true },
+    { title: t('代理商ID'), dataIndex: 'agentId', width: 180,
+    },
     { title: t('动账币种'), dataIndex: 'currency', width: 120 },
     { title: t('动账金额'), dataIndex: 'amount', width: 140 },
-    { title: t('动账订单号'), dataIndex: 'sourceOrderNo', width: 260, ellipsis: true },
+    { title: t('动账订单号'), dataIndex: 'sourceOrderNo', width: 260,
+    },
     { title: t('动账类型'), dataIndex: 'sourceTypeDesc', width: 160 },
     {
         title: t('状态'),
@@ -98,7 +102,8 @@ const columns = computed<ColumnType<FiatUserAssetLogItem>[]>(() => [
         // 老项目中 headersCustom=['state'] 有自定义颜色，改用 statusText preset
         cellPreset: { type: 'statusText', preset: 'fiatUserAssetLogState' },
     },
-    { title: t('动账说明'), dataIndex: 'reason', width: 180, ellipsis: true },
+    { title: t('动账说明'), dataIndex: 'reason', width: 180,
+    },
     { title: t('可用期初金额'), dataIndex: 'beforeBalance', width: 180 },
     { title: t('可用期末金额'), dataIndex: 'afterBalance', width: 180 },
     { title: t('收单待结算期初金额'), dataIndex: 'beforeAcquirerFrozen', width: 220 },

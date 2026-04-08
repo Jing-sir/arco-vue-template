@@ -55,9 +55,11 @@ const searchConf = computed<SearchOption[]>(() => [
 
 // ─── 表格列配置 ────────────────────────────────────────────────────────────────
 const columns = computed<ColumnType[]>(() => [
-    { title: t('ID'), dataIndex: 'id', width: 180, ellipsis: true },
+    { title: t('ID'), dataIndex: 'id', width: 180,
+    },
     { title: t('资产类型'), dataIndex: 'symbol', width: 120 },
-    { title: t('资产人ID'), dataIndex: 'agentId', width: 160, ellipsis: true },
+    { title: t('资产人ID'), dataIndex: 'agentId', width: 160,
+    },
     { title: t('可用数量'), dataIndex: 'balance', width: 140 },
     { title: t('冻结数量'), dataIndex: 'frozenBalance', width: 140 },
     {
